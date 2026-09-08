@@ -1,43 +1,33 @@
-DANCO APPLICANT ASSESSMENT — ADVANCED SECONDARY PROTOTYPE v25
+DANCO WORKFORCE ASSESSMENT — ADVANCED SECONDARY PROTOTYPE v26
 
-This package is intentionally separate from the existing Danco prototype.
-Do not overwrite the existing working version if you want to keep both options available.
+This is the NEW advanced/secondary prototype. Keep it in a separate GitHub Pages repository so the established Danco prototype remains available independently.
 
-RECOMMENDED HOSTING
-Create a separate GitHub Pages repository, for example:
+RECOMMENDED HOSTING REPOSITORY
   thejoeyrob/Danco-Advanced-Prototype
-Upload EVERY file in this ZIP to the repository root.
 
-WHAT IS NEW
-• Commercial Account Manager application option.
-• Same five-question work-style primer, followed by a dedicated timed ten-question commercial-sales suitability assessment.
-• Private administrator report with 0–100% suitability, commercial indicators and estimated sales approach.
-• Applicant background-screening consent question and refusal-reason capture.
-• Admin-only Request background check button after result review.
-• Demonstration cost-approval screen before screening request.
-• Supabase-stored screening demonstration record with placeholder result categories.
-• Additional queues: CB checked · To action, CB checked · Eligible and CB checked · Not eligible.
+Upload every file from this ZIP to the repository root, then enable GitHub Pages from main / root.
 
-BACKGROUND SCREENING DEMO
-No third-party screening company is connected and NO CHARGE is made.
-The cost shown is illustrative. The app demonstrates the workflow and database structure only.
-A live screening provider would later be connected to the protected Supabase Edge Function using Danco's own provider account and server-side credentials.
+TEST THE NEW ROUTING
+1. Unlock the prototype trial.
+2. Select English or Spanish.
+3. If the device is in Choice mode, select either:
+   • Danco Workforce Assessment
+   • Apply to work at Danco
+4. In Administrator, use Device Start Mode to lock the device to either route or restore Choice of either.
 
-LIVE DATA
-This advanced prototype points directly to the Danco Supabase service:
-https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-service
+TEST THE SSN WORKFLOW SAFELY
+For prototype demonstrations, enter PROTOTYPE in the Social Security number field. Do not enter a real applicant SSN into a public demonstration build.
 
-FIRST REVIEW
-1. Unlock the trial.
-2. In Administrator, choose Application mode.
-3. Start a new applicant and select Commercial Account Manager.
-4. Complete the work-style primer and ten timed sales questions.
-5. Submit the application to the shared database.
-6. Open Administrator and load the application report.
-7. Select Request background check.
-8. Review the demonstration cost screen, approve it, and submit.
-9. The record moves to CB checked · To action and placeholder screening results appear in the report.
-10. Manually file it as Eligible, Not eligible, or leave it To action.
+If an invalid or blank SSN is used, the applicant can proceed only after acknowledging the warning and selecting a reason. That application can still be stored and reviewed, but the administrator cannot request a background check from it.
 
-IMPORTANT
-The background screening is a demonstration only. The Eligible / Not eligible folders are manual administrative workflow states, not an automated employment decision.
+BACKGROUND CHECK RULE
+If no valid SSN readiness is present, the administrator receives:
+“Unable to request a background check on this applicant due to no Social Security number being provided. Danco does not recognise or accept no Social Security number background checks.”
+
+PROTOTYPE bypass is accepted only for the demonstration background workflow. It must never satisfy a live CRA request.
+
+SUBMISSION
+Applicants can now submit completed applications directly to the protected shared review list without knowing the administrator PIN. Administrator access and background-screening actions remain protected.
+
+PRIVACY
+The normal Danco applicant record does not retain a full raw SSN. It stores high-level SSN readiness, masked last four digits for a structurally valid number, prototype-bypass state, and any exception reason. A future live CRA integration requires a separately approved secure identity handoff/provider flow.

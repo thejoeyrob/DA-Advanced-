@@ -1,63 +1,33 @@
-# Danco Advanced Prototype — Supabase backend notes
+# Danco Advanced Prototype v26 — Supabase backend notes
 
-The advanced prototype uses the existing Danco Supabase project and the `danco-service` Edge Function.
+Project Edge Function: `danco-service` — version 3.
 
-## Additive schema now present
+## Submission contract
+`POST /api/submissions`
+- Applicant submission no longer requires an administrator PIN.
+- The backend sanitizes application data before storage and strips common raw-SSN field names as a defense-in-depth measure.
+- Stored application identity metadata may include `ssnStatus`, `ssnLast4`, `ssnPrototypeBypass`, exception reason, DOB and address fields.
+- Full raw SSN is not stored in the normal `danco_submissions.application` JSON.
 
-### `danco_submissions`
-The existing shared-submission table retains the original queues and adds:
+## Administrator contract
+`POST /api/admin`
+- Remains administrator-PIN protected.
+- Supports all standard and CB checked queues.
 
-- `background_to_action`
-- `background_eligible`
-- `background_not_eligible`
-
-It also includes `assessment_track`:
-
-- `roofing`
-- `account_manager`
-
-### `danco_background_screenings`
-A separate protected table stores screening workflow metadata, including:
-
-- submission reference / relation
-- prototype-demo or live-provider mode
-- provider and provider request ID
-- screening package
-- approved cost / currency / possible pass-through fees
-- administrator approval details and timestamps
-- authorization status
-- screening status
-- structured minimal results summary
-- optional provider report URL
-- manual review decision and note
-
-RLS is enabled with no browser policies. Access is via the protected Edge Function only.
-
-## Edge Function actions used by this PWA
-
+## Background screening contract
 `POST /api/background`
+- Remains administrator-PIN protected.
+- Quote/request checks SSN readiness before proceeding.
+- In prototype mode, a structurally-valid SSN marker or `PROTOTYPE` bypass can demonstrate the workflow.
+- In future live-provider mode, the prototype bypass is not accepted.
+- Missing/invalid SSN returns HTTP 422 with code `SSN_REQUIRED_FOR_BACKGROUND_CHECK`.
 
-- `action: quote` — returns the demonstration screening package/cost
-- `action: request` — creates the prototype screening record after cost approval and moves the submission to Background checked · To action
-- `action: get` — retrieves the latest screening status/summary for the protected report
-- `action: decision` — files the record as Eligible, Not eligible or To action
+`danco_background_screenings` now includes:
+- `ssn_status`
+- `ssn_last4`
+- `identity_summary` JSONB
 
-The original `/api/submissions` and `/api/admin` contracts remain available to the existing prototype.
+No raw full SSN should be written to these fields.
 
-## Provider go-live hook
-
-No real provider is selected in this build. Once Danco has a credentialed screening-provider account, the server-side provider adapter should be connected inside the Edge Function. Provider API credentials must remain in Supabase Edge Function secrets and must never be shipped in this PWA or GitHub.
-
-The intended live flow is:
-
-1. Danco administrator reviews the applicant result.
-2. Administrator approves the provider quote in the Danco interface.
-3. Edge Function creates the provider screening request.
-4. Provider collects any required sensitive PII and formal disclosure/authorization in its own secure candidate flow.
-5. Provider webhook/API status updates the Danco screening record.
-6. Danco stores the minimal agreed screening status/summary and provider reference in its database.
-7. A Danco administrator makes the hiring workflow decision; the system does not auto-reject applicants.
-
-## Prototype safety
-
-The current `request` action runs in `prototype_demo` mode. It creates no third-party request and incurs no charge. Each displayed screening category deliberately says **Results will be displayed when live**.
+## Production CRA integration
+A credentialed provider adapter must be added server-side. The full SSN should be passed through an approved provider-hosted flow or separately approved encrypted/restricted identity handoff. CRA and Supabase secret/service-role credentials must remain server-side only.

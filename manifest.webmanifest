@@ -1,8 +1,8 @@
 {
-  "name": "Danco Roofing Applicant Assessment \u2014 Advanced Prototype",
-  "short_name": "Danco Advanced",
-  "description": "Advanced Danco applicant assessment prototype with role-specific sales suitability and background-screening workflow demonstration.",
-  "start_url": "./index.html?v=25.0.0",
+  "name": "Danco Workforce Assessment — Advanced Prototype",
+  "short_name": "Danco Workforce",
+  "description": "Advanced Danco workforce assessment and application prototype with sales suitability, identity readiness and background-screening workflow demonstration.",
+  "start_url": "./index.html?v=26.0.0",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",

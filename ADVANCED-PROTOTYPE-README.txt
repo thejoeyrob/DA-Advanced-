@@ -1,40 +1,15 @@
-DANCO APPLICANT ASSESSMENT — ADVANCED PROTOTYPE v25
+DANCO WORKFORCE ASSESSMENT — ADVANCED PROTOTYPE v26
 
-This is a SECONDARY prototype. It does not replace the current Danco prototype.
+NEW IN THIS VERSION
+• Danco Workforce Assessment naming for assessment-only use.
+• Applicant chooses Workforce Assessment or Apply to work at Danco after language selection, unless the device is admin-locked to one route.
+• Three device modes: Workforce Assessment only / Application only / Choice of either.
+• Address, city, state, ZIP, DOB and SSN readiness fields in Application mode.
+• SSN structural validation and explicit exception/reason workflow.
+• PROTOTYPE SSN bypass for safe demonstrations.
+• PIN-free applicant submission to the live shared database.
+• Manual result decoder removed from the administrator interface.
+• Background-check request blocked for records without SSN readiness.
+• Existing Commercial Account Manager sales suitability and background-check demo retained.
 
-NEW DEMONSTRATION FEATURES
-1. Commercial Account Manager role
-   - Select Application Mode, then choose Commercial Account Manager.
-   - The same five-question work-style primer is retained.
-   - The timed ten-question assessment then switches to commercial-sales suitability.
-   - The administrator report shows a 0–100% advisory suitability indicator, commercial strengths and an estimated sales approach.
-
-2. Background-screening demonstration
-   - Application Mode now records a background-screening consent response.
-   - After a submitted application is opened in the protected administrator dashboard, use Request background check.
-   - A cost-approval screen demonstrates Danco-funded provider billing.
-   - No third-party provider is connected and NO CHARGE is made in prototype mode.
-   - The prototype creates a background-screening record in Supabase and adds placeholder screening categories reading “Results will be displayed when live”.
-   - The application automatically moves to CB checked · To action.
-   - An administrator can then manually file it as CB checked · Eligible or CB checked · Not eligible.
-
-3. Live-ready Supabase structure
-   - Background-screening records are stored separately from applicant submissions.
-   - The structure includes provider, provider request ID, package, approved cost, authorization status, results summary, provider report URL and decision fields.
-   - When a screening provider is selected, its API adapter and secure secret credentials can be connected server-side without exposing keys in this PWA.
-
-LIVE DATA ENDPOINT
-https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-service
-
-IMPORTANT
-- This is an employment-screening demonstration only and does not run a real background check.
-- The prototype’s “Eligible / Not eligible” folders are manual administrative workflow labels, not an automated hiring decision.
-- A live provider must supply its required disclosure/authorization flow and compliance process.
-
-DEPLOYMENT
-Upload all files in this ZIP to the root of a SEPARATE GitHub Pages repository, for example:
-thejoeyrob/Danco-Advanced-Prototype
-Do not overwrite the existing production/prototype repository if you want to preserve both versions.
-
-AUDIO NOTE
-The existing roofing assessment retains the bundled recorded Danco narration. New Commercial Account Manager wording uses the device's language-aware speech fallback where a dedicated recorded clip does not yet exist. A production sales track can be supplied with the same dedicated neural narration treatment as the existing roofing assessment.
+The live shared service is the protected Danco Supabase Edge Function. No third-party CRA is connected in this prototype and no payment is taken.
