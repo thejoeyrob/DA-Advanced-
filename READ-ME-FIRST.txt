@@ -1,0 +1,43 @@
+DANCO APPLICANT ASSESSMENT — ADVANCED SECONDARY PROTOTYPE v25
+
+This package is intentionally separate from the existing Danco prototype.
+Do not overwrite the existing working version if you want to keep both options available.
+
+RECOMMENDED HOSTING
+Create a separate GitHub Pages repository, for example:
+  thejoeyrob/Danco-Advanced-Prototype
+Upload EVERY file in this ZIP to the repository root.
+
+WHAT IS NEW
+• Commercial Account Manager application option.
+• Same five-question work-style primer, followed by a dedicated timed ten-question commercial-sales suitability assessment.
+• Private administrator report with 0–100% suitability, commercial indicators and estimated sales approach.
+• Applicant background-screening consent question and refusal-reason capture.
+• Admin-only Request background check button after result review.
+• Demonstration cost-approval screen before screening request.
+• Supabase-stored screening demonstration record with placeholder result categories.
+• Additional queues: CB checked · To action, CB checked · Eligible and CB checked · Not eligible.
+
+BACKGROUND SCREENING DEMO
+No third-party screening company is connected and NO CHARGE is made.
+The cost shown is illustrative. The app demonstrates the workflow and database structure only.
+A live screening provider would later be connected to the protected Supabase Edge Function using Danco's own provider account and server-side credentials.
+
+LIVE DATA
+This advanced prototype points directly to the Danco Supabase service:
+https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-service
+
+FIRST REVIEW
+1. Unlock the trial.
+2. In Administrator, choose Application mode.
+3. Start a new applicant and select Commercial Account Manager.
+4. Complete the work-style primer and ten timed sales questions.
+5. Submit the application to the shared database.
+6. Open Administrator and load the application report.
+7. Select Request background check.
+8. Review the demonstration cost screen, approve it, and submit.
+9. The record moves to CB checked · To action and placeholder screening results appear in the report.
+10. Manually file it as Eligible, Not eligible, or leave it To action.
+
+IMPORTANT
+The background screening is a demonstration only. The Eligible / Not eligible folders are manual administrative workflow states, not an automated employment decision.
