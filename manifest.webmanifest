@@ -2,7 +2,7 @@
   "name": "Danco Workforce Assessment",
   "short_name": "Danco Workforce",
   "description": "Danco workforce assessment and applicant prototype with role-specific suitability and optional owner-approved Danco+ hiring workflow.",
-  "start_url": "./index.html?v=28.1.0",
+  "start_url": "./index.html?v=29.0.0",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",

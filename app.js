@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 14;
+  const VERSION = 15;
   const SESSION_KEY = 'dancoAssessment_adv_v13_session';
   const SETTINGS_KEY = 'dancoAssessment_adv_v13_settings';
   const APPLICATIONS_KEY = 'dancoAssessment_adv_v13_applications';
@@ -9,7 +9,7 @@
   const TRIAL_KEY = 'dancoAssessment_adv_v11_trial';
   const TRIAL_USAGE_KEY = 'dancoAssessment_adv_v11_trialUsage';
   const ADMIN_HASH = '9793703E';
-  const SHARED_SERVICE_URL = 'https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-service';
+  const SHARED_SERVICE_URL = 'https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-service-v5';
   const DANCO_PLUS_ACCESS_URL = 'https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-plus-access';
   const DEVICE_ID_KEY = 'dancoAssessment_dancoPlus_deviceId';
   const DANCO_PLUS_APPROVAL_KEY = 'dancoAssessment_dancoPlus_approval';
@@ -24,6 +24,16 @@
   const XOR_STREAM = [0x31,0x9a,0x57,0xc4,0x0d,0xe3,0x68,0xb2,0x7f];
   const DISC_INDEX = { D:1, I:2, S:3, C:4 };
   const DISC_CODE = ['', 'D', 'I', 'S', 'C'];
+  const BACKGROUND_DEMO_FALLBACK = {
+    providers:['Checkr','GoodHire'],
+    packages:[
+      {code:'BASIC',label:'Basic',price:29.99,detail:'SSN trace, sex offender registry, global watchlist and national criminal search.'},
+      {code:'ESSENTIAL',label:'Essential',price:59.99,detail:'Basic coverage plus identity verification and unlimited county criminal search.'},
+      {code:'COMPLETE',label:'Complete',price:94.99,detail:'Essential coverage plus unlimited state criminal and federal criminal search.'}
+    ],
+    currency:'USD',
+    passThroughFeesPossible:true
+  };
 
   const TEXT = {
     en:{
@@ -238,6 +248,7 @@
   let backgroundQuote = null;
   let currentEmploymentContract = null;
   let contractEligibilityConfirmed = false;
+  let contractEligibilityBasis = '';
   let ssnOverrideState = { approved:false, valueKey:'', reason:'', other:'' };
   let nativeFullscreenActive = false;
   let dancoPlusPollTimer = null;
@@ -515,8 +526,8 @@
   let narrationQueueToken=0;
   function initialiseNarration(){
     narrationPlayers={
-      en:new Audio('./narration-en.mp3?v=28.0.0'),
-      es:new Audio('./narration-es.mp3?v=28.0.0')
+      en:new Audio('./narration-en.mp3?v=29.0.0'),
+      es:new Audio('./narration-es.mp3?v=29.0.0')
     };
     Object.values(narrationPlayers).forEach(audio=>{audio.preload='auto';audio.load();});
     narrationAudio=narrationPlayers[settings.lang];
@@ -824,7 +835,7 @@
   function startPhase(nextPhase, seconds){
     clearInterval(timer); phase=nextPhase; phaseRemaining=seconds; updateTimer();
     if(phase==='answer'){
-      $('phase-label').textContent=t('answer'); $('.phase-display'); $('timer-display').parentElement.classList.add('answer'); $('knowledge-hint').textContent=t('answerHint');
+      $('phase-label').textContent=t('answer'); $('timer-display').parentElement.classList.add('answer'); $('knowledge-hint').textContent=t('answerHint');
       $$('[data-answer-index]').forEach(button=>button.disabled=false);
       $('knowledge-confirm').disabled=knowledgeSelectedIndex===null;
       const q=currentQuestion(); if(settings.audio) speak(q.hideText?q[settings.lang]:[q[settings.lang],...currentDisplayOptions.map(({option})=>option[settings.lang])],{preferDevice:activeAssessmentTrack()==='account_manager'});
@@ -1108,7 +1119,10 @@
       ...(application.backgroundConsent==='No'?[['Reason provided',application.backgroundConsentReason]]:[])
     ]:[];
     const bg=backgroundScreening||null;
-    let backgroundHtml=application?`<section class="background-report-card"><div class="background-report-heading"><div><small>BACKGROUND SCREENING</small><h3>${bg?'Prototype screening record':'Not yet requested'}</h3></div><span class="background-status-pill">${escapeHtml(bg?.status?bg.status.replaceAll('_',' ').toUpperCase():'AWAITING ADMIN ACTION')}</span></div>${bg?`<div class="background-meta-grid"><div><span>Provider</span><b>${escapeHtml(bg.provider||'Provider to be selected')}</b></div><div><span>Package</span><b>${escapeHtml(bg.packageLabel||'Employment background screen')}</b></div><div><span>Approved cost</span><b>${bg.quotedCost?`$${Number(bg.quotedCost).toFixed(2)} ${escapeHtml(bg.currency||'USD')}`:'Not recorded'}</b></div><div><span>Decision</span><b>${escapeHtml(bg.decision?bg.decision.replaceAll('_',' '):'To action')}</b></div></div><div class="background-result-grid">${Object.values(bg.results||{}).map(item=>`<div><span>${escapeHtml(item.label||'Screening category')}</span><b>${escapeHtml(item.result||'Results will be displayed when live')}</b></div>`).join('')}</div><p class="fine">Advanced prototype demonstration. No third-party screening has been ordered and no charge has been made. A live provider integration would return only the agreed status/summary data into this Danco record.</p>`:`<p>The applicant's consent response is stored with the application. An authorized Danco reviewer can start the prototype background-screening workflow after reviewing the assessment.</p>`}</section>`:'';
+    const bgFailed=bg?.decision==='not_eligible';
+    const bgPassed=bg?.decision==='eligible';
+    const bgDecisionLabel=bgFailed?'DOES NOT MEET DANCO CRITERIA':bgPassed?'MEETS DANCO CRITERIA':bg?.decision?bg.decision.replaceAll('_',' ').toUpperCase():'TO ACTION';
+    let backgroundHtml=application?`<section class="background-report-card ${bgFailed?'background-report-failed':bgPassed?'background-report-passed':''}"><div class="background-report-heading"><div><small>BACKGROUND SCREENING</small><h3>${bg?'Screening record':'Not yet requested'}</h3></div><span class="background-status-pill">${escapeHtml(bg?.status?bg.status.replaceAll('_',' ').toUpperCase():'AWAITING ADMIN ACTION')}</span></div>${bg?`${bgFailed?'<div class="background-failure-alert"><b>BACKGROUND CHECK ERROR · CONTRACT CREATION BLOCKED</b><span>This demonstration result is filed as Background checked — Not eligible. Senior review is required before the candidate can progress.</span></div>':bgPassed?'<div class="background-success-alert"><b>BACKGROUND CHECK DEMO · CRITERIA MET</b><span>This demonstration result has been filed automatically as Background checked — Eligible.</span></div>':''}<div class="background-meta-grid"><div><span>Provider</span><b>${escapeHtml(bg.provider||'Provider to be selected')}</b></div><div><span>Package</span><b>${escapeHtml(bg.packageLabel||'Employment background screen')}</b></div><div><span>Approved cost</span><b>${bg.quotedCost?`$${Number(bg.quotedCost).toFixed(2)} ${escapeHtml(bg.currency||'USD')}`:'Not recorded'}</b></div><div><span>${bg.mode==='prototype_demo'?'Prototype outcome':'Reviewer decision'}</span><b>${escapeHtml(bgDecisionLabel)}</b></div></div><div class="background-result-grid">${Object.values(bg.results||{}).map(item=>`<div><span>${escapeHtml(item.label||'Screening category')}</span><b>${escapeHtml(item.result||'Results will be displayed when live')}</b></div>`).join('')}</div><p class="fine">${bg.mode==='prototype_demo'?'Prototype demonstration only. The pass/fail outcome above was deliberately selected by the reviewer to demonstrate workflow behavior; no third-party screening was ordered and no charge was made. The category-level results remain placeholders until a live vendor is connected.':'Live screening status summary. Detailed provider reports and sensitive source records should remain in the approved screening environment and be accessed only by authorized staff.'}</p>`:`<p>The applicant's consent response is stored with the application. An authorized Danco reviewer can start the prototype background-screening workflow after reviewing the assessment.</p>`}</section>`:'';
     if(application&&!dancoPlusActive()) backgroundHtml=`<section class="danco-plus-report-teaser"><div class="danco-plus-mark small"><b>Danco+</b><span>LOCKED</span></div><div><small>OPTIONAL ADVANCED HIRING WORKFLOW</small><h3>Continue beyond assessment when Danco is ready</h3><p>Integrated background screening, offer-document creation and secure employment-file progression are available in the owner-approved Danco+ trial.</p></div></section>`;
     const ec=employmentContract||currentEmploymentContract||null;
     const contractHtml=application&&ec?`<section class="background-report-card contract-report-card"><div class="background-report-heading"><div><small>EMPLOYMENT CONTRACT</small><h3>${escapeHtml(ec.contractReference||'Contract created')}</h3></div><span class="background-status-pill">${ec.signedStoragePath?'SIGNED FILE UPLOADED':'CONTRACT CREATED'}</span></div><div class="background-meta-grid"><div><span>Role offered</span><b>${escapeHtml(ec.offeredRole||'Not recorded')}</b></div><div><span>Created by</span><b>${escapeHtml(ec.createdBy||'Danco administrator')}</b></div><div><span>Created</span><b>${escapeHtml(ec.createdAt?new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short'}).format(new Date(ec.createdAt)):'Not recorded')}</b></div><div><span>Signed document</span><b>${escapeHtml(ec.signedFilename||'Awaiting signed upload')}</b></div></div></section>`:'';
@@ -1167,15 +1181,65 @@
     const ssnReady=application?.ssnStatus==='valid'||application?.ssnPrototypeBypass===true||application?.ssnStatus==='prototype';
     if(!dancoPlusActive()){
       panel.classList.add('advanced-locked');
-      $('background-action-copy').innerHTML='<b>Danco+ feature.</b> Demonstrate a controlled background-screening request, visible provider cost approval and screening filing from this candidate record.';
+      $('background-action-copy').innerHTML='<b>Danco+ feature.</b> Demonstrate a controlled background-screening request, visible provider cost approval, pass/fail workflow behavior and automatic candidate filing.';
       $('request-background-check').disabled=false;$('request-background-check').textContent='Request Danco+ · Background screening';$('background-decision-actions').hidden=true;return;
     }
     panel.classList.remove('advanced-locked');
     const noSsnMessage='Unable to request a background check on this applicant due to no Social Security number being provided. Danco does not recognize or accept no Social Security number background checks.';
-    $('background-action-copy').innerHTML=consent==='Yes'?(ssnReady?`<b>Applicant consent and SSN requirement recorded.</b> ${screening?'A screening demonstration is attached to this record.':'This candidate can be progressed to the background-screening demonstration.'}`:`<b>Background check unavailable.</b> ${escapeHtml(noSsnMessage)}`):consent==='No'?`<b>Applicant declined background screening.</b> ${escapeHtml(application?.backgroundConsentReason||'No reason supplied.')}`:'<b>No background-screening consent response is stored.</b>';
-    $('request-background-check').disabled=consent!=='Yes'||!ssnReady||!!screening;
-    $('request-background-check').textContent=screening?'Background check requested':'Request background check';
-    $('background-decision-actions').hidden=!screening;
+    if(consent==='Yes'&&ssnReady){
+      if(screening?.decision==='not_eligible'){
+        $('background-action-copy').innerHTML='<b class="danger-copy">Background check does not meet Danco criteria.</b> The candidate has been filed automatically under Background checked — Not eligible. Contract creation is blocked for this record.';
+      }else if(screening?.decision==='eligible'){
+        $('background-action-copy').innerHTML='<b>Background check criteria met.</b> The candidate has been filed automatically under Background checked — Eligible. You may re-run the demonstration to show the alternate outcome.';
+      }else{
+        $('background-action-copy').innerHTML='<b>Applicant consent and SSN requirement recorded.</b> This candidate can be progressed to the background-screening demonstration.';
+      }
+    }else if(consent==='Yes'){
+      $('background-action-copy').innerHTML=`<b>Background check unavailable.</b> ${escapeHtml(noSsnMessage)}`;
+    }else if(consent==='No'){
+      $('background-action-copy').innerHTML=`<b>Applicant declined background screening.</b> ${escapeHtml(application?.backgroundConsentReason||'No reason supplied.')}`;
+    }else{
+      $('background-action-copy').innerHTML='<b>No background-screening consent response is stored.</b>';
+    }
+    $('request-background-check').disabled=consent!=='Yes'||!ssnReady;
+    $('request-background-check').textContent=screening?'Run another background check demo':'Request background check';
+    // Prototype outcomes auto-file. Manual decision controls are retained only for future live/provider review.
+    $('background-decision-actions').hidden=!screening||screening.mode==='prototype_demo';
+  }
+
+  function selectedBackgroundProvider(){
+    const providers=Array.isArray(backgroundQuote?.providers)&&backgroundQuote.providers.length?backgroundQuote.providers:BACKGROUND_DEMO_FALLBACK.providers.map(name=>({name,packages:BACKGROUND_DEMO_FALLBACK.packages}));
+    const providerName=$('background-provider-select')?.value||providers[0]?.name||'Checkr';
+    return providers.find(x=>x.name===providerName)||providers[0];
+  }
+  function selectedBackgroundPackage(){
+    const provider=selectedBackgroundProvider();
+    const packages=provider?.packages||backgroundQuote?.packages||BACKGROUND_DEMO_FALLBACK.packages;
+    const code=$('background-package-select')?.value||packages[0]?.code;
+    return packages.find(x=>x.code===code)||packages[0];
+  }
+  function refreshBackgroundPackageUi(){
+    const provider=selectedBackgroundProvider();
+    const packageSelect=$('background-package-select');
+    const packages=provider?.packages||backgroundQuote?.packages||BACKGROUND_DEMO_FALLBACK.packages;
+    if(packageSelect&&(!packageSelect.options.length||!packages.some(x=>x.code===packageSelect.value))){
+      packageSelect.innerHTML=packages.map(x=>`<option value="${escapeHtml(x.code)}">${escapeHtml(x.label)} · $${Number(x.price).toFixed(2)}</option>`).join('');
+      const preferred=packages.find(x=>x.code==='ESSENTIAL')||packages[0];if(preferred)packageSelect.value=preferred.code;
+    }
+    const pkg=selectedBackgroundPackage();
+    if($('background-cost'))$('background-cost').textContent=pkg?`$${Number(pkg.price).toFixed(2)} ${backgroundQuote?.currency||'USD'}${backgroundQuote?.passThroughFeesPossible!==false?' + possible court/database pass-through fees':''}`:'—';
+    if($('background-package-detail'))$('background-package-detail').innerHTML=pkg?`<b>${escapeHtml(provider?.name||'Provider')} · ${escapeHtml(pkg.label)}</b><span>${escapeHtml(pkg.detail||'Public package-price reference for prototype demonstration.')}</span>`:'';
+    if($('background-provider'))$('background-provider').textContent=`Danco ${provider?.name||'screening-provider'} account`;
+  }
+  function populateBackgroundQuoteUi(quoteResponse){
+    backgroundQuote=quoteResponse||{};
+    const fallbackProviders=BACKGROUND_DEMO_FALLBACK.providers.map(name=>({name,packages:BACKGROUND_DEMO_FALLBACK.packages}));
+    const providers=Array.isArray(backgroundQuote.providers)&&backgroundQuote.providers.length?backgroundQuote.providers:fallbackProviders;
+    const providerSelect=$('background-provider-select');
+    providerSelect.innerHTML=providers.map(x=>`<option value="${escapeHtml(x.name)}">${escapeHtml(x.name)} · public price reference</option>`).join('');
+    providerSelect.value=providers[0]?.name||'Checkr';
+    $('background-package-select').innerHTML='';
+    refreshBackgroundPackageUi();
   }
   async function openBackgroundRequest(){
     if(!requireDancoPlus('Integrated background screening'))return;
@@ -1184,27 +1248,33 @@
     const ssnReady=application.ssnStatus==='valid'||application.ssnPrototypeBypass===true||application.ssnStatus==='prototype';
     if(!ssnReady){ $('decode-error').textContent='Unable to request a background check on this applicant due to no Social Security number being provided. Danco does not recognize or accept no Social Security number background checks.'; return; }
     try{
-      const quoteResponse=await sharedRequest('/api/background',{action:'quote',reference:currentSharedReference,adminPin:adminAccessPin}); backgroundQuote=quoteResponse.quote; const identity=quoteResponse.identityReadiness||{};
+      const quoteResponse=await sharedRequest('/api/background',{action:'quote',reference:currentSharedReference,adminPin:adminAccessPin});
+      populateBackgroundQuoteUi(quoteResponse); const identity=quoteResponse.identityReadiness||{};
       $('background-candidate').textContent=`${currentLoadedRecord.name||'Applicant'} · ${currentSharedReference}`;
-      $('background-package').textContent=backgroundQuote.packageLabel;
-      $('background-cost').textContent=`$${Number(backgroundQuote.estimatedCost).toFixed(2)} ${backgroundQuote.currency}${backgroundQuote.passThroughFeesPossible?' + possible court/pass-through fees':''}`;
-      $('background-provider').textContent='Danco screening-provider account (provider to be selected)'; if($('background-identity')) $('background-identity').textContent=identity.prototype?'PROTOTYPE bypass · DOB/address readiness recorded':identity.valid?`SSN ending ${identity.ssnLast4||'••••'} · ${identity.dateOfBirthPresent?'DOB on file':'DOB missing'} · ${identity.addressPresent?'Address complete':'Address incomplete'}`:'SSN not ready';
-      $('background-approval').checked=false; $('background-approved-by').value=''; $('background-error').textContent='';
+      if($('background-identity')) $('background-identity').textContent=identity.prototype?'PROTOTYPE bypass · DOB/address readiness recorded':identity.valid?`SSN ending ${identity.ssnLast4||'••••'} · ${identity.dateOfBirthPresent?'DOB on file':'DOB missing'} · ${identity.addressPresent?'Address complete':'Address incomplete'}`:'SSN not ready';
+      $('background-demo-result').value='eligible';$('background-approval').checked=false;$('background-approved-by').value='';$('background-error').textContent='';
       openModal('background-modal');
+      speak(['Approve background-screening request','Select the package, demonstration outcome and approving administrator, then approve the displayed cost.'],{remember:false});
     }catch(error){$('decode-error').textContent=error.message;}
   }
   async function confirmBackgroundRequest(){
     if(!requireDancoPlus('Integrated background screening'))return;
     $('background-error').textContent='';
-    if(!$('background-approval').checked){$('background-error').textContent='Approve the displayed estimated cost before continuing.';return;}
+    if(!$('background-approval').checked){$('background-error').textContent='Approve the displayed package cost before continuing.';return;}
     const approvedBy=$('background-approved-by').value.trim(); if(!approvedBy){$('background-error').textContent='Enter the approving administrator name.';return;}
-    const button=$('confirm-background-request'); button.disabled=true; button.textContent='Creating demonstration…';
+    const provider=selectedBackgroundProvider(),pkg=selectedBackgroundPackage(),demoOutcome=$('background-demo-result').value;
+    if(!provider||!pkg){$('background-error').textContent='Choose a screening provider reference and package.';return;}
+    const button=$('confirm-background-request'); button.disabled=true; button.textContent='Running demonstration…';
     try{
-      const response=await sharedRequest('/api/background',{action:'request',reference:currentSharedReference,adminPin:adminAccessPin,costApproved:true,approvedBy,packageCode:backgroundQuote?.packageCode,packageLabel:backgroundQuote?.packageLabel,quotedCost:backgroundQuote?.estimatedCost});
-      currentBackgroundScreening=response.screening||null; closeModal('background-modal'); toast('Background-screening demonstration added.');
+      const response=await sharedRequest('/api/background',{
+        action:'request',reference:currentSharedReference,adminPin:adminAccessPin,costApproved:true,approvedBy,
+        provider:provider.name,packageCode:pkg.code,packageLabel:pkg.label,quotedCost:pkg.price,demoOutcome
+      });
+      currentBackgroundScreening=response.screening||null;currentQueueStatus=response.queueStatus||(demoOutcome==='not_eligible'?'background_not_eligible':'background_eligible');closeModal('background-modal');
+      toast(demoOutcome==='not_eligible'?'Background check demo failed — candidate filed as not eligible.':'Background check demo passed — candidate filed as eligible.');
       await reloadCurrentSharedRecord(); await populateStoredApplicants();
     }catch(error){$('background-error').textContent=error.message;}
-    finally{button.disabled=false;button.textContent='Approve cost & request screening';}
+    finally{button.disabled=false;button.textContent='Approve cost & run screening demo';}
   }
   async function setBackgroundDecision(decision){
     if(!requireDancoPlus('Background-screening filing'))return;
@@ -1243,7 +1313,18 @@
       $('create-employment-contract').hidden=false;$('create-employment-contract').textContent='Request Danco+ · Create employment agreement';$('view-employment-contract').hidden=true;$('signed-upload-controls').hidden=true;$('open-signed-contract').hidden=true;return;
     }
     panel.classList.remove('advanced-locked');signedPanel.classList.remove('advanced-locked');$('create-employment-contract').textContent='Create employment contract';
-    $('employment-contract-copy').innerHTML=contract?`<b>${escapeHtml(contract.contractReference||'Employment contract')} is stored.</b> ${contract.signedStoragePath?'A signed file has also been uploaded.':'The candidate is now filed under Employment contracts until a signed copy is uploaded.'}`:'Create a pre-filled Danco employment contract from the stored applicant record after confirming the background-check criteria.';
+    const bg=record?.backgroundScreening||currentBackgroundScreening||null;
+    if(contract){
+      $('employment-contract-copy').innerHTML=`<b>${escapeHtml(contract.contractReference||'Employment contract')} is stored.</b> ${contract.signedStoragePath?'A signed file has also been uploaded.':'The candidate is now filed under Employment contracts until a signed copy is uploaded.'}`;
+    }else if(bg?.decision==='not_eligible'){
+      $('employment-contract-copy').innerHTML='<b class="danger-copy">Contract creation is blocked.</b> The background check on this record does not meet Danco criteria. Senior review is required before the candidate can progress.';
+    }else if(bg?.decision==='eligible'){
+      $('employment-contract-copy').innerHTML='<b>Background-check criteria are recorded as met.</b> Create a pre-filled Danco employment agreement from the stored applicant record.';
+    }else if(bg){
+      $('employment-contract-copy').innerHTML='<b>A background-screening record is attached.</b> Contract creation requires an administrator to confirm that Danco criteria have been satisfied.';
+    }else{
+      $('employment-contract-copy').innerHTML='<b>No Danco+ background check is attached.</b> A contract can still be created if an administrator confirms that a satisfactory check was provided through another approved source.';
+    }
     $('create-employment-contract').hidden=!!contract;
     $('view-employment-contract').hidden=!contract;
     const signed=!!contract?.signedStoragePath;
@@ -1257,17 +1338,50 @@
     $('contract-prefill-summary').innerHTML=fields.map(([label,value])=>`<div><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></div>`).join('');
   }
   function resetContractModal(){
-    contractEligibilityConfirmed=false;
+    contractEligibilityConfirmed=false;contractEligibilityBasis='';
     $('contract-eligibility-step').hidden=false;$('contract-form-step').hidden=true;$('contract-preview-step').hidden=true;$('contract-blocked').hidden=true;$('contract-error').textContent='';
+    const bg=currentBackgroundScreening||currentLoadedRecord?.backgroundScreening||null;
+    const buttons=$('contract-eligibility-buttons');
+    buttons.hidden=false;
+    if(bg?.decision==='not_eligible'){
+      $('contract-eligibility-question').textContent='This applicant has a background check on file that does not meet Danco criteria.';
+      $('contract-eligibility-context').textContent='The failed screening result blocks contract creation for this candidate in Danco+.';
+      $('contract-blocked-copy').textContent='Contract creation cannot proceed because the background check on this record does not meet Danco criteria. Please seek advice from senior staff before progressing the applicant.';
+      $('contract-blocked').hidden=false;buttons.hidden=true;
+      return;
+    }
+    if(bg?.decision==='eligible'){
+      $('contract-eligibility-question').textContent="Does this applicant's background check meet the required Danco criteria?";
+      $('contract-eligibility-context').textContent='A Danco+ background-screening record is on file and is currently marked as meeting criteria.';
+      contractEligibilityBasis='Danco+ background screening on file';
+    }else if(bg){
+      $('contract-eligibility-question').textContent="Has this applicant's background check been reviewed and confirmed as satisfactory?";
+      $('contract-eligibility-context').textContent='A Danco+ screening record is attached but still requires an authorized Danco determination before contract creation.';
+      contractEligibilityBasis='Danco+ screening reviewed by administrator';
+    }else{
+      $('contract-eligibility-question').textContent='Has a satisfactory background check been provided through another approved source?';
+      $('contract-eligibility-context').textContent='No Danco+ background check is attached to this applicant. Select Yes only if Danco has received and accepted a satisfactory check from another source.';
+      contractEligibilityBasis='External / previously supplied background check confirmed by administrator';
+    }
+    $('contract-blocked-copy').textContent='Contract creation cannot proceed. Please seek advice from senior staff before progressing this applicant.';
   }
+  function todayIso(){return new Date().toISOString().slice(0,10);}
+  function plusDaysIso(days){const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);}
   function prefillContractForm(){
     const app=currentLoadedRecord?.application||{};
     $('contract-role').value=['Service Helper','Roofer','Foreman','Commercial Account Manager'].includes(app.role)?app.role:'';
+    $('contract-offer-date').value=todayIso();$('contract-offer-expiration').value=plusDaysIso(7);
     $('contract-start-date').value=/^\d{4}-\d{2}-\d{2}$/.test(app.availability||'')?app.availability:'';
     $('contract-work-location').value=[app.city,app.state].filter(Boolean).join(', ');
     $('contract-employment-type').value='Full-time';$('contract-classification').value=app.role==='Commercial Account Manager'?'Salaried / exempt':'Hourly / non-exempt';
     $('contract-pay-frequency').value='Biweekly';$('contract-intro-period').value='90 days';$('contract-created-by').value='';
     $('contract-benefits').value='Per Danco plan terms and eligibility rules';$('contract-pto').value='Per Danco policy';$('contract-overtime').value=app.role==='Commercial Account Manager'?'Per classification and applicable law':'Eligible as required by applicable law';$('contract-travel').value='As required by role and assigned projects/territory';
+    $('contract-commission').value=app.role==='Commercial Account Manager'?'Per separate Danco commission / incentive plan':'';
+    $('contract-expenses').value='Business expenses reimbursed in accordance with Danco policy';
+    $('contract-property').value='Danco-issued property, tools and PPE as required; return on separation';
+    $('contract-confidentiality').value='Subject to Danco confidentiality, proprietary-information and information-security policies';
+    $('contract-policies').value='Employee handbook, safety policies and role procedures to be acknowledged separately';
+    $('contract-payroll').value='Separate secure payroll enrollment required';
     contractPrefillSummary();
   }
   function openContractWorkflow(existing=false){
@@ -1276,14 +1390,18 @@
     resetContractModal();
     if(existing&&currentEmploymentContract){$('contract-eligibility-step').hidden=true;$('contract-preview-step').hidden=false;renderContractPreview(currentEmploymentContract);}
     openModal('contract-modal');
+    if(!existing)speak(['Create employment contract',$('contract-eligibility-question').textContent],{remember:false});
   }
   function collectContractData(){
     return {
+      offerDate:$('contract-offer-date').value,
+      offerExpiration:$('contract-offer-expiration').value,
       employmentType:$('contract-employment-type').value,
       classification:$('contract-classification').value,
       startDate:$('contract-start-date').value,
       compensation:$('contract-compensation').value.trim(),
       payFrequency:$('contract-pay-frequency').value,
+      commissionPlan:$('contract-commission').value.trim(),
       workLocation:$('contract-work-location').value.trim(),
       supervisor:$('contract-supervisor').value.trim(),
       schedule:$('contract-schedule').value.trim(),
@@ -1292,6 +1410,12 @@
       pto:$('contract-pto').value.trim(),
       overtime:$('contract-overtime').value.trim(),
       travel:$('contract-travel').value.trim(),
+      expenses:$('contract-expenses').value.trim(),
+      companyProperty:$('contract-property').value.trim(),
+      confidentiality:$('contract-confidentiality').value.trim(),
+      policyAcknowledgment:$('contract-policies').value.trim(),
+      payrollOnboarding:$('contract-payroll').value,
+      backgroundCheckBasis:contractEligibilityBasis||'Administrator confirmed satisfactory background-check criteria',
       additionalTerms:$('contract-additional-terms').value.trim(),
       preparedBy:$('contract-created-by').value.trim()
     };
@@ -1300,29 +1424,33 @@
   function renderContractPreview(contract){
     const app=currentLoadedRecord?.application||{};const d=contract?.contractData||{};
     const address=[app.address,app.city,app.state,app.zip].filter(Boolean).join(', ');
+    const salesRole=contract?.offeredRole==='Commercial Account Manager';
     $('contract-preview').innerHTML=`
       <article class="contract-document">
         <header class="contract-document-header"><img src="danco-logo-white.png" alt="Danco Roofing Services, Inc."><div><h2>Employment Agreement / Offer Terms</h2><small>${escapeHtml(contract?.contractReference||'Prototype contract')}</small></div></header>
         <div class="contract-document-body">
-          <div class="contract-document-meta"><div><span>Employee</span><b>${contractValue(currentLoadedRecord?.name,'Applicant')}</b></div><div><span>Role offered</span><b>${contractValue(contract?.offeredRole)}</b></div><div><span>Proposed start date</span><b>${contractValue(d.startDate)}</b></div></div>
-          <section class="contract-section"><h3>Employee particulars</h3><div class="contract-grid"><div><span>Email</span><b>${contractValue(app.email)}</b></div><div><span>Phone</span><b>${contractValue(app.phone)}</b></div><div><span>Home address</span><b>${contractValue(address)}</b></div><div><span>Work authorization</span><b>${contractValue(app.authorization)}</b></div></div></section>
-          <section class="contract-section"><h3>Position and compensation</h3><div class="contract-grid"><div><span>Employment type</span><b>${contractValue(d.employmentType)}</b></div><div><span>FLSA classification</span><b>${contractValue(d.classification)}</b></div><div><span>Compensation</span><b>${contractValue(d.compensation)}</b></div><div><span>Pay frequency</span><b>${contractValue(d.payFrequency)}</b></div><div><span>Primary work location</span><b>${contractValue(d.workLocation)}</b></div><div><span>Reports to</span><b>${contractValue(d.supervisor)}</b></div><div><span>Normal schedule</span><b>${contractValue(d.schedule)}</b></div><div><span>Introductory period</span><b>${contractValue(d.introductoryPeriod)}</b></div></div></section>
-          <section class="contract-section"><h3>Benefits and working conditions</h3><div class="contract-grid"><div><span>Benefits eligibility</span><b>${contractValue(d.benefits)}</b></div><div><span>PTO / leave</span><b>${contractValue(d.pto)}</b></div><div><span>Overtime</span><b>${contractValue(d.overtime)}</b></div><div><span>Travel / vehicle</span><b>${contractValue(d.travel)}</b></div></div></section>
-          <section class="contract-section"><h3>Employment terms</h3><div class="contract-terms"><p>Employment is intended to be at-will to the extent permitted by applicable law. Either Danco or the employee may end the employment relationship at any time, with or without advance notice or cause, subject to applicable law and any final Danco-approved agreement.</p><p>The employee is expected to perform the duties of the offered role, comply with Danco safety rules, workplace policies, confidentiality requirements, equipment/property controls and lawful management instructions. Employment remains subject to completion of required work-authorization, background-screening and onboarding requirements.</p>${d.additionalTerms?`<p><b>Additional offer terms:</b> ${escapeHtml(d.additionalTerms)}</p>`:''}<p class="fine">Prototype document generated from the Danco recruitment workflow. Final production wording should be approved by Danco HR and qualified employment counsel before use as a binding agreement.</p></div></section>
+          <div class="contract-document-meta"><div><span>Employee</span><b>${contractValue(currentLoadedRecord?.name,'Applicant')}</b></div><div><span>Role offered</span><b>${contractValue(contract?.offeredRole)}</b></div><div><span>Offer date</span><b>${contractValue(d.offerDate)}</b></div><div><span>Proposed start date</span><b>${contractValue(d.startDate)}</b></div></div>
+          <section class="contract-section"><h3>Employee particulars</h3><div class="contract-grid"><div><span>Email</span><b>${contractValue(app.email)}</b></div><div><span>Phone</span><b>${contractValue(app.phone)}</b></div><div><span>Home address</span><b>${contractValue(address)}</b></div><div><span>U.S. work authorization</span><b>${contractValue(app.authorization)}</b></div><div><span>Background-check basis</span><b>${contractValue(d.backgroundCheckBasis)}</b></div><div><span>Offer valid through</span><b>${contractValue(d.offerExpiration)}</b></div></div></section>
+          <section class="contract-section"><h3>Position and compensation</h3><div class="contract-grid"><div><span>Employment type</span><b>${contractValue(d.employmentType)}</b></div><div><span>FLSA classification</span><b>${contractValue(d.classification)}</b></div><div><span>Compensation</span><b>${contractValue(d.compensation)}</b></div><div><span>Pay frequency</span><b>${contractValue(d.payFrequency)}</b></div>${salesRole||d.commissionPlan?`<div><span>Commission / incentive plan</span><b>${contractValue(d.commissionPlan,'Separate plan / to be confirmed')}</b></div>`:''}<div><span>Primary work location</span><b>${contractValue(d.workLocation)}</b></div><div><span>Reports to</span><b>${contractValue(d.supervisor)}</b></div><div><span>Normal schedule</span><b>${contractValue(d.schedule)}</b></div><div><span>Introductory period</span><b>${contractValue(d.introductoryPeriod)}</b></div></div></section>
+          <section class="contract-section"><h3>Benefits and working conditions</h3><div class="contract-grid"><div><span>Benefits eligibility</span><b>${contractValue(d.benefits)}</b></div><div><span>PTO / leave</span><b>${contractValue(d.pto)}</b></div><div><span>Overtime</span><b>${contractValue(d.overtime)}</b></div><div><span>Travel / vehicle</span><b>${contractValue(d.travel)}</b></div><div><span>Expense reimbursement</span><b>${contractValue(d.expenses)}</b></div><div><span>Company property / PPE</span><b>${contractValue(d.companyProperty)}</b></div></div></section>
+          <section class="contract-section"><h3>Policies, confidentiality and onboarding</h3><div class="contract-grid"><div><span>Confidentiality / proprietary information</span><b>${contractValue(d.confidentiality)}</b></div><div><span>Handbook / policy acknowledgment</span><b>${contractValue(d.policyAcknowledgment)}</b></div><div><span>Payroll / direct deposit</span><b>${contractValue(d.payrollOnboarding)}</b></div><div><span>Prepared by</span><b>${contractValue(d.preparedBy,'Danco administrator')}</b></div></div><p class="contract-security-note"><b>Payroll security:</b> Bank account and routing numbers are intentionally not included in this agreement. Collect them separately through Danco's approved secure payroll process.</p></section>
+          <section class="contract-section"><h3>Employment terms</h3><div class="contract-terms"><p>Employment is intended to be at-will to the extent permitted by applicable law. Either Danco or the employee may end the employment relationship at any time, with or without advance notice or cause, subject to applicable law and any final Danco-approved agreement.</p><p>The employee is expected to perform the duties of the offered role, follow lawful management direction, maintain attendance and performance standards, and comply with Danco safety requirements, workplace policies, project/site rules, confidentiality obligations and controls for company property, tools, vehicles and information.</p><p>Compensation, benefits, leave, incentive arrangements and expense reimbursement remain subject to the applicable Danco plan documents and policies. Required work-authorization/I-9, onboarding documentation and any approved background-screening requirements must be satisfied before or during onboarding as directed by Danco.</p><p>Confidential, proprietary, customer and company information must be protected in accordance with Danco policy. Company property must be returned when requested or when employment ends. This prototype is intended for an Indiana-based employer and remains subject to applicable federal, state and local law.</p>${d.additionalTerms?`<p><b>Additional offer terms:</b> ${escapeHtml(d.additionalTerms)}</p>`:''}<p class="fine">Prototype document generated from the Danco recruitment workflow. Final production wording, classifications and policy references should be approved by Danco HR and qualified employment counsel before use as a binding agreement.</p></div></section>
           <div class="signature-grid"><div class="signature-line">Employee signature / date</div><div class="signature-line">For Danco Roofing Services, Inc. / date</div></div>
-        </div><footer class="contract-document-footer"><span>Danco Roofing Services, Inc. · Employment Contract Prototype</span><span>Generated by Danco Workforce Assessment · JW EDS</span></footer>
+        </div><footer class="contract-document-footer"><span>Danco Roofing Services, Inc. · Employment Agreement Prototype</span><span>Generated by Danco Workforce Assessment · JW EDS</span></footer>
       </article>`;
   }
   async function createEmploymentContract(){
     if(!requireDancoPlus('Offer & employment agreement builder'))return;
     $('contract-error').textContent='';
-    const role=$('contract-role').value;if(!role){$('contract-error').textContent='Choose the role being offered.';return;}
-    const data=collectContractData();if(!data.startDate||!data.compensation||!data.preparedBy){$('contract-error').textContent='Enter the proposed start date, compensation and administrator name before creating the contract.';return;}
+    const appRole=currentLoadedRecord?.application?.role||'';
+    const role=$('contract-role').value||appRole;if(!['Service Helper','Roofer','Foreman','Commercial Account Manager'].includes(role)){$('contract-error').textContent='Choose the role being offered.';return;}
+    const data=collectContractData();
+    const createdBy=data.preparedBy||'Danco administrator (prototype)';
     const button=$('confirm-create-contract');button.disabled=true;button.textContent='Creating contract…';
     try{
-      const response=await sharedRequest('/api/contracts',{action:'create',reference:currentSharedReference,adminPin:adminAccessPin,backgroundCriteriaMet:true,offeredRole:role,createdBy:data.preparedBy,contractData:data});
+      const response=await sharedRequest('/api/contracts',{action:'create',reference:currentSharedReference,adminPin:adminAccessPin,backgroundCriteriaMet:true,backgroundCheckBasis:data.backgroundCheckBasis,offeredRole:role,createdBy,contractData:data});
       currentEmploymentContract=response.contract||null;if(!currentEmploymentContract)throw new Error('The contract could not be created.');
-      $('contract-form-step').hidden=true;$('contract-preview-step').hidden=false;renderContractPreview(currentEmploymentContract);currentQueueStatus='employment_contracts';toast('Employment contract created and filed.');await reloadCurrentSharedRecord();await populateStoredApplicants();
+      $('contract-form-step').hidden=true;$('contract-preview-step').hidden=false;renderContractPreview(currentEmploymentContract);currentQueueStatus='employment_contracts';toast('Employment agreement created and filed.');await reloadCurrentSharedRecord();await populateStoredApplicants();
     }catch(error){$('contract-error').textContent=error.message;}
     finally{button.disabled=false;button.textContent='Create pre-filled contract';}
   }
@@ -1379,7 +1507,6 @@
     $('next-applicant').addEventListener('click',()=>{if(!isOwner()&&trialRemaining()<=0){openModal('unlock-modal');return;}localStorage.removeItem(SESSION_KEY);session=null;newSession();showScreen('language-screen');});
     $('admin-open').addEventListener('click',()=>{openModal('admin-modal');$('admin-login').hidden=adminAuthenticated;$('admin-dashboard').hidden=!adminAuthenticated;if(!adminAuthenticated)setTimeout(()=>$('admin-pin').focus(),80);else prepareAdmin();});
     $('admin-login-button').addEventListener('click',()=>{const pin=$('admin-pin').value.trim();if(accessHash(pin)!==ADMIN_HASH){$('admin-error').textContent='Administrator PIN not recognized.';return;}adminAuthenticated=true;adminAccessPin=pin;$('admin-error').textContent='';$('admin-pin').value='';$('admin-login').hidden=true;$('admin-dashboard').hidden=false;prepareAdmin();});
-    $('owner-access-open')?.addEventListener('click',()=>{if($('owner-verify-error'))$('owner-verify-error').textContent='';openModal('owner-verify-modal');setTimeout(()=>$('owner-verify-code')?.focus(),80);});
     $$('[data-admin-device-mode]').forEach(button=>button.addEventListener('click',()=>setDeviceMode(button.dataset.adminDeviceMode)));
     $$('[data-journey-mode]').forEach(button=>button.addEventListener('click',()=>chooseJourney(button.dataset.journeyMode)));
     $$('[data-action="close-ssn-warning"]').forEach(button=>button.addEventListener('click',()=>closeModal('ssn-warning-modal')));
@@ -1395,6 +1522,8 @@
     $('view-employment-contract').addEventListener('click',()=>openContractWorkflow(true));
     $('contract-eligibility-no').addEventListener('click',()=>{$('contract-blocked').hidden=false;$('contract-form-step').hidden=true;});
     $('contract-eligibility-yes').addEventListener('click',()=>{contractEligibilityConfirmed=true;$('contract-eligibility-step').hidden=true;$('contract-form-step').hidden=false;prefillContractForm();});
+    $('background-provider-select').addEventListener('change',()=>{$('background-package-select').innerHTML='';refreshBackgroundPackageUi();});
+    $('background-package-select').addEventListener('change',refreshBackgroundPackageUi);
     $('confirm-create-contract').addEventListener('click',createEmploymentContract);
     $('upload-signed-contract').addEventListener('click',uploadSignedContract);
     $('open-signed-contract').addEventListener('click',openSignedContract);
@@ -1434,7 +1563,7 @@
     else if(session?.status==='profile'){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);profileIndex=session.profileAnswers?.length||0;renderProfile();}
     else if(session?.status==='profile-intro'){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);showScreen('profile-intro-screen');}
     else showScreen('language-screen');
-    if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=28.0.0').catch(()=>{}));
+    if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=29.0.0').catch(()=>{}));
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDancoPlusStatus({welcome:true});});
   }
 

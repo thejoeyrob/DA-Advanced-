@@ -10,10 +10,10 @@
   <meta property="og:image" content="social-preview.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="manifest.webmanifest?v=28.1.0">
+  <link rel="manifest" href="manifest.webmanifest?v=29.0.0">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" href="icon-192.png">
-  <link rel="stylesheet" href="app.css?v=28.1.0">
+  <link rel="stylesheet" href="app.css?v=29.0.0">
   <title>Danco Workforce Assessment · Prototype</title>
 </head>
 <body class="prototype-locked">
@@ -436,38 +436,73 @@
     <div class="modal-card small-modal"><button class="modal-close" type="button" data-action="close-owner-verify" aria-label="Close">×</button><span class="eyebrow">OWNER VERIFICATION</span><h2 id="owner-verify-title">Connect owner approval controls</h2><p>Enter the existing private owner access code once to establish the secure approval session on this device.</p><label class="field"><span>Owner access code</span><input id="owner-verify-code" type="password" autocomplete="off"></label><p class="form-error" id="owner-verify-error"></p><button class="button button-primary button-wide" id="owner-verify-submit" type="button">Verify owner</button></div>
   </div>
 
-  <div class="modal-backdrop" id="background-modal" role="dialog" aria-modal="true" aria-labelledby="background-modal-title"><div class="modal-card background-modal-card"><button class="modal-close" type="button" data-action="close-background" aria-label="Close">×</button><span class="eyebrow">ADVANCED PROTOTYPE · ADMIN ONLY</span><h2 id="background-modal-title">Approve background-screening request</h2><p class="lead small">This demonstrates the live workflow. No provider is connected and no payment will be taken in this prototype.</p><div class="background-payment-summary"><div><span>Candidate</span><b id="background-candidate">—</b></div><div><span>Screening package</span><b id="background-package">—</b></div><div><span>Illustrative provider cost</span><b id="background-cost">—</b></div><div><span>Billing account</span><b id="background-provider">—</b></div><div><span>Identity readiness</span><b id="background-identity">—</b></div></div><div class="notice-card"><span>$</span><p>A live integration would use Danco's own screening-provider account. Provider charges and any court/pass-through fees would be billed directly to Danco. The app would require this cost approval before submitting the request.</p></div><label class="field"><span>Approving administrator</span><input id="background-approved-by" maxlength="120" placeholder="Name"></label><label class="cost-approval-check"><input id="background-approval" type="checkbox"><span>I approve the displayed estimated cost and request the screening demonstration for this candidate.</span></label><p class="form-error" id="background-error" role="alert"></p><button class="button button-primary button-wide" id="confirm-background-request" type="button">Approve cost &amp; request screening</button></div></div>
+  <div class="modal-backdrop" id="background-modal" role="dialog" aria-modal="true" aria-labelledby="background-modal-title">
+    <div class="modal-card background-modal-card">
+      <button class="modal-close" type="button" data-action="close-background" aria-label="Close">×</button>
+      <span class="eyebrow">DANCO+ · ADMINISTRATOR DEMONSTRATION</span>
+      <h2 id="background-modal-title">Approve background-screening request</h2>
+      <p class="lead small">Select a current public package-price reference, approve the cost and choose the prototype outcome you want to demonstrate. No provider is contacted and no payment is taken.</p>
+      <div class="background-payment-summary">
+        <div><span>Candidate</span><b id="background-candidate">—</b></div>
+        <label class="field compact-field"><span>Provider reference</span><select id="background-provider-select"></select></label>
+        <label class="field compact-field"><span>Screening package</span><select id="background-package-select"></select></label>
+        <div><span>Public starting price</span><b id="background-cost">—</b></div>
+        <div><span>Billing account</span><b id="background-provider">Danco provider account</b></div>
+        <div><span>Identity readiness</span><b id="background-identity">—</b></div>
+      </div>
+      <div class="background-package-detail" id="background-package-detail"></div>
+      <div class="demo-outcome-panel">
+        <div><span class="eyebrow">PROTOTYPE OUTCOME CONTROL</span><h3>Choose the result to demonstrate</h3><p>This selector exists only in prototype mode so both the successful and blocked hiring paths can be presented. A purchased/live release removes this selector; the provider returns the screening data and an authorized Danco reviewer makes the employment decision.</p></div>
+        <label class="field"><span>Demonstration outcome</span><select id="background-demo-result"><option value="eligible">Meets Danco criteria · demo PASS</option><option value="not_eligible">Does not meet Danco criteria · demo FAIL</option></select></label>
+      </div>
+      <div class="notice-card"><span>$</span><p>Public package prices are demonstration references only. A live integration would use Danco's own screening-provider account. Provider charges, taxes and court/database pass-through fees would be billed directly to Danco under its vendor agreement.</p></div>
+      <label class="field"><span>Approving administrator</span><input id="background-approved-by" maxlength="120" placeholder="Name"></label>
+      <label class="cost-approval-check"><input id="background-approval" type="checkbox"><span>I approve the displayed package cost and request this screening demonstration.</span></label>
+      <p class="form-error" id="background-error" role="alert"></p>
+      <button class="button button-primary button-wide" id="confirm-background-request" type="button">Approve cost &amp; run screening demo</button>
+    </div>
+  </div>
 
   <div class="modal-backdrop" id="contract-modal" role="dialog" aria-modal="true" aria-labelledby="contract-modal-title">
     <div class="modal-card contract-modal-card">
       <button class="modal-close" type="button" data-action="close-contract" aria-label="Close">×</button>
       <span class="eyebrow">ADVANCED PROTOTYPE · ADMIN ONLY</span><h2 id="contract-modal-title">Create employment contract</h2>
       <section id="contract-eligibility-step">
-        <p class="lead small">Does this applicant's background check meet the required Danco criteria?</p>
-        <div class="eligibility-buttons"><button class="button button-secondary" id="contract-eligibility-no" type="button">No</button><button class="button button-primary" id="contract-eligibility-yes" type="button">Yes</button></div>
-        <div class="notice-card contract-blocked" id="contract-blocked" hidden><span>!</span><p>Contract creation cannot proceed. Please seek advice from senior staff before progressing this applicant.</p></div>
+        <p class="lead small" id="contract-eligibility-question">Does this applicant's background check meet the required Danco criteria?</p>
+        <p class="fine contract-eligibility-context" id="contract-eligibility-context"></p>
+        <div class="eligibility-buttons" id="contract-eligibility-buttons"><button class="button button-secondary" id="contract-eligibility-no" type="button">No</button><button class="button button-primary" id="contract-eligibility-yes" type="button">Yes</button></div>
+        <div class="notice-card contract-blocked" id="contract-blocked" hidden><span>!</span><p id="contract-blocked-copy">Contract creation cannot proceed. Please seek advice from senior staff before progressing this applicant.</p></div>
       </section>
       <section id="contract-form-step" hidden>
         <p class="lead small">Applicant details are pre-filled from the stored Danco application. Complete the offer-specific details below.</p>
         <div class="contract-prefill-summary" id="contract-prefill-summary"></div>
         <div class="contract-form-grid">
           <label class="field"><span>Role offered</span><select id="contract-role"><option value="">Choose role</option><option>Service Helper</option><option>Roofer</option><option>Foreman</option><option>Commercial Account Manager</option></select></label>
+          <label class="field"><span>Offer date</span><input id="contract-offer-date" type="date"></label>
+          <label class="field"><span>Offer valid through</span><input id="contract-offer-expiration" type="date"></label>
           <label class="field"><span>Employment type</span><select id="contract-employment-type"><option>Full-time</option><option>Part-time</option><option>Temporary</option></select></label>
           <label class="field"><span>FLSA classification</span><select id="contract-classification"><option>Hourly / non-exempt</option><option>Salaried / exempt</option><option>Salaried / non-exempt</option></select></label>
           <label class="field"><span>Proposed start date</span><input id="contract-start-date" type="date"></label>
-          <label class="field"><span>Compensation</span><input id="contract-compensation" placeholder="e.g. $28.00 per hour"></label>
+          <label class="field"><span>Compensation</span><input id="contract-compensation" placeholder="e.g. $28.00 per hour or $70,000 annually"></label>
           <label class="field"><span>Pay frequency</span><select id="contract-pay-frequency"><option>Weekly</option><option>Biweekly</option><option>Semimonthly</option></select></label>
+          <label class="field contract-wide"><span>Commission / incentive plan</span><input id="contract-commission" placeholder="Optional · e.g. Per separate Danco commission plan"></label>
           <label class="field"><span>Primary work location</span><input id="contract-work-location" placeholder="Danco location / territory"></label>
-          <label class="field"><span>Reports to</span><input id="contract-supervisor" placeholder="Manager / supervisor"></label><label class="field"><span>Prepared by</span><input id="contract-created-by" maxlength="120" placeholder="Administrator name"></label>
+          <label class="field"><span>Reports to</span><input id="contract-supervisor" placeholder="Manager / supervisor"></label>
+          <label class="field"><span>Prepared by</span><input id="contract-created-by" maxlength="120" placeholder="Administrator name"></label>
           <label class="field contract-wide"><span>Normal schedule</span><input id="contract-schedule" placeholder="e.g. Monday-Friday, 7:00 AM-4:00 PM; project needs may vary"></label>
           <label class="field"><span>Introductory period</span><select id="contract-intro-period"><option>90 days</option><option>60 days</option><option>30 days</option><option>None specified</option></select></label>
           <label class="field"><span>Benefits eligibility</span><input id="contract-benefits" placeholder="Per Danco plan terms"></label>
           <label class="field"><span>PTO / leave</span><input id="contract-pto" placeholder="Per Danco policy"></label>
           <label class="field"><span>Overtime</span><input id="contract-overtime" placeholder="Per classification and applicable law"></label>
           <label class="field"><span>Travel / vehicle</span><input id="contract-travel" placeholder="As required by role"></label>
-          <label class="field contract-wide"><span>Additional offer terms</span><textarea id="contract-additional-terms" maxlength="1800" placeholder="Optional role-specific terms, allowances, commission plan reference, contingencies or notes"></textarea></label>
+          <label class="field"><span>Expense reimbursement</span><input id="contract-expenses" placeholder="Per Danco expense policy"></label>
+          <label class="field"><span>Company property / PPE</span><input id="contract-property" placeholder="Issued as required; return on separation"></label>
+          <label class="field"><span>Confidentiality / proprietary information</span><input id="contract-confidentiality" placeholder="Subject to Danco confidentiality and information-security policies"></label>
+          <label class="field"><span>Handbook / policy acknowledgment</span><input id="contract-policies" placeholder="Employee handbook and safety policies to be acknowledged"></label>
+          <label class="field contract-wide"><span>Payroll / direct-deposit onboarding</span><select id="contract-payroll"><option>Separate secure payroll enrollment required</option><option>Payroll enrollment completed separately</option><option>Not applicable / to be confirmed</option></select></label>
+          <label class="field contract-wide"><span>Additional offer terms</span><textarea id="contract-additional-terms" maxlength="1800" placeholder="Optional role-specific terms, allowances, contingencies or notes"></textarea></label>
         </div>
-        <div class="notice-card"><span>i</span><p>Prototype template only. Danco should have its final employment agreement and offer language reviewed by qualified U.S./Indiana employment counsel before production use.</p></div>
+        <div class="notice-card"><span>i</span><p>Prototype template only. Fields may be left incomplete so the document format can be demonstrated. Banking account/routing details are intentionally excluded from the employment agreement and should be collected separately through Danco's secure payroll onboarding process. Final employment language should be reviewed by qualified U.S./Indiana employment counsel before production use.</p></div>
         <p class="form-error" id="contract-error" role="alert"></p><button class="button button-primary button-wide" id="confirm-create-contract" type="button">Create pre-filled contract</button>
       </section>
       <section id="contract-preview-step" hidden>
@@ -484,7 +519,7 @@
     <img src="joseph-whelan-eds-white.png" alt="" aria-hidden="true">
   </aside>
 
-  <script src="narration-manifest.js?v=28.1.0" defer></script>
-  <script src="app.js?v=28.1.0" defer></script>
+  <script src="narration-manifest.js?v=29.0.0" defer></script>
+  <script src="app.js?v=29.0.0" defer></script>
 </body>
 </html>

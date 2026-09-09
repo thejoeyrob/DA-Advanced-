@@ -1,46 +1,66 @@
-# Danco Workforce Assessment - Advanced Prototype v27 implementation brief
+# Danco Workforce Assessment — v29 implementation brief
 
-## Purpose
-A secondary, progressive Danco recruitment prototype that preserves the established bilingual application/assessment experience while adding structured sales suitability, applicant-specific interview direction, background-screening orchestration and employment-contract workflow demonstration.
+## Release intent
+v29 restores and strengthens the Danco+ screening demonstration while preserving every Standard assessment/application capability developed through v28.1.
 
-## Standard assessment/application layer
-- User-selected route after language: **Danco Workforce Assessment** or **Apply to work at Danco**.
-- Administrator device lock: Workforce Assessment only, Application only or Choice of either.
-- English / Spanish journeys, work-style/DISC primer and role-specific assessment.
-- Roles: Service Helper, Roofer, Foreman and Commercial Account Manager.
-- Commercial Account Manager uses the established ten-question suitability model with rebalanced concise answer wording. Scoring concepts and outcome model are preserved.
-- Administrator report begins with a candidate-specific overall suitability brief and ends with four short assessment-led interview prompts with fact-finding tags.
-- Applicant submissions are PIN-free; administrator review remains protected.
+## Background screening
+The administrator report again exposes **Request background check** in Danco+.
 
-## Narration
-The established Danco recorded narration sprites are preserved and their manifest contains a verified 0.300-second minimum gap with no overlapping clip boundaries. When revised/dynamic content does not have an exact recorded clip, the app routes the whole prompt to the device's English or Spanish system reader so a question never mixes voices mid-prompt. Help also lets the user select **Danco recorded** or **Device reader** for the whole journey.
+The prototype request dialog now demonstrates:
+1. candidate / identity readiness,
+2. provider reference,
+3. package selection,
+4. published package cost,
+5. administrator cost approval,
+6. a prototype-only result selector.
 
-## Background-screening layer
-Application mode captures address, city, state, ZIP, date of birth and SSN readiness. The normal applicant record never stores the full raw SSN. Background-screening demonstration remains administrator-controlled and requires cost approval. Prototype `PROTOTYPE` bypass is supported; live provider mode must require real provider-approved identity data.
+Public package references at this build date:
+- Basic — $29.99
+- Essential — $59.99
+- Complete — $94.99
 
-Background queues:
-- CB checked - To action
-- CB checked - Eligible
-- CB checked - Not eligible
+The selected demo result is not a real background-check finding. It exists only so a presenter can demonstrate both branches:
+- **Meets Danco criteria** → record automatically files to Background checked — Eligible.
+- **Does not meet Danco criteria** → report receives a prominent failure/error state, contract generation is blocked and record automatically files to Background checked — Not eligible.
 
-## Employment-contract layer
-From a stored application report, an administrator can select **Create employment contract**. The workflow asks whether the candidate's background check meets Danco criteria. A No response blocks contract creation and directs the reviewer to senior staff. A Yes response opens a four-role offer selector and a pre-filled offer/contract form.
+Category-level screening results continue to state **Results will be displayed when live**.
 
-The contract prototype captures offer-specific fields including employment type, FLSA classification, start date, compensation, pay frequency, work location, reporting line, schedule, introductory period, benefits/PTO, overtime, travel/vehicle requirements and additional offer terms. The generated document matches the visual language of the Danco report and can be printed/saved as PDF.
+A production integration must remove the demo-result selector. Vendor/provider results and Danco's authorized human review determine production workflow.
 
-Creating a contract automatically files the record in **Employment contracts**.
+## Employment agreement
+A Danco+ contract can be generated when:
+- a Danco+ screening is satisfactory, or
+- no Danco+ screening exists but an administrator confirms a satisfactory check was provided through another approved source.
 
-## Signed-contract file store
-**Signed employment contracts** is upload-only. It accepts PDF, JPEG or PNG scanned signed contracts up to the prototype limit of 8 MB. Upload writes the file to a private Supabase Storage bucket, records an audit trail and moves the applicant into the Signed employment contracts queue. Generic queue controls cannot move a record into either contract queue.
+An attached Danco+ screening marked **not eligible** blocks contract creation.
+
+The prototype agreement is intentionally exportable even when offer-specific fields remain incomplete. The visual demonstration therefore does not require compensation, start date or administrator fields to be completed.
+
+Expanded optional content:
+- offer date / expiration,
+- employment type and FLSA classification,
+- start date, compensation and pay frequency,
+- sales commission / incentive-plan reference,
+- location, supervisor and schedule,
+- introductory period,
+- benefits and PTO,
+- overtime,
+- travel / vehicle,
+- expense reimbursement,
+- company property / PPE,
+- confidentiality / proprietary-information obligations,
+- employee handbook / policy acknowledgments,
+- payroll / direct-deposit onboarding status,
+- additional offer terms,
+- signatures.
+
+Bank account and routing-number fields are intentionally not included. Those details should be collected through Danco's approved secure payroll onboarding route rather than duplicated inside the employment agreement.
+
+## Voice and accessibility
+Applicant narration remains bilingual. Existing recorded narration is preserved. Revised/dynamic text falls back to one continuous device reader voice rather than mixing voices mid-prompt. Danco+ administrator dialogs use the selected reader when audio is enabled.
 
 ## Security boundary
-- Full raw SSNs are excluded from the normal Danco database record.
-- Supabase secret/service credentials remain server-side.
-- Signed contract files are held in a private bucket and opened through short-lived signed URLs.
-- This is a prototype workflow; Danco HR/counsel should approve final employment contract wording and production retention/access rules.
-
-## v28.1 responsive character and Danco+ visual refinement
-- Character placements audited across hero, setup, profile intro, profile questions, instructions, assessment questions, result and Help drawer.
-- Mobile guide screens reserve a dedicated character stage; helper speech copy sits below rather than over the figures.
-- Short landscape screens retain visible character staging with compact guide copy and reduced form padding.
-- Danco+ retains Danco navy/blue as the dominant identity while adding controlled metallic-gold accents, premium panel borders and subtle highlight effects.
+- Full SSNs remain excluded from the normal applicant record.
+- CRA/vendor secrets remain server-side.
+- The demo pass/fail control is prototype-only and cannot represent a real vendor result.
+- Signed contracts remain private and use time-limited signed links.
