@@ -1,17 +1,17 @@
-importScripts('./narration-manifest.js?v=26.0.0');
+importScripts('./narration-manifest.js?v=28.0.0');
 
-const CACHE_NAME = 'danco-workforce-advanced-v26-20260908';
+const CACHE_NAME = 'danco-workforce-standard-plus-v28-20260909';
 
 const OLD_BACKEND = 'https://danco-assessment-service.josephrwhelan.chatgpt.site';
 const NEW_BACKEND = 'https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-service';
 
 const CORE_ASSETS = [
   './',
-  './index.html?v=26.0.0',
-  './app.css?v=26.0.0',
-  './app.js?v=26.0.0',
-  './narration-manifest.js?v=26.0.0',
-  './manifest.webmanifest?v=26.0.0',
+  './index.html?v=28.0.0',
+  './app.css?v=28.0.0',
+  './app.js?v=28.0.0',
+  './narration-manifest.js?v=28.0.0',
+  './manifest.webmanifest?v=28.0.0',
   './danco-logo.webp',
   './danco-logo-white.png',
   './joseph-whelan-eds-white.png',
@@ -20,6 +20,9 @@ const CORE_ASSETS = [
   './icon-192.png',
   './icon-512.png',
   './apple-touch-icon.png',
+  './icon-danco-plus-192.png',
+  './icon-danco-plus-512.png',
+  './apple-touch-icon-danco-plus.png',
   './social-preview.png',
   './visual-epdm.png',
   './visual-tpo.png',
@@ -52,8 +55,8 @@ const CORE_ASSETS = [
 ];
 
 const NARRATION_ASSETS = [
-  './narration-en.mp3?v=26.0.0',
-  './narration-es.mp3?v=26.0.0'
+  './narration-en.mp3?v=28.0.0',
+  './narration-es.mp3?v=28.0.0'
 ];
 
 self.addEventListener('install', event => event.waitUntil(
@@ -113,7 +116,7 @@ self.addEventListener('fetch', event => {
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
           return response;
         })
-        .catch(() => caches.match('./index.html?v=26.0.0'))
+        .catch(() => caches.match('./index.html?v=28.0.0'))
     );
     return;
   }

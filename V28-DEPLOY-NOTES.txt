@@ -1,0 +1,34 @@
+DANCO WORKFORCE ASSESSMENT — STANDARD + DANCO+ TRIAL v28
+
+DEPLOYMENT
+Upload/replace the files in this ZIP at the root of the Danco GitHub Pages repository.
+The package is flat; do not place the files inside another folder.
+
+STANDARD MODE
+- Default for normal trial codes.
+- Includes assessment/application journeys, English/Spanish, DISC/work-style profiling,
+  roofing roles, Commercial Account Manager sales assessment, shared results and reports.
+- Danco+ controls are visible but locked.
+
+DANCO+ TRIAL
+- A user requests Danco+ from a locked advanced feature.
+- Requester name is pre-filled but editable.
+- Owner approves the requesting device from the owner-only panel.
+- The same device automatically unlocks the advanced prototype and receives a one-time welcome.
+- Owner mode includes an instant Standard / Danco+ presentation toggle.
+
+PRODUCTION SCREENING PROVIDER
+No real CRA/background-screening provider can be configured from trial mode.
+Production vendor credentials remain an owner-controlled server-side setup task.
+
+HOME SCREEN ICON
+The app changes browser/install icon references between Standard and Danco+.
+An icon already cached by iOS on an existing Home Screen shortcut cannot be reliably
+changed by a web app. Danco+ functionality and in-app branding change immediately;
+to force a different iOS Home Screen icon, the shortcut may need to be removed/re-added.
+
+BACKEND
+Requires the existing Danco Supabase project with:
+- danco-service Edge Function v4
+- danco-plus-access Edge Function v1
+- danco_plus_trial_requests migration/table

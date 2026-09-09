@@ -1,33 +1,30 @@
-# Danco Advanced Prototype v26 — Supabase backend notes
+# Danco Advanced Prototype v27 - Supabase backend notes
 
-Project Edge Function: `danco-service` — version 3.
+Project Edge Function: `danco-service` - version 4.
 
-## Submission contract
+## Applicant submissions
 `POST /api/submissions`
-- Applicant submission no longer requires an administrator PIN.
-- The backend sanitizes application data before storage and strips common raw-SSN field names as a defense-in-depth measure.
-- Stored application identity metadata may include `ssnStatus`, `ssnLast4`, `ssnPrototypeBypass`, exception reason, DOB and address fields.
-- Full raw SSN is not stored in the normal `danco_submissions.application` JSON.
+- No administrator PIN required from applicants.
+- Raw/full SSN field names are stripped before normal application storage.
 
-## Administrator contract
+## Administrator
 `POST /api/admin`
-- Remains administrator-PIN protected.
-- Supports all standard and CB checked queues.
+- Administrator-PIN protected.
+- Queues: standard, CB checked, Employment contracts and Signed employment contracts.
+- Generic status updates cannot manually place records into either contract queue.
 
-## Background screening contract
+## Background screening
 `POST /api/background`
-- Remains administrator-PIN protected.
-- Quote/request checks SSN readiness before proceeding.
-- In prototype mode, a structurally-valid SSN marker or `PROTOTYPE` bypass can demonstrate the workflow.
-- In future live-provider mode, the prototype bypass is not accepted.
-- Missing/invalid SSN returns HTTP 422 with code `SSN_REQUIRED_FOR_BACKGROUND_CHECK`.
+- Administrator-PIN protected.
+- Preserves SSN-readiness enforcement, cost approval and prototype screening records.
+- A production CRA adapter remains a separate go-live step.
 
-`danco_background_screenings` now includes:
-- `ssn_status`
-- `ssn_last4`
-- `identity_summary` JSONB
+## Employment contracts
+`POST /api/contracts`
+- Administrator-PIN protected.
+- `create`: requires explicit confirmation that the background check meets Danco criteria, a stored background-screening record and one of the four Danco roles. Stores offer fields and automatically files to `employment_contracts`.
+- `upload_signed`: accepts PDF/JPEG/PNG (prototype max 8 MB), stores to private bucket `danco-signed-employment-contracts`, records uploader/file audit metadata and automatically files to `signed_employment_contracts`.
+- `signed_url`: returns a short-lived signed download URL for an existing signed file.
 
-No raw full SSN should be written to these fields.
-
-## Production CRA integration
-A credentialed provider adapter must be added server-side. The full SSN should be passed through an approved provider-hosted flow or separately approved encrypted/restricted identity handoff. CRA and Supabase secret/service-role credentials must remain server-side only.
+## Data/security boundary
+`danco_employment_contracts` has RLS enabled and direct anon/authenticated privileges revoked. Application data continues to flow through the Edge Function. The signed-contract bucket is private. Secret/service-role credentials remain server-side only.

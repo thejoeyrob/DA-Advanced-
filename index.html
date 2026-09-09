@@ -10,11 +10,11 @@
   <meta property="og:image" content="social-preview.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="manifest.webmanifest?v=26.0.0">
+  <link rel="manifest" href="manifest.webmanifest?v=28.0.0">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" href="icon-192.png">
-  <link rel="stylesheet" href="app.css?v=26.0.0">
-  <title>Danco Workforce Assessment · Advanced Prototype</title>
+  <link rel="stylesheet" href="app.css?v=28.0.0">
+  <title>Danco Workforce Assessment · Prototype</title>
 </head>
 <body class="prototype-locked">
   <div class="prototype-watermark" aria-hidden="true"><span>PROTOTYPE</span><span>PROTOTYPE</span><span>PROTOTYPE</span></div>
@@ -25,7 +25,7 @@
       <span><b>Danco Workforce Assessment</b><small>Assessment &amp; applications</small></span>
     </button>
     <div class="header-actions">
-      <span class="status-pill advanced-status">ADVANCED PROTOTYPE</span><span class="status-pill" id="access-status">PROTOTYPE</span>
+      <span class="status-pill danco-plus-header-status" id="danco-plus-header-status">STANDARD</span><span class="status-pill" id="access-status">PROTOTYPE</span>
       <button class="icon-button" id="language-toggle" type="button" aria-label="Change language">ES</button>
       <button class="icon-button" id="audio-toggle" type="button" aria-label="Toggle audio support">🔊</button>
       <button class="icon-button" id="fullscreen-toggle" type="button" aria-label="Toggle full screen">⛶</button>
@@ -39,7 +39,7 @@
       <div class="hero-shell">
         <img class="hero-helper hero-helper-left slide-left" src="danco-helper-english.png" alt="Friendly Danco team helper holding a clipboard">
         <div class="hero-copy">
-          <span class="eyebrow">DANCO ROOFING SERVICES, INC. · ADVANCED PROTOTYPE</span>
+          <span class="eyebrow" id="product-eyebrow">DANCO ROOFING SERVICES, INC. · WORKFORCE &amp; APPLICANT PROTOTYPE</span>
           <h1 id="language-title">Welcome to Danco</h1>
           <p class="lead">Choose your language first. You can then take the Danco Workforce Assessment or apply to work at Danco, depending on how this device has been configured.</p>
           <div class="language-grid" role="group" aria-label="Choose language">
@@ -270,9 +270,13 @@
       <button class="button button-secondary button-wide" type="button" data-action="repeat-audio"><span aria-hidden="true">↻</span><span data-i18n="repeatAudio">Repeat spoken audio</span></button>
       <small data-i18n="repeatAudioHint">Hear the current instruction or question again.</small>
       <div class="voice-setup" id="narration-voice-setup">
-        <span class="voice-label" data-i18n="voiceLabel">Narration audio</span>
-        <div class="standard-voice-badge"><span aria-hidden="true">✓</span><div><b data-i18n="standardVoiceTitle">Danco standard voice</b><small data-i18n="standardVoiceCopy">The same clear recorded narration on iPhone, Android and desktop.</small></div></div>
-        <button class="button voice-test-button" type="button" data-action="test-narration"><span aria-hidden="true">▶</span><span data-i18n="testVoice">Test standard narration</span></button>
+        <span class="voice-label" data-i18n="voiceLabel">Narration voice</span>
+        <div class="voice-mode-toggle" role="group" aria-label="Narration voice">
+          <button type="button" class="active" data-voice-mode="recorded">Danco recorded</button>
+          <button type="button" data-voice-mode="device">Device reader</button>
+        </div>
+        <div class="standard-voice-badge"><span aria-hidden="true">✓</span><div><b id="selected-voice-title" data-i18n="standardVoiceTitle">Danco recorded voice</b><small id="selected-voice-copy" data-i18n="standardVoiceCopy">Uses the optimized Danco narration pack whenever an exact recorded line is available.</small></div></div>
+        <button class="button voice-test-button" type="button" data-action="test-narration"><span aria-hidden="true">▶</span><span data-i18n="testVoice">Test selected voice</span></button>
       </div>
     </div>
     <button class="button button-primary button-wide help-confirm" type="button" data-action="close-help" data-i18n="gotIt">Got it</button>
@@ -310,20 +314,36 @@
           <div class="print-date" id="print-date"></div>
         </div>
         <div class="dashboard-heading"><div><span class="eyebrow">PRIVATE DANCO VIEW</span><h2>Workforce assessment &amp; applicant breakdown</h2></div><span class="dashboard-status">ADMIN</span></div>
+        <section class="danco-plus-access-card" id="danco-plus-access-card">
+          <div class="danco-plus-mark"><b>Danco+</b><span id="danco-plus-access-state">STANDARD</span></div>
+          <div class="danco-plus-access-copy"><span class="eyebrow">OPTIONAL ADVANCED HIRING WORKFLOW</span><h3 id="danco-plus-access-title">Advanced tools are visible in Standard mode</h3><p id="danco-plus-access-copy">Explore the standard assessment and application workflow normally. Danco+ can be requested on this device when you are ready to demonstrate integrated screening, offer creation and secure employment-file progression.</p></div>
+          <button class="button button-gold" id="request-danco-plus" type="button">Request Danco+ trial</button>
+        </section>
+        <section class="owner-danco-plus-panel" id="owner-danco-plus-panel" hidden>
+          <div class="owner-panel-heading"><div><span class="eyebrow">OWNER ONLY · DANCO+ CONTROL</span><h3>Advanced trial approvals</h3><p>Approve requesting devices and switch this presentation device between Standard and Danco+ without re-entering the owner code.</p></div><span class="owner-badge">OWNER</span></div>
+          <div class="owner-presentation-toggle"><span>Presentation mode</span><div class="mode-toggle" role="group" aria-label="Owner presentation mode"><button type="button" data-owner-product-mode="standard">Standard</button><button type="button" data-owner-product-mode="advanced">Danco+</button></div></div>
+          <div class="owner-provider-lock"><b>Live screening-provider connection</b><span>Production owner setup only. Vendor credentials and real provider configuration are intentionally unavailable in trial mode.</span></div>
+          <div class="owner-request-toolbar"><b>Advanced trial requests</b><button class="button button-secondary" id="refresh-danco-plus-requests" type="button">Refresh requests</button></div>
+          <div class="owner-request-list" id="owner-request-list"><p class="fine">Owner approval service will load here.</p></div>
+          <button class="button button-secondary owner-verify-button" id="verify-owner-session" type="button" hidden>Verify owner approval session</button>
+          <p class="form-error" id="owner-plus-error" role="alert"></p>
+        </section>
         <section class="admin-mode-card" aria-labelledby="admin-mode-title">
           <div><span class="eyebrow">DEVICE START MODE</span><h3 id="admin-mode-title">Lock this device to a route</h3><p>Choose whether this browser/device offers the workforce assessment only, the job application only, or lets the user choose after selecting a language.</p></div>
           <div class="mode-toggle mode-toggle-three" role="group" aria-label="Device start mode"><button type="button" data-admin-device-mode="assessment">Workforce assessment only</button><button type="button" data-admin-device-mode="application">Application only</button><button type="button" data-admin-device-mode="choice">Choice of either</button></div>
         </section>
         <section class="stored-applications-card" aria-labelledby="stored-applications-title">
-          <div><span class="eyebrow">SHARED SUBMISSION DATABASE</span><h3 id="stored-applications-title">Applications and assessment results</h3><p id="shared-service-status">Submitted records are shared across authorised phones, tablets and computers.</p></div>
+          <div><span class="eyebrow">SHARED SUBMISSION DATABASE</span><h3 id="stored-applications-title">Applications and assessment results</h3><p id="shared-service-status">Submitted records are shared across authorized phones, tablets and computers.</p></div>
           <div class="shared-submission-browser">
             <div class="submission-queue-tabs" role="tablist" aria-label="Submission status">
               <button class="active" type="button" data-queue-status="pending">Yet to process <span data-queue-count>0</span></button>
               <button type="button" data-queue-status="actioned">Actioned <span data-queue-count>0</span></button>
               <button type="button" data-queue-status="archived">Archived <span data-queue-count>0</span></button>
-              <button type="button" data-queue-status="background_to_action">CB checked · To action <span data-queue-count>0</span></button>
-              <button type="button" data-queue-status="background_eligible">CB checked · Eligible <span data-queue-count>0</span></button>
-              <button type="button" data-queue-status="background_not_eligible">CB checked · Not eligible <span data-queue-count>0</span></button>
+              <button type="button" class="advanced-queue-tab" data-advanced-feature="queue" data-queue-status="background_to_action">CB checked · To action <span data-queue-count>0</span></button>
+              <button type="button" class="advanced-queue-tab" data-advanced-feature="queue" data-queue-status="background_eligible">CB checked · Eligible <span data-queue-count>0</span></button>
+              <button type="button" class="advanced-queue-tab" data-advanced-feature="queue" data-queue-status="background_not_eligible">CB checked · Not eligible <span data-queue-count>0</span></button>
+              <button type="button" class="advanced-queue-tab" data-advanced-feature="queue" data-queue-status="employment_contracts">Employment contracts <span data-queue-count>0</span></button>
+              <button type="button" class="advanced-queue-tab" data-advanced-feature="queue" data-queue-status="signed_employment_contracts">Signed employment contracts <span data-queue-count>0</span></button>
             </div>
             <div class="stored-applicant-controls"><label class="field"><span>Select applicant or assessment</span><select id="stored-applicant-select"><option value="">Open the dashboard to load submissions</option></select></label><button class="button button-secondary" id="load-stored-applicant" type="button">Open full result</button></div>
           </div>
@@ -331,7 +351,16 @@
         <p class="form-error" id="decode-error" role="alert"></p>
 
         <div id="dashboard-output" class="dashboard-output"></div>
-        <section class="background-screening-actions" id="background-screening-actions" hidden><div><span class="eyebrow">ADVANCED PROTOTYPE · BACKGROUND SCREENING</span><h3>Progress a promising candidate</h3><p id="background-action-copy"></p></div><button class="button button-gold" id="request-background-check" type="button">Request background check</button><div class="background-decision-actions" id="background-decision-actions" hidden><span>After review, file the candidate as:</span><button class="button button-secondary" type="button" data-background-decision="further_review">CB checked · To action</button><button class="button button-secondary" type="button" data-background-decision="eligible">CB checked · Eligible</button><button class="button button-secondary" type="button" data-background-decision="not_eligible">CB checked · Not eligible</button><small>These are manual prototype workflow states. The screening result does not automatically make an employment decision.</small></div></section>
+        <section class="background-screening-actions danco-plus-feature-card" id="background-screening-actions" data-advanced-feature="background" hidden><div><span class="eyebrow">ADVANCED PROTOTYPE · BACKGROUND SCREENING</span><h3>Progress a promising candidate</h3><p id="background-action-copy"></p></div><button class="button button-gold" id="request-background-check" type="button">Request background check</button><div class="background-decision-actions" id="background-decision-actions" hidden><span>After review, file the candidate as:</span><button class="button button-secondary" type="button" data-background-decision="further_review">CB checked · To action</button><button class="button button-secondary" type="button" data-background-decision="eligible">CB checked · Eligible</button><button class="button button-secondary" type="button" data-background-decision="not_eligible">CB checked · Not eligible</button><small>These are manual prototype workflow states. The screening result does not automatically make an employment decision.</small></div></section>
+        <section class="employment-contract-actions danco-plus-feature-card" id="employment-contract-actions" data-advanced-feature="contract" hidden>
+          <div><span class="eyebrow">ADVANCED PROTOTYPE · EMPLOYMENT CONTRACT</span><h3>Progress an eligible candidate to offer documentation</h3><p id="employment-contract-copy">Create a pre-filled Danco employment contract from the stored applicant record.</p></div>
+          <div class="contract-action-buttons"><button class="button button-gold" id="create-employment-contract" type="button">Create employment contract</button><button class="button button-secondary" id="view-employment-contract" type="button" hidden>View employment contract</button></div>
+        </section>
+        <section class="signed-contract-actions danco-plus-feature-card" id="signed-contract-actions" data-advanced-feature="filing" hidden>
+          <div><span class="eyebrow">UPLOAD-ONLY FILE STORE</span><h3>Signed employment contracts</h3><p>Upload the scanned, signed contract. Records enter this folder only after a signed file is uploaded; nothing can be moved here from another queue.</p></div>
+          <div class="signed-upload-controls" id="signed-upload-controls"><label class="field"><span>Signed contract file</span><input id="signed-contract-file" type="file" accept="application/pdf,image/jpeg,image/png"></label><label class="field"><span>Uploaded by</span><input id="signed-contract-uploaded-by" maxlength="120" placeholder="Administrator name"></label><button class="button button-primary" id="upload-signed-contract" type="button">Upload signed contract</button></div>
+          <button class="button button-secondary" id="open-signed-contract" type="button" hidden>Open signed contract</button><p class="form-error" id="signed-contract-error" role="alert"></p>
+        </section>
         <div class="submission-status-actions" id="submission-status-actions" hidden>
           <span>Move this shared record to:</span>
           <button class="button button-secondary" type="button" data-set-submission-status="pending">Yet to process</button>
@@ -380,7 +409,73 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="danco-plus-request-modal" role="dialog" aria-modal="true" aria-labelledby="danco-plus-request-title">
+    <div class="modal-card danco-plus-request-modal-card">
+      <button class="modal-close" type="button" data-action="close-danco-plus-request" aria-label="Close">×</button>
+      <div class="danco-plus-modal-mark">Danco+</div><span class="eyebrow">ADVANCED TRIAL REQUEST</span><h2 id="danco-plus-request-title">Request Danco+ on this device</h2>
+      <p class="lead small">Danco+ extends the standard assessment into a connected hiring workflow designed to reduce handoffs and administrative delay.</p>
+      <div class="danco-plus-feature-list"><div><b>Integrated background screening</b><span>Admin-led cost approval and screening workflow demonstration.</span></div><div><b>Offer &amp; employment agreement builder</b><span>Pre-fill candidate details and generate consistent offer documentation.</span></div><div><b>Secure employment file progression</b><span>Move approved candidates through contract and signed-document filing in one controlled record.</span></div></div>
+      <label class="field"><span>Requesting name</span><input id="danco-plus-request-name" maxlength="120" placeholder="Your name"></label><p class="fine">Your name is pre-filled from the current assessment or applicant record when available and can be changed for prototype testing.</p>
+      <p class="form-error" id="danco-plus-request-error" role="alert"></p><button class="button button-gold button-wide" id="submit-danco-plus-request" type="button">Send request to owner</button>
+      <div class="danco-plus-request-status" id="danco-plus-request-status" hidden></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="danco-plus-welcome-modal" role="dialog" aria-modal="true" aria-labelledby="danco-plus-welcome-title">
+    <div class="modal-card danco-plus-welcome-card">
+      <div class="danco-plus-glow-mark">Danco+</div><span class="eyebrow">ADVANCED MODE APPROVED</span><h2 id="danco-plus-welcome-title">Welcome to Danco+</h2>
+      <p class="danco-plus-tagline">Hire with confidence. Move at Danco speed.</p>
+      <p class="lead small">This advanced prototype connects assessment insight, screening readiness, offer creation and secure employment-file handling into one guided workflow. It is designed to turn disconnected hiring handoffs that can take days into controlled actions that can take minutes — while keeping decisions, third-party costs and approvals in Danco's hands.</p>
+      <div class="danco-plus-welcome-grid"><div><b>Screen</b><span>Progress promising applicants into a controlled background-screening demonstration.</span></div><div><b>Offer</b><span>Create a Danco-styled, pre-filled employment agreement from the applicant record.</span></div><div><b>File</b><span>Keep created and signed employment documents organized with the candidate workflow.</span></div></div>
+      <button class="button button-gold button-wide" id="enter-danco-plus" type="button">Enter Danco+</button>
+      <p class="fine">Prototype only. Real screening-provider services, pricing, turnaround and legal compliance remain independent third-party responsibilities.</p>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="owner-verify-modal" role="dialog" aria-modal="true" aria-labelledby="owner-verify-title">
+    <div class="modal-card small-modal"><button class="modal-close" type="button" data-action="close-owner-verify" aria-label="Close">×</button><span class="eyebrow">OWNER VERIFICATION</span><h2 id="owner-verify-title">Connect owner approval controls</h2><p>Enter the existing private owner access code once to establish the secure approval session on this device.</p><label class="field"><span>Owner access code</span><input id="owner-verify-code" type="password" autocomplete="off"></label><p class="form-error" id="owner-verify-error"></p><button class="button button-primary button-wide" id="owner-verify-submit" type="button">Verify owner</button></div>
+  </div>
+
   <div class="modal-backdrop" id="background-modal" role="dialog" aria-modal="true" aria-labelledby="background-modal-title"><div class="modal-card background-modal-card"><button class="modal-close" type="button" data-action="close-background" aria-label="Close">×</button><span class="eyebrow">ADVANCED PROTOTYPE · ADMIN ONLY</span><h2 id="background-modal-title">Approve background-screening request</h2><p class="lead small">This demonstrates the live workflow. No provider is connected and no payment will be taken in this prototype.</p><div class="background-payment-summary"><div><span>Candidate</span><b id="background-candidate">—</b></div><div><span>Screening package</span><b id="background-package">—</b></div><div><span>Illustrative provider cost</span><b id="background-cost">—</b></div><div><span>Billing account</span><b id="background-provider">—</b></div><div><span>Identity readiness</span><b id="background-identity">—</b></div></div><div class="notice-card"><span>$</span><p>A live integration would use Danco's own screening-provider account. Provider charges and any court/pass-through fees would be billed directly to Danco. The app would require this cost approval before submitting the request.</p></div><label class="field"><span>Approving administrator</span><input id="background-approved-by" maxlength="120" placeholder="Name"></label><label class="cost-approval-check"><input id="background-approval" type="checkbox"><span>I approve the displayed estimated cost and request the screening demonstration for this candidate.</span></label><p class="form-error" id="background-error" role="alert"></p><button class="button button-primary button-wide" id="confirm-background-request" type="button">Approve cost &amp; request screening</button></div></div>
+
+  <div class="modal-backdrop" id="contract-modal" role="dialog" aria-modal="true" aria-labelledby="contract-modal-title">
+    <div class="modal-card contract-modal-card">
+      <button class="modal-close" type="button" data-action="close-contract" aria-label="Close">×</button>
+      <span class="eyebrow">ADVANCED PROTOTYPE · ADMIN ONLY</span><h2 id="contract-modal-title">Create employment contract</h2>
+      <section id="contract-eligibility-step">
+        <p class="lead small">Does this applicant's background check meet the required Danco criteria?</p>
+        <div class="eligibility-buttons"><button class="button button-secondary" id="contract-eligibility-no" type="button">No</button><button class="button button-primary" id="contract-eligibility-yes" type="button">Yes</button></div>
+        <div class="notice-card contract-blocked" id="contract-blocked" hidden><span>!</span><p>Contract creation cannot proceed. Please seek advice from senior staff before progressing this applicant.</p></div>
+      </section>
+      <section id="contract-form-step" hidden>
+        <p class="lead small">Applicant details are pre-filled from the stored Danco application. Complete the offer-specific details below.</p>
+        <div class="contract-prefill-summary" id="contract-prefill-summary"></div>
+        <div class="contract-form-grid">
+          <label class="field"><span>Role offered</span><select id="contract-role"><option value="">Choose role</option><option>Service Helper</option><option>Roofer</option><option>Foreman</option><option>Commercial Account Manager</option></select></label>
+          <label class="field"><span>Employment type</span><select id="contract-employment-type"><option>Full-time</option><option>Part-time</option><option>Temporary</option></select></label>
+          <label class="field"><span>FLSA classification</span><select id="contract-classification"><option>Hourly / non-exempt</option><option>Salaried / exempt</option><option>Salaried / non-exempt</option></select></label>
+          <label class="field"><span>Proposed start date</span><input id="contract-start-date" type="date"></label>
+          <label class="field"><span>Compensation</span><input id="contract-compensation" placeholder="e.g. $28.00 per hour"></label>
+          <label class="field"><span>Pay frequency</span><select id="contract-pay-frequency"><option>Weekly</option><option>Biweekly</option><option>Semimonthly</option></select></label>
+          <label class="field"><span>Primary work location</span><input id="contract-work-location" placeholder="Danco location / territory"></label>
+          <label class="field"><span>Reports to</span><input id="contract-supervisor" placeholder="Manager / supervisor"></label><label class="field"><span>Prepared by</span><input id="contract-created-by" maxlength="120" placeholder="Administrator name"></label>
+          <label class="field contract-wide"><span>Normal schedule</span><input id="contract-schedule" placeholder="e.g. Monday-Friday, 7:00 AM-4:00 PM; project needs may vary"></label>
+          <label class="field"><span>Introductory period</span><select id="contract-intro-period"><option>90 days</option><option>60 days</option><option>30 days</option><option>None specified</option></select></label>
+          <label class="field"><span>Benefits eligibility</span><input id="contract-benefits" placeholder="Per Danco plan terms"></label>
+          <label class="field"><span>PTO / leave</span><input id="contract-pto" placeholder="Per Danco policy"></label>
+          <label class="field"><span>Overtime</span><input id="contract-overtime" placeholder="Per classification and applicable law"></label>
+          <label class="field"><span>Travel / vehicle</span><input id="contract-travel" placeholder="As required by role"></label>
+          <label class="field contract-wide"><span>Additional offer terms</span><textarea id="contract-additional-terms" maxlength="1800" placeholder="Optional role-specific terms, allowances, commission plan reference, contingencies or notes"></textarea></label>
+        </div>
+        <div class="notice-card"><span>i</span><p>Prototype template only. Danco should have its final employment agreement and offer language reviewed by qualified U.S./Indiana employment counsel before production use.</p></div>
+        <p class="form-error" id="contract-error" role="alert"></p><button class="button button-primary button-wide" id="confirm-create-contract" type="button">Create pre-filled contract</button>
+      </section>
+      <section id="contract-preview-step" hidden>
+        <div id="contract-preview" class="contract-preview"></div>
+        <div class="contract-preview-actions"><button class="button button-secondary" id="print-contract" type="button">Print / save contract PDF</button><button class="button button-primary" data-action="close-contract" type="button">Done</button></div>
+      </section>
+    </div>
+  </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -389,7 +484,7 @@
     <img src="joseph-whelan-eds-white.png" alt="" aria-hidden="true">
   </aside>
 
-  <script src="narration-manifest.js?v=26.0.0" defer></script>
-  <script src="app.js?v=26.0.0" defer></script>
+  <script src="narration-manifest.js?v=28.0.0" defer></script>
+  <script src="app.js?v=28.0.0" defer></script>
 </body>
 </html>

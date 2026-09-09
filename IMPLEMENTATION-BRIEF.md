@@ -1,37 +1,40 @@
-# Danco Workforce Assessment — Advanced Prototype v26 implementation brief
+# Danco Workforce Assessment - Advanced Prototype v27 implementation brief
 
 ## Purpose
-A secondary prototype demonstrating how the established Danco recruitment assessment can expand into a workforce-assessment/application entry point, role-specific sales screening and an administrator-controlled background-screening workflow.
+A secondary, progressive Danco recruitment prototype that preserves the established bilingual application/assessment experience while adding structured sales suitability, applicant-specific interview direction, background-screening orchestration and employment-contract workflow demonstration.
 
-## Entry routes
-After language selection the default device mode offers:
-1. **Danco Workforce Assessment** — suitable for existing employees, refresher/internal assessment and assessment-only use.
-2. **Apply to work at Danco** — application form followed by work-style questions and the appropriate role assessment.
+## Standard assessment/application layer
+- User-selected route after language: **Danco Workforce Assessment** or **Apply to work at Danco**.
+- Administrator device lock: Workforce Assessment only, Application only or Choice of either.
+- English / Spanish journeys, work-style/DISC primer and role-specific assessment.
+- Roles: Service Helper, Roofer, Foreman and Commercial Account Manager.
+- Commercial Account Manager uses the established ten-question suitability model with rebalanced concise answer wording. Scoring concepts and outcome model are preserved.
+- Administrator report begins with a candidate-specific overall suitability brief and ends with four short assessment-led interview prompts with fact-finding tags.
+- Applicant submissions are PIN-free; administrator review remains protected.
 
-An administrator can lock a browser/device to Workforce Assessment only, Application only, or Choice of either.
+## Narration
+The established Danco recorded narration sprites are preserved and their manifest contains a verified 0.300-second minimum gap with no overlapping clip boundaries. When revised/dynamic content does not have an exact recorded clip, the app routes the whole prompt to the device's English or Spanish system reader so a question never mixes voices mid-prompt. Help also lets the user select **Danco recorded** or **Device reader** for the whole journey.
 
-## Application identity readiness
-Application mode captures street address, city, state, ZIP code, date of birth and SSN readiness. The SSN field performs structural plausibility checks. Invalid/missing entries can proceed only after an explicit warning and recorded reason. `PROTOTYPE` is the safe demonstration bypass.
+## Background-screening layer
+Application mode captures address, city, state, ZIP, date of birth and SSN readiness. The normal applicant record never stores the full raw SSN. Background-screening demonstration remains administrator-controlled and requires cost approval. Prototype `PROTOTYPE` bypass is supported; live provider mode must require real provider-approved identity data.
 
-The normal shared applicant record never stores a full raw SSN. For a valid entry it stores only a masked last-four reference and readiness state. A production CRA implementation requires a secure direct/provider-hosted identity handoff.
+Background queues:
+- CB checked - To action
+- CB checked - Eligible
+- CB checked - Not eligible
 
-## Submission
-Completed records submit directly to the shared Supabase workflow without requiring an applicant to know the administrator PIN. Administrator browsing, status changes and background-screening actions remain protected.
+## Employment-contract layer
+From a stored application report, an administrator can select **Create employment contract**. The workflow asks whether the candidate's background check meets Danco criteria. A No response blocks contract creation and directs the reviewer to senior staff. A Yes response opens a four-role offer selector and a pre-filled offer/contract form.
 
-## Background screening
-Danco's prototype rule is enforced: a background-screening quote/request cannot proceed without SSN readiness. In prototype mode `PROTOTYPE` is accepted. A future live provider mode must require real provider-validated identity data; the bypass will not satisfy a live request.
+The contract prototype captures offer-specific fields including employment type, FLSA classification, start date, compensation, pay frequency, work location, reporting line, schedule, introductory period, benefits/PTO, overtime, travel/vehicle requirements and additional offer terms. The generated document matches the visual language of the Danco report and can be printed/saved as PDF.
 
-No real CRA is called and no charge is made in prototype mode.
+Creating a contract automatically files the record in **Employment contracts**.
 
-## Administrator workflow
-Standard queues:
-- Yet to process
-- Actioned
-- Archived
+## Signed-contract file store
+**Signed employment contracts** is upload-only. It accepts PDF, JPEG or PNG scanned signed contracts up to the prototype limit of 8 MB. Upload writes the file to a private Supabase Storage bucket, records an audit trail and moves the applicant into the Signed employment contracts queue. Generic queue controls cannot move a record into either contract queue.
 
-Background-screening queues:
-- CB checked · To action
-- CB checked · Eligible
-- CB checked · Not eligible
-
-The manual result decoder has been removed from the interface because deliberately submitted records are stored centrally and retrieved from the shared list.
+## Security boundary
+- Full raw SSNs are excluded from the normal Danco database record.
+- Supabase secret/service credentials remain server-side.
+- Signed contract files are held in a private bucket and opened through short-lived signed URLs.
+- This is a prototype workflow; Danco HR/counsel should approve final employment contract wording and production retention/access rules.

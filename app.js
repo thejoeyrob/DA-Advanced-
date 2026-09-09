@@ -1,15 +1,22 @@
 (() => {
   'use strict';
 
-  const VERSION = 11;
-  const SESSION_KEY = 'dancoAssessment_adv_v12_session';
-  const SETTINGS_KEY = 'dancoAssessment_adv_v12_settings';
-  const APPLICATIONS_KEY = 'dancoAssessment_adv_v12_applications';
+  const VERSION = 14;
+  const SESSION_KEY = 'dancoAssessment_adv_v13_session';
+  const SETTINGS_KEY = 'dancoAssessment_adv_v13_settings';
+  const APPLICATIONS_KEY = 'dancoAssessment_adv_v13_applications';
   const OWNER_KEY = 'dancoAssessment_adv_v11_owner';
   const TRIAL_KEY = 'dancoAssessment_adv_v11_trial';
   const TRIAL_USAGE_KEY = 'dancoAssessment_adv_v11_trialUsage';
   const ADMIN_HASH = '9793703E';
   const SHARED_SERVICE_URL = 'https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-service';
+  const DANCO_PLUS_ACCESS_URL = 'https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-plus-access';
+  const DEVICE_ID_KEY = 'dancoAssessment_dancoPlus_deviceId';
+  const DANCO_PLUS_APPROVAL_KEY = 'dancoAssessment_dancoPlus_approval';
+  const DANCO_PLUS_INTRO_KEY = 'dancoAssessment_dancoPlus_introSeen';
+  const DANCO_PLUS_REQUEST_KEY = 'dancoAssessment_dancoPlus_request';
+  const OWNER_SESSION_KEY = 'dancoAssessment_dancoPlus_ownerSession';
+  const OWNER_PRESENTATION_KEY = 'dancoAssessment_dancoPlus_ownerPresentation';
   const OWNER_HASH = '5986B210';
   const TRIAL_RUNS = 3;
   const TRIAL_HASHES = new Set(['F083233F','AE44D52A','8CBCD409','AB6BB9D6','C0BA6D81','26399FF4','E2556F1A','9988758A','E61E252E','C495C2E8']);
@@ -24,9 +31,9 @@
       applicationEyebrow:'JOB APPLICATION',applicationDetailsTitle:'Your application details',prototypeOptional:'Optional during prototype testing',emailLabel:'Email address',phoneLabel:'Phone number',locationLabel:'City and state',availabilityLabel:'Available start date',desiredRoleLabel:'Position applied for',chooseRole:'Choose a role',experienceLabel:'Commercial roofing experience',chooseExperience:'Choose experience',workAuthorizationLabel:'Authorized to work in the United States?',licenseLabel:'Valid driver’s license?',chooseAnswer:'Choose an answer',otherRolesLegend:'Would you consider another listed role if it better matches your assessment?',otherRolesYes:'Yes, I’m open to other roles',otherRolesNo:'No, only the role selected above',backgroundConsentLegend:'If your application progresses, do you consent to Danco requesting an employment background screening?',backgroundConsentYes:'Yes, I consent to a background screening if my application progresses',backgroundConsentNo:'No, I do not consent',backgroundReasonLabel:'Please provide a reason',backgroundReasonPlaceholder:'Briefly explain your answer',backgroundConsentNote:'Prototype acknowledgement only. A live screening provider would present its own formal disclosure and authorization before any check is run.',
       stepTwo:'STEP 2 OF 3 · GETTING TO KNOW YOU',profileIntroTitle:'Before we get into the assessment…',profileIntroOne:'We’re happy that you’re looking to join the Danco Roofing team. We focus on working together and helping our workforce feel comfortable when interacting with one another.',profileIntroTwo:'We’d like to take a moment to get to know how you prefer to work. The next five friendly questions have no timer, and there are no right or wrong answers.',profilePrivacy:'This optional section is used only as a gentle workplace-engagement guide for the hiring team. Your estimated result will not be shown on your applicant result screen.',startFive:'Answer 5 quick questions',skipProfile:'Skip this section',skipRecorded:'If you skip, the assessment report will simply note “not completed”.',noTimer:'NO TIMER',profileHint:'Choose the answer that feels most natural to you.',confirmAnswerHint:'Select an option, then confirm it.',confirmFinalAnswer:'Confirm final answer',answerSelectedHint:'Your choice is selected. Confirm it or choose another option.',
       stepThree:'STEP 3 OF 3 · TRADE ASSESSMENT',instructionsTitle:'Ten focused questions',instructionsLead:'The assessment checks practical roofing knowledge, safe decision-making and role readiness.',featureQuestions:'Questions',featureQuestionsCopy:'Seven include visual answer choices',featureTiming:'Review then answer',featureTimingCopy:'A clear timer appears for each stage',featureChoice:'One answer',featureChoiceCopy:'Choose the single best response',featureResult:'Private result',featureResultCopy:'You receive a result code, not a score',timingNotice:'First, review the question while the answer cards are locked. When the answer timer begins, select one response. Unanswered questions are recorded as timed out.',supportActiveTitle:'Accessibility support is active.',supportActiveCopy:'Extra answer time and the Repeat question control are enabled.',repeatQuestion:'Repeat question',startQuestions:'Start the 10 questions',
-      completeEyebrow:'ASSESSMENT COMPLETE',completeTitle:'Thank you for taking part',completeLead:'Your responses have been converted into the result code below.',applicationCompleteEyebrow:'DANCO APPLICATION COMPLETE',applicationCompleteTitle:'Your Danco application is complete',applicationCompleteLead:'Submit your completed application to Danco when you are ready.',applicationSubmittedTitle:'Thank you for your application',applicationSubmittedLead:'Your application has been received. Danco will contact you after it has been reviewed.',resultCodeLabel:'Result code',applicationNumberLabel:'Application reference',applicationReferencePending:'Pending secure submission',appliedPositionLabel:'Position applied for',otherPositionsLabel:'Open to other listed positions',notSpecified:'Not specified',yesLabel:'Yes',noLabel:'No',copyCode:'Copy result code',copyApplicationNumber:'Copy application reference',resultInstruction:'Save this code and provide it to the Danco administrator or hiring contact. Your score and private work-style guide are not shown on this screen.',applicationResultInstruction:'Your score and private work-style guide are not displayed. Submit the completed application to Danco’s protected review list.',applicationSubmittedInstruction:'Keep this reference for your records. Your full result is available only in the protected Danco administrator dashboard.',submitApplication:'Submit application for review',submitAssessment:'Submit assessment for review',submitApplicationNote:'Completed applications and workforce assessments can be submitted directly to Danco’s protected shared review list.',submitTitle:'Submit to Danco for review?',submitCopy:'This completed record will be added to Danco’s protected shared review list. No administrator code is required from the applicant.',administratorPin:'Administrator PIN',confirmSubmit:'Submit securely',submissionSaved:'Submission saved to the shared Danco review list.',submissionAlreadySaved:'This submission is already in the shared review list.',submissionFailed:'The shared service could not save this result. Check the connection and try again.',invalidAdminPin:'Administrator PIN not recognised.',nextApplicant:'Start next applicant',help:'Help',helpTitle:'Need a hand?',helpDefault:'Follow the instruction shown at the top of the current screen. During the timed assessment, review first and select one answer when the cards become active.',repeatAudio:'Repeat spoken audio',repeatAudioHint:'Hear the current instruction or question again.',voiceLabel:'Narration audio',standardVoiceTitle:'Danco standard voice',standardVoiceCopy:'The same clear recorded narration on iPhone, Android and desktop.',testVoice:'Test standard narration',voiceSample:'Hello. I’m your Danco assessment guide. I’ll read each question clearly.',narrationUnavailable:'This narration clip is unavailable. The written question remains on screen.',tapRepeatAudio:'Tap Repeat spoken audio to hear this again.',gotIt:'Got it',helpersWithYou:'Your Danco team helpers are with you',profileUntimedReminder:'Take your time—this section is not timed.',timedReminder:'Your selected-language helper has the visual focus.',fullscreenOn:'Full-screen app view active.',fullscreenOff:'Full-screen app view closed.',fullscreenIos:'App view expanded. For a completely borderless iPhone experience, add the assessment to your Home Screen.',
+      completeEyebrow:'ASSESSMENT COMPLETE',completeTitle:'Thank you for taking part',completeLead:'Your responses have been converted into the result code below.',applicationCompleteEyebrow:'DANCO APPLICATION COMPLETE',applicationCompleteTitle:'Your Danco application is complete',applicationCompleteLead:'Submit your completed application to Danco when you are ready.',applicationSubmittedTitle:'Thank you for your application',applicationSubmittedLead:'Your application has been received. Danco will contact you after it has been reviewed.',resultCodeLabel:'Result code',applicationNumberLabel:'Application reference',applicationReferencePending:'Pending secure submission',appliedPositionLabel:'Position applied for',otherPositionsLabel:'Open to other listed positions',notSpecified:'Not specified',yesLabel:'Yes',noLabel:'No',copyCode:'Copy result code',copyApplicationNumber:'Copy application reference',resultInstruction:'Save this code and provide it to the Danco administrator or hiring contact. Your score and private work-style guide are not shown on this screen.',applicationResultInstruction:'Your score and private work-style guide are not displayed. Submit the completed application to Danco’s protected review list.',applicationSubmittedInstruction:'Keep this reference for your records. Your full result is available only in the protected Danco administrator dashboard.',submitApplication:'Submit application for review',submitAssessment:'Submit assessment for review',submitApplicationNote:'Completed applications and workforce assessments can be submitted directly to Danco’s protected shared review list.',submitTitle:'Submit to Danco for review?',submitCopy:'This completed record will be added to Danco’s protected shared review list. No administrator code is required from the applicant.',administratorPin:'Administrator PIN',confirmSubmit:'Submit securely',submissionSaved:'Submission saved to the shared Danco review list.',submissionAlreadySaved:'This submission is already in the shared review list.',submissionFailed:'The shared service could not save this result. Check the connection and try again.',invalidAdminPin:'Administrator PIN not recognized.',nextApplicant:'Start next applicant',help:'Help',helpTitle:'Need a hand?',helpDefault:'Follow the instruction shown at the top of the current screen. During the timed assessment, review first and select one answer when the cards become active.',repeatAudio:'Repeat spoken audio',repeatAudioHint:'Hear the current instruction or question again.',voiceLabel:'Narration voice',standardVoiceTitle:'Danco recorded voice',standardVoiceCopy:'Uses the optimized Danco narration pack whenever an exact recorded line is available.',deviceVoiceTitle:'Device default reader',deviceVoiceCopy:'Uses the default English or Spanish system reader installed on this phone, tablet or computer.',testVoice:'Test selected voice',voiceSample:'Hello. I’m your Danco assessment guide. I’ll read each question clearly.',narrationUnavailable:'This narration clip is unavailable. The written question remains on screen.',tapRepeatAudio:'Tap Repeat spoken audio to hear this again.',gotIt:'Got it',helpersWithYou:'Your Danco team helpers are with you',profileUntimedReminder:'Take your time—this section is not timed.',timedReminder:'Your selected-language helper has the visual focus.',fullscreenOn:'Full-screen app view active.',fullscreenOff:'Full-screen app view closed.',fullscreenIos:'App view expanded. For a completely borderless iPhone experience, add the assessment to your Home Screen.',
       unlockTitle:'Unlock the assessment trial',unlockCopy:'Enter the private access code supplied by Danco. A valid trial code activates up to three completed assessments on this browser or device.',unlockStepOne:'Enter the supplied code below.',unlockStepTwo:'Select “Activate trial”.',unlockStepThree:'Return to setup and begin the assessment.',accessCodeLabel:'Private access code',activateTrial:'Activate trial',unlockPrivacy:'Codes are never displayed by the app. Re-entering the same code does not restore used trial runs.',
-      accessLockedTitle:'Prototype locked',accessLockedCopy:'Enter the private trial code supplied by Danco before beginning.',accessTrialTitle:'Prototype trial active',accessTrialCopy:n=>`${n} completed assessment${n===1?'':'s'} remaining on this browser or device.`,accessOwnerTitle:'Full access active',accessOwnerCopy:'Unlimited local assessments are enabled on this device.',namePlaceholder:'Your full name',codePlaceholder:'Enter code',requiredError:'Please enter your full name.',lockedError:'A valid private access code is required before the assessment can begin.',usedError:'This trial has no completed assessments remaining.',profileCounter:(n)=>`Question ${n} of 5`,knowledgeCounter:(n)=>`Question ${n} of 10`,review:'REVIEW',answer:'ANSWER',reviewHint:'Review the question. Answer choices will unlock when the timer changes to ANSWER.',answerHint:'Select the single best answer and confirm it before the timer reaches zero.',timedOut:'Time expired. Moving to the next question.',copied:'Result code copied.',copyFailed:'Press and hold the code to copy it.',profileSkipped:'Optional work-style questions: not completed',profileDone:'Optional work-style questions: completed',trialRemaining:n=>`Trial assessments remaining: ${n}`,ownerActive:'Full access · unlimited assessments',unlockSuccess:n=>`Trial activated with ${n} assessments available.`,ownerSuccess:'Full access activated.',invalidCode:'Access code not recognised.',resume:'Resume assessment',
+      accessLockedTitle:'Prototype locked',accessLockedCopy:'Enter the private trial code supplied by Danco before beginning.',accessTrialTitle:'Prototype trial active',accessTrialCopy:n=>`${n} completed assessment${n===1?'':'s'} remaining on this browser or device.`,accessOwnerTitle:'Full access active',accessOwnerCopy:'Unlimited local assessments are enabled on this device.',namePlaceholder:'Your full name',codePlaceholder:'Enter code',requiredError:'Please enter your full name.',lockedError:'A valid private access code is required before the assessment can begin.',usedError:'This trial has no completed assessments remaining.',profileCounter:(n)=>`Question ${n} of 5`,knowledgeCounter:(n)=>`Question ${n} of 10`,review:'REVIEW',answer:'ANSWER',reviewHint:'Review the question. Answer choices will unlock when the timer changes to ANSWER.',answerHint:'Select the single best answer and confirm it before the timer reaches zero.',timedOut:'Time expired. Moving to the next question.',copied:'Result code copied.',copyFailed:'Press and hold the code to copy it.',profileSkipped:'Optional work-style questions: not completed',profileDone:'Optional work-style questions: completed',trialRemaining:n=>`Trial assessments remaining: ${n}`,ownerActive:'Full access · unlimited assessments',unlockSuccess:n=>`Trial activated with ${n} assessments available.`,ownerSuccess:'Full access activated.',invalidCode:'Access code not recognized.',resume:'Resume assessment',
       categories:{materials:'Roof products',installation:'Installation & tools',service:'Service & diagnosis',safety:'Site & lifting safety',supervision:'Foreman control'},tiers:{foundation:'Foundation',roofer:'Roofer level',foreman:'Foreman level'}
     },
     es:{
@@ -34,7 +41,7 @@
       applicationEyebrow:'SOLICITUD DE EMPLEO',applicationDetailsTitle:'Datos de tu solicitud',prototypeOptional:'Opcional durante la prueba del prototipo',emailLabel:'Correo electrónico',phoneLabel:'Número de teléfono',locationLabel:'Ciudad y estado',availabilityLabel:'Fecha disponible para comenzar',desiredRoleLabel:'Puesto solicitado',chooseRole:'Elige un puesto',experienceLabel:'Experiencia en techos comerciales',chooseExperience:'Elige tu experiencia',workAuthorizationLabel:'¿Tienes autorización para trabajar en Estados Unidos?',licenseLabel:'¿Tienes licencia de conducir válida?',chooseAnswer:'Elige una respuesta',otherRolesLegend:'¿Considerarías otro puesto de la lista si se ajusta mejor a tu evaluación?',otherRolesYes:'Sí, estoy abierto a otros puestos',otherRolesNo:'No, solo el puesto seleccionado',backgroundConsentLegend:'Si tu solicitud avanza, ¿autorizas a Danco a solicitar una verificación de antecedentes laborales?',backgroundConsentYes:'Sí, autorizo una verificación si mi solicitud avanza',backgroundConsentNo:'No, no autorizo',backgroundReasonLabel:'Indica el motivo',backgroundReasonPlaceholder:'Explica brevemente tu respuesta',backgroundConsentNote:'Reconocimiento solo para el prototipo. Un proveedor real presentaría su divulgación y autorización formal antes de realizar cualquier verificación.',
       stepTwo:'PASO 2 DE 3 · CONOCERTE',profileIntroTitle:'Antes de comenzar la evaluación…',profileIntroOne:'Nos alegra que estés interesado en unirte al equipo de Danco Roofing. Nos enfocamos en trabajar juntos y en ayudar a nuestro personal a sentirse cómodo al interactuar.',profileIntroTwo:'Nos gustaría conocerte un poco y saber cómo prefieres trabajar. Las siguientes cinco preguntas son sencillas, no tienen límite de tiempo y no hay respuestas correctas o incorrectas.',profilePrivacy:'Esta sección opcional se usa únicamente como una guía amable de interacción laboral para el equipo de contratación. El resultado estimado no aparecerá en tu pantalla final.',startFive:'Responder 5 preguntas rápidas',skipProfile:'Omitir esta sección',skipRecorded:'Si decides omitirla, el informe simplemente indicará “no completada”.',noTimer:'SIN LÍMITE',profileHint:'Elige la respuesta que te resulte más natural.',confirmAnswerHint:'Selecciona una opción y después confírmala.',confirmFinalAnswer:'Confirmar respuesta final',answerSelectedHint:'Tu opción está seleccionada. Confírmala o elige otra.',
       stepThree:'PASO 3 DE 3 · EVALUACIÓN TÉCNICA',instructionsTitle:'Diez preguntas enfocadas',instructionsLead:'La evaluación revisa conocimientos prácticos de techado, decisiones seguras y preparación para el puesto.',featureQuestions:'Preguntas',featureQuestionsCopy:'Siete incluyen opciones visuales',featureTiming:'Revisar y responder',featureTimingCopy:'Cada etapa muestra un cronómetro claro',featureChoice:'Una respuesta',featureChoiceCopy:'Elige la mejor respuesta',featureResult:'Resultado privado',featureResultCopy:'Recibirás un código, no una puntuación',timingNotice:'Primero revisa la pregunta mientras las opciones están bloqueadas. Cuando comience el tiempo de respuesta, selecciona una opción. Las preguntas sin responder se registran como agotadas.',supportActiveTitle:'El apoyo de accesibilidad está activo.',supportActiveCopy:'Se habilitaron tiempo adicional y el control Repetir pregunta.',repeatQuestion:'Repetir pregunta',startQuestions:'Comenzar las 10 preguntas',
-      completeEyebrow:'EVALUACIÓN COMPLETADA',completeTitle:'Gracias por participar',completeLead:'Tus respuestas se convirtieron en el siguiente código de resultado.',applicationCompleteEyebrow:'EVALUACIÓN DE SOLICITUD COMPLETADA',applicationCompleteTitle:'La evaluación de tu solicitud está completa',applicationCompleteLead:'Cuando estés listo, envía tu solicitud directamente a la lista protegida de revisión de Danco.',applicationSubmittedTitle:'Gracias por tu solicitud',applicationSubmittedLead:'Hemos recibido tu solicitud. Danco se pondrá en contacto contigo después de revisarla.',resultCodeLabel:'Código de resultado',applicationNumberLabel:'Referencia de solicitud',applicationReferencePending:'Envío seguro pendiente',appliedPositionLabel:'Puesto solicitado',otherPositionsLabel:'Abierto a otros puestos de la lista',notSpecified:'No especificado',yesLabel:'Sí',noLabel:'No',copyCode:'Copiar código',copyApplicationNumber:'Copiar referencia de solicitud',resultInstruction:'Guarda este código y entrégalo al administrador o contacto de contratación de Danco. Tu puntuación y la guía privada de estilo de trabajo no aparecen en esta pantalla.',applicationResultInstruction:'Tu puntuación y la guía privada de estilo de trabajo no se muestran. Envía la solicitud completada a la lista protegida de revisión de Danco.',applicationSubmittedInstruction:'Guarda esta referencia. Tu resultado completo solo está disponible en el panel protegido del administrador de Danco.',submitApplication:'Enviar solicitud para revisión',submitAssessment:'Enviar evaluación para revisión',submitApplicationNote:'Las solicitudes y evaluaciones completadas pueden enviarse directamente a la lista protegida de revisión compartida de Danco.',submitTitle:'¿Enviar a Danco para revisión?',submitCopy:'Este registro completado se añadirá a la lista protegida de revisión compartida de Danco. El solicitante no necesita un código de administrador.',administratorPin:'PIN de administrador',confirmSubmit:'Enviar de forma segura',submissionSaved:'Resultado guardado en la lista compartida de Danco.',submissionAlreadySaved:'Este resultado ya está en la lista compartida.',submissionFailed:'El servicio compartido no pudo guardar el resultado. Comprueba la conexión e inténtalo de nuevo.',invalidAdminPin:'PIN de administrador no reconocido.',nextApplicant:'Comenzar siguiente solicitante',help:'Ayuda',helpTitle:'¿Necesitas ayuda?',helpDefault:'Sigue la instrucción que aparece en la parte superior. Durante la evaluación cronometrada, primero revisa y luego elige una respuesta cuando se activen las opciones.',repeatAudio:'Repetir audio',repeatAudioHint:'Escucha de nuevo la instrucción o pregunta actual.',voiceLabel:'Audio de narración',standardVoiceTitle:'Voz estándar de Danco',standardVoiceCopy:'La misma narración clara en iPhone, Android y computadora.',testVoice:'Probar narración estándar',voiceSample:'Hola. Soy tu guía para la evaluación de Danco. Leeré cada pregunta con claridad.',narrationUnavailable:'Este fragmento de audio no está disponible. La pregunta escrita permanece en pantalla.',tapRepeatAudio:'Toca Repetir audio para escucharlo de nuevo.',gotIt:'Entendido',helpersWithYou:'Tus guías del equipo Danco están contigo',profileUntimedReminder:'Tómate tu tiempo; esta sección no tiene límite.',timedReminder:'La guía de tu idioma elegido tiene el enfoque visual.',fullscreenOn:'Vista de aplicación en pantalla completa activa.',fullscreenOff:'Vista de pantalla completa cerrada.',fullscreenIos:'Vista ampliada. Para una experiencia sin bordes en iPhone, agrega la evaluación a la pantalla de inicio.',
+      completeEyebrow:'EVALUACIÓN COMPLETADA',completeTitle:'Gracias por participar',completeLead:'Tus respuestas se convirtieron en el siguiente código de resultado.',applicationCompleteEyebrow:'EVALUACIÓN DE SOLICITUD COMPLETADA',applicationCompleteTitle:'La evaluación de tu solicitud está completa',applicationCompleteLead:'Cuando estés listo, envía tu solicitud directamente a la lista protegida de revisión de Danco.',applicationSubmittedTitle:'Gracias por tu solicitud',applicationSubmittedLead:'Hemos recibido tu solicitud. Danco se pondrá en contacto contigo después de revisarla.',resultCodeLabel:'Código de resultado',applicationNumberLabel:'Referencia de solicitud',applicationReferencePending:'Envío seguro pendiente',appliedPositionLabel:'Puesto solicitado',otherPositionsLabel:'Abierto a otros puestos de la lista',notSpecified:'No especificado',yesLabel:'Sí',noLabel:'No',copyCode:'Copiar código',copyApplicationNumber:'Copiar referencia de solicitud',resultInstruction:'Guarda este código y entrégalo al administrador o contacto de contratación de Danco. Tu puntuación y la guía privada de estilo de trabajo no aparecen en esta pantalla.',applicationResultInstruction:'Tu puntuación y la guía privada de estilo de trabajo no se muestran. Envía la solicitud completada a la lista protegida de revisión de Danco.',applicationSubmittedInstruction:'Guarda esta referencia. Tu resultado completo solo está disponible en el panel protegido del administrador de Danco.',submitApplication:'Enviar solicitud para revisión',submitAssessment:'Enviar evaluación para revisión',submitApplicationNote:'Las solicitudes y evaluaciones completadas pueden enviarse directamente a la lista protegida de revisión compartida de Danco.',submitTitle:'¿Enviar a Danco para revisión?',submitCopy:'Este registro completado se añadirá a la lista protegida de revisión compartida de Danco. El solicitante no necesita un código de administrador.',administratorPin:'PIN de administrador',confirmSubmit:'Enviar de forma segura',submissionSaved:'Resultado guardado en la lista compartida de Danco.',submissionAlreadySaved:'Este resultado ya está en la lista compartida.',submissionFailed:'El servicio compartido no pudo guardar el resultado. Comprueba la conexión e inténtalo de nuevo.',invalidAdminPin:'PIN de administrador no reconocido.',nextApplicant:'Comenzar siguiente solicitante',help:'Ayuda',helpTitle:'¿Necesitas ayuda?',helpDefault:'Sigue la instrucción que aparece en la parte superior. Durante la evaluación cronometrada, primero revisa y luego elige una respuesta cuando se activen las opciones.',repeatAudio:'Repetir audio',repeatAudioHint:'Escucha de nuevo la instrucción o pregunta actual.',voiceLabel:'Voz de narración',standardVoiceTitle:'Voz grabada de Danco',standardVoiceCopy:'Usa el paquete optimizado de narración de Danco cuando existe una línea grabada exacta.',deviceVoiceTitle:'Lector predeterminado del dispositivo',deviceVoiceCopy:'Usa el lector del sistema en inglés o español instalado en este teléfono, tableta o computadora.',testVoice:'Probar voz seleccionada',voiceSample:'Hola. Soy tu guía para la evaluación de Danco. Leeré cada pregunta con claridad.',narrationUnavailable:'Este fragmento de audio no está disponible. La pregunta escrita permanece en pantalla.',tapRepeatAudio:'Toca Repetir audio para escucharlo de nuevo.',gotIt:'Entendido',helpersWithYou:'Tus guías del equipo Danco están contigo',profileUntimedReminder:'Tómate tu tiempo; esta sección no tiene límite.',timedReminder:'La guía de tu idioma elegido tiene el enfoque visual.',fullscreenOn:'Vista de aplicación en pantalla completa activa.',fullscreenOff:'Vista de pantalla completa cerrada.',fullscreenIos:'Vista ampliada. Para una experiencia sin bordes en iPhone, agrega la evaluación a la pantalla de inicio.',
       unlockTitle:'Desbloquear la prueba',unlockCopy:'Ingresa el código privado proporcionado por Danco. Un código de prueba válido permite hasta tres evaluaciones completadas en este navegador o dispositivo.',unlockStepOne:'Ingresa el código proporcionado.',unlockStepTwo:'Selecciona “Activar prueba”.',unlockStepThree:'Regresa a la preparación y comienza.',accessCodeLabel:'Código de acceso privado',activateTrial:'Activar prueba',unlockPrivacy:'La aplicación nunca muestra los códigos. Volver a ingresar el mismo código no recupera usos ya consumidos.',
       accessLockedTitle:'Prototipo bloqueado',accessLockedCopy:'Ingresa el código privado de prueba proporcionado por Danco antes de comenzar.',accessTrialTitle:'Prueba de prototipo activa',accessTrialCopy:n=>`Quedan ${n} evaluación${n===1?'':'es'} completada${n===1?'':'s'} en este navegador o dispositivo.`,accessOwnerTitle:'Acceso completo activo',accessOwnerCopy:'Este dispositivo tiene evaluaciones locales ilimitadas.',namePlaceholder:'Tu nombre completo',codePlaceholder:'Ingresa el código',requiredError:'Ingresa tu nombre completo.',lockedError:'Se necesita un código de acceso privado válido antes de comenzar.',usedError:'Esta prueba ya no tiene evaluaciones disponibles.',profileCounter:(n)=>`Pregunta ${n} de 5`,knowledgeCounter:(n)=>`Pregunta ${n} de 10`,review:'REVISAR',answer:'RESPONDER',reviewHint:'Revisa la pregunta. Las opciones se activarán cuando el cronómetro cambie a RESPONDER.',answerHint:'Selecciona la mejor respuesta y confírmala antes de que el cronómetro llegue a cero.',timedOut:'Tiempo agotado. Pasando a la siguiente pregunta.',copied:'Código copiado.',copyFailed:'Mantén presionado el código para copiarlo.',profileSkipped:'Preguntas opcionales de estilo de trabajo: no completadas',profileDone:'Preguntas opcionales de estilo de trabajo: completadas',trialRemaining:n=>`Evaluaciones de prueba restantes: ${n}`,ownerActive:'Acceso completo · evaluaciones ilimitadas',unlockSuccess:n=>`Prueba activada con ${n} evaluaciones disponibles.`,ownerSuccess:'Acceso completo activado.',invalidCode:'Código de acceso no reconocido.',resume:'Continuar evaluación',
       categories:{materials:'Productos para techos',installation:'Instalación y herramientas',service:'Servicio y diagnóstico',safety:'Seguridad en obra e izaje',supervision:'Control del encargado'},tiers:{foundation:'Base',roofer:'Nivel techador',foreman:'Nivel encargado'}
@@ -59,7 +66,7 @@
       {disc:'I',en:'In a friendly, conversational way',es:'De manera amable y conversacional'}]},
     {en:'On a busy workday, which contribution sounds most like you?',es:'En un día de mucho trabajo, ¿qué aporte se parece más a ti?',options:[
       {disc:'I',en:'Keeping communication positive',es:'Mantener una comunicación positiva'},
-      {disc:'C',en:'Keeping the work organised and accurate',es:'Mantener el trabajo organizado y preciso'},
+      {disc:'C',en:'Keeping the work organized and accurate',es:'Mantener el trabajo organizado y preciso'},
       {disc:'S',en:'Keeping a steady and dependable pace',es:'Mantener un ritmo constante y confiable'},
       {disc:'D',en:'Keeping the team focused on completion',es:'Mantener al equipo enfocado en terminar'}]},
     {en:'When learning a new task, what approach suits you best?',es:'Al aprender una tarea nueva, ¿qué enfoque te conviene más?',options:[
@@ -137,7 +144,7 @@
       en:'Wind-uplift attachment is normally greatest in which roof zones?',es:'¿En qué zonas del techo suele ser mayor la fijación contra la succión del viento?',
       options:[
         {en:'Corners and perimeter',es:'Esquinas y perímetro',img:'visual-zone-perimeter.png'},
-        {en:'Field centre only',es:'Solo el centro del techo',img:'visual-zone-center.png'},
+        {en:'Field center only',es:'Solo el centro del techo',img:'visual-zone-center.png'},
         {en:'Around roof drains only',es:'Solo alrededor de los desagües',img:'visual-zone-drain.png'},
         {en:'Equally across all zones',es:'Igual en todas las zonas',img:'visual-zone-equal.png'}],correct:0}
   ];
@@ -146,70 +153,71 @@
   const SALES_QUESTIONS = [
     {id:1,weight:15,tierLabel:{en:'Commercial experience',es:'Experiencia comercial'},catLabel:{en:'Experience & market',es:'Experiencia y mercado'},read:9,answer:25,
       en:'Which description best matches your strongest recent sales experience?',es:'¿Qué descripción se ajusta mejor a tu experiencia de ventas reciente más sólida?',options:[
-        {en:'Commercial construction B2B sales to facility managers, property owners, general contractors or similar decision-makers in this region',es:'Ventas B2B de construcción comercial a gerentes de instalaciones, propietarios, contratistas generales o decisores similares de esta región',fit:100,styles:['relationship','strategic']},
-        {en:'Commercial roofing sales in this region with an established customer base',es:'Ventas de techado comercial en esta región con una base de clientes establecida',fit:82,styles:['technical','relationship']},
-        {en:'B2B sales outside construction with responsibility for developing and retaining commercial accounts',es:'Ventas B2B fuera de la construcción con responsabilidad de desarrollar y retener cuentas comerciales',fit:62,styles:['driver','relationship']},
-        {en:'Mostly consumer, retail or service sales with limited commercial account responsibility',es:'Principalmente ventas al consumidor, minoristas o de servicios con poca responsabilidad sobre cuentas comerciales',fit:28,styles:['driver']}]},
+        {en:'Regional commercial construction B2B sales to property, facility, contractor or developer accounts',es:'Ventas B2B regionales de construcción comercial a cuentas de propiedades, instalaciones, contratistas o desarrolladores',fit:100,styles:['relationship','strategic']},
+        {en:'Regional commercial roofing sales with established customer relationships and repeat account responsibility',es:'Ventas regionales de techado comercial con relaciones establecidas y responsabilidad sobre cuentas recurrentes',fit:82,styles:['technical','relationship']},
+        {en:'B2B account sales outside construction, including new business and account retention',es:'Ventas B2B fuera de la construcción, incluyendo nuevo negocio y retención de cuentas',fit:62,styles:['driver','relationship']},
+        {en:'Consumer or service sales with some business accounts but limited commercial-account ownership',es:'Ventas de consumo o servicios con algunas cuentas empresariales pero responsabilidad comercial limitada',fit:28,styles:['driver']}]},
     {id:2,weight:15,tierLabel:{en:'Portable relationships',es:'Relaciones transferibles'},catLabel:{en:'Network & territory',es:'Red y territorio'},read:9,answer:25,
       en:'Which statement best describes the business relationships you could realistically bring into a Danco territory?',es:'¿Qué afirmación describe mejor las relaciones comerciales que podrías aportar de forma realista a un territorio de Danco?',options:[
-        {en:'Active relationships with facility managers, property owners, general contractors, developers or commercial construction decision-makers in the region',es:'Relaciones activas con gerentes de instalaciones, propietarios, contratistas generales, desarrolladores o decisores de construcción comercial de la región',fit:100,styles:['relationship','strategic']},
-        {en:'A strong regional construction network from an adjacent trade or product that sells to many of the same clients',es:'Una sólida red regional de construcción de un oficio o producto adyacente que vende a muchos de los mismos clientes',fit:94,styles:['relationship','strategic']},
-        {en:'A useful B2B network, but with few existing construction or property contacts',es:'Una red B2B útil, pero con pocos contactos existentes de construcción o propiedades',fit:62,styles:['relationship']},
-        {en:'Very few portable customer relationships; I would be building the territory largely from scratch',es:'Muy pocas relaciones de clientes transferibles; tendría que construir el territorio casi desde cero',fit:30,styles:['driver']}]},
+        {en:'Active regional relationships with property, facility, contractor, developer or construction decision-makers',es:'Relaciones regionales activas con responsables de propiedades, instalaciones, contratistas, desarrolladores o construcción',fit:100,styles:['relationship','strategic']},
+        {en:'Strong regional network from an adjacent construction trade selling to many of the same buyers',es:'Red regional sólida de un oficio de construcción adyacente que vende a muchos de los mismos compradores',fit:94,styles:['relationship','strategic']},
+        {en:'Broad B2B network with some property or construction contacts but no concentrated sector base',es:'Red B2B amplia con algunos contactos de propiedades o construcción, pero sin una base sectorial concentrada',fit:62,styles:['relationship']},
+        {en:'Limited portable relationships; the territory would mostly be built through new prospecting',es:'Relaciones transferibles limitadas; el territorio se construiría principalmente mediante nueva prospección',fit:30,styles:['driver']}]},
     {id:3,weight:12,tierLabel:{en:'New business',es:'Nuevo negocio'},catLabel:{en:'Territory development',es:'Desarrollo de territorio'},read:9,answer:25,
       en:'You inherit a territory with growth potential. What would your first 60 days look like?',es:'Heredas un territorio con potencial de crecimiento. ¿Cómo serían tus primeros 60 días?',options:[
-        {en:'Map priority sectors and decision-makers, reactivate useful relationships, build a target list and run a measured prospecting cadence alongside product learning',es:'Mapear sectores y decisores prioritarios, reactivar relaciones útiles, crear una lista objetivo y ejecutar una cadencia de prospección medida mientras aprendo el producto',fit:100,styles:['strategic','driver']},
-        {en:'Drive very high cold-call volume immediately and concentrate on getting as many appointments as possible',es:'Impulsar de inmediato un volumen muy alto de llamadas en frío y concentrarme en conseguir el mayor número posible de citas',fit:68,styles:['driver']},
-        {en:'Spend most of the period becoming technically confident before approaching many prospects',es:'Dedicar la mayor parte del período a ganar confianza técnica antes de contactar a muchos prospectos',fit:56,styles:['technical','strategic']},
-        {en:'Focus mainly on inbound enquiries and marketing-generated leads until I understand the market better',es:'Centrarme principalmente en consultas entrantes y oportunidades generadas por marketing hasta comprender mejor el mercado',fit:22,styles:['strategic']}]},
+        {en:'Segment the territory, reactivate relationships, target accounts, prospect consistently and learn the product in parallel',es:'Segmentar el territorio, reactivar relaciones, priorizar cuentas, prospectar con constancia y aprender el producto en paralelo',fit:100,styles:['strategic','driver']},
+        {en:'Lead with high activity: calls, visits and appointment generation while learning the market',es:'Liderar con mucha actividad: llamadas, visitas y generación de citas mientras aprendo el mercado',fit:68,styles:['driver']},
+        {en:'Build technical product knowledge first, then expand prospecting as confidence increases',es:'Desarrollar primero el conocimiento técnico del producto y luego ampliar la prospección a medida que aumenta la confianza',fit:56,styles:['technical','strategic']},
+        {en:'Start with inbound and marketing leads, then broaden outbound activity with market knowledge',es:'Empezar con oportunidades entrantes y de marketing, y ampliar después la actividad saliente con mayor conocimiento del mercado',fit:22,styles:['strategic']}]},
     {id:4,weight:10,tierLabel:{en:'Opening doors',es:'Abrir puertas'},catLabel:{en:'Consultative selling',es:'Venta consultiva'},read:9,answer:25,
       en:'A facility manager says, “We already have a roofer and we are happy with them.” What is your strongest next move?',es:'Un gerente de instalaciones dice: “Ya tenemos un techador y estamos satisfechos con ellos”. ¿Cuál es tu mejor siguiente paso?',options:[
-        {en:'Acknowledge the relationship, ask about future projects, service pressures and decision timing, then earn permission for a useful future conversation',es:'Reconocer la relación, preguntar por proyectos futuros, presiones de servicio y tiempos de decisión, y ganar permiso para una conversación útil más adelante',fit:100,styles:['relationship','strategic']},
-        {en:'Give a concise Danco value pitch and ask for an opportunity to quote the next suitable project',es:'Dar una presentación concisa del valor de Danco y pedir la oportunidad de cotizar el próximo proyecto adecuado',fit:76,styles:['driver','relationship']},
-        {en:'Explain why competitors often underperform and challenge whether the incumbent is really delivering value',es:'Explicar por qué los competidores suelen rendir peor y cuestionar si el proveedor actual realmente aporta valor',fit:24,styles:['driver']},
-        {en:'Leave information and wait for them to contact me when they need something',es:'Dejar información y esperar a que me contacten cuando necesiten algo',fit:38,styles:['relationship']}]},
+        {en:'Respect the incumbent, explore future needs and timing, and earn permission for the next useful conversation',es:'Respetar al proveedor actual, explorar necesidades y tiempos futuros y obtener permiso para la próxima conversación útil',fit:100,styles:['relationship','strategic']},
+        {en:'Give a concise Danco value case and ask to quote the next suitable opportunity',es:'Presentar brevemente el valor de Danco y pedir cotizar la próxima oportunidad adecuada',fit:76,styles:['driver','relationship']},
+        {en:'Test the incumbent’s performance directly and identify gaps Danco could improve',es:'Cuestionar directamente el desempeño del proveedor actual e identificar áreas que Danco podría mejorar',fit:24,styles:['driver']},
+        {en:'Leave useful information and stay available until a requirement creates an opening',es:'Dejar información útil y mantenerse disponible hasta que una necesidad genere una oportunidad',fit:38,styles:['relationship']}]},
     {id:5,weight:10,tierLabel:{en:'Technical credibility',es:'Credibilidad técnica'},catLabel:{en:'Technical selling',es:'Venta técnica'},read:9,answer:25,
       en:'A prospect asks a technical roofing question you cannot answer confidently. What do you do?',es:'Un prospecto hace una pregunta técnica de techado que no puedes responder con confianza. ¿Qué haces?',options:[
-        {en:'Clarify what they need, say I want to give an accurate answer, involve the right Danco technical person and return promptly with a clear response',es:'Aclarar lo que necesita, decir que quiero dar una respuesta precisa, involucrar a la persona técnica adecuada de Danco y regresar pronto con una respuesta clara',fit:100,styles:['technical','relationship']},
-        {en:'Research it thoroughly myself and send the technical information once I am certain',es:'Investigarla a fondo por mi cuenta y enviar la información técnica cuando esté seguro',fit:78,styles:['technical','strategic']},
-        {en:'Use my best judgement and answer confidently so I do not lose momentum',es:'Usar mi mejor criterio y responder con confianza para no perder impulso',fit:18,styles:['driver']},
-        {en:'Move the conversation back to price, service and relationship because the technical team can handle details later',es:'Volver la conversación al precio, servicio y relación porque el equipo técnico puede manejar los detalles después',fit:32,styles:['relationship','driver']}]},
-    {id:6,weight:10,tierLabel:{en:'Commercial judgement',es:'Criterio comercial'},catLabel:{en:'Value & margin',es:'Valor y margen'},read:9,answer:25,
+        {en:'Clarify the need, involve the right Danco specialist, and return quickly with an accurate answer',es:'Aclarar la necesidad, involucrar al especialista adecuado de Danco y responder pronto con precisión',fit:100,styles:['technical','relationship']},
+        {en:'Research it personally and respond once I can support the answer confidently',es:'Investigarla personalmente y responder cuando pueda respaldar la respuesta con confianza',fit:78,styles:['technical','strategic']},
+        {en:'Give my best professional answer now and follow up if more detail is needed',es:'Dar ahora mi mejor respuesta profesional y ampliar la información si hace falta',fit:18,styles:['driver']},
+        {en:'Refocus on commercial priorities and bring technical detail in later if required',es:'Volver a las prioridades comerciales e incorporar el detalle técnico después si es necesario',fit:32,styles:['relationship','driver']}]},
+    {id:6,weight:10,tierLabel:{en:'Commercial judgment',es:'Criterio comercial'},catLabel:{en:'Value & margin',es:'Valor y margen'},read:9,answer:25,
       en:'A strong prospect says Danco is more expensive than another proposal. What is your preferred response?',es:'Un prospecto sólido dice que Danco es más caro que otra propuesta. ¿Cuál es tu respuesta preferida?',options:[
-        {en:'Understand what is being compared, quantify risk, service, lifecycle and scope differences, offer sensible options and protect value before discussing discount',es:'Entender qué se está comparando, cuantificar diferencias de riesgo, servicio, ciclo de vida y alcance, ofrecer opciones sensatas y proteger el valor antes de hablar de descuento',fit:100,styles:['strategic','technical']},
-        {en:'Use a controlled discount if it is needed to win a valuable account and make the first project happen',es:'Usar un descuento controlado si es necesario para ganar una cuenta valiosa y lograr el primer proyecto',fit:58,styles:['driver']},
-        {en:'Hold the quoted price firmly and explain that quality costs more',es:'Mantener firmemente el precio cotizado y explicar que la calidad cuesta más',fit:52,styles:['driver','technical']},
-        {en:'Escalate pricing decisions to management because margin authority should sit above sales',es:'Escalar las decisiones de precio a la dirección porque la autoridad sobre márgenes debe estar por encima de ventas',fit:46,styles:['strategic']}]},
+        {en:'Compare scope, value and risk, offer sensible options, and protect value before considering discount',es:'Comparar alcance, valor y riesgo, ofrecer opciones sensatas y proteger el valor antes de considerar un descuento',fit:100,styles:['strategic','technical']},
+        {en:'Use a controlled discount when account value justifies winning the first project',es:'Usar un descuento controlado cuando el valor de la cuenta justifique ganar el primer proyecto',fit:58,styles:['driver']},
+        {en:'Hold the price and reinforce Danco quality, service and overall value',es:'Mantener el precio y reforzar la calidad, el servicio y el valor general de Danco',fit:52,styles:['driver','technical']},
+        {en:'Escalate pricing tradeoffs to management before changing the commercial position',es:'Escalar las decisiones de precio a la dirección antes de cambiar la posición comercial',fit:46,styles:['strategic']}]},
     {id:7,weight:8,tierLabel:{en:'Sales persistence',es:'Persistencia comercial'},catLabel:{en:'Long-cycle follow-up',es:'Seguimiento de ciclo largo'},read:9,answer:25,
       en:'A prospect is interested but has no roofing project for the next six months. How do you manage the opportunity?',es:'Un prospecto está interesado pero no tiene proyecto de techado durante los próximos seis meses. ¿Cómo gestionas la oportunidad?',options:[
-        {en:'Agree a useful next step and timing, maintain a relevant value-led contact cadence and keep the opportunity accurately staged',es:'Acordar un siguiente paso y momento útil, mantener una cadencia de contacto relevante basada en valor y mantener la oportunidad correctamente clasificada',fit:100,styles:['strategic','relationship']},
-        {en:'Keep pressing for an earlier project, inspection or commitment so the opportunity does not go cold',es:'Seguir presionando por un proyecto, inspección o compromiso más temprano para que la oportunidad no se enfríe',fit:56,styles:['driver']},
-        {en:'Check in periodically and rely on the relationship to tell me when the timing is right',es:'Contactar periódicamente y confiar en la relación para que me indiquen cuándo es el momento adecuado',fit:68,styles:['relationship']},
-        {en:'Pause active follow-up until they contact me or a project appears',es:'Pausar el seguimiento activo hasta que me contacten o aparezca un proyecto',fit:22,styles:['strategic']}]},
+        {en:'Agree the next step and date, maintain relevant contact, and keep the CRM stage accurate',es:'Acordar el siguiente paso y fecha, mantener un contacto relevante y conservar correcta la etapa en el CRM',fit:100,styles:['strategic','relationship']},
+        {en:'Create earlier reasons to engage, such as inspections, budgeting or planning conversations',es:'Crear razones para participar antes, como inspecciones, presupuestos o conversaciones de planificación',fit:56,styles:['driver']},
+        {en:'Check in periodically and let the relationship signal when timing becomes active',es:'Mantener contacto periódico y dejar que la relación indique cuándo el momento se vuelve activo',fit:68,styles:['relationship']},
+        {en:'Reduce active follow-up and re-engage closer to the likely project timing',es:'Reducir el seguimiento activo y retomar el contacto más cerca del momento probable del proyecto',fit:22,styles:['strategic']}]},
     {id:8,weight:8,tierLabel:{en:'Pipeline discipline',es:'Disciplina de cartera'},catLabel:{en:'CRM & forecasting',es:'CRM y previsión'},read:9,answer:25,
       en:'Which approach best describes how you manage a commercial sales pipeline?',es:'¿Qué enfoque describe mejor cómo gestionas una cartera de ventas comerciales?',options:[
-        {en:'Every meaningful opportunity has a stage, value, probability, decision date and next action, and I review pipeline quality every week',es:'Cada oportunidad importante tiene etapa, valor, probabilidad, fecha de decisión y siguiente acción, y reviso la calidad de la cartera cada semana',fit:100,styles:['strategic','technical']},
-        {en:'I keep detailed notes for my strongest accounts and use CRM mainly for important opportunities and management visibility',es:'Mantengo notas detalladas para mis cuentas principales y uso el CRM sobre todo para oportunidades importantes y visibilidad de gestión',fit:70,styles:['relationship','strategic']},
-        {en:'I rely heavily on my own notes, calendar and memory because I know my customers well',es:'Confío mucho en mis propias notas, calendario y memoria porque conozco bien a mis clientes',fit:36,styles:['relationship']},
-        {en:'I update CRM mainly when a quote is issued or a deal is won or lost',es:'Actualizo el CRM principalmente cuando se emite una cotización o se gana o pierde un negocio',fit:12,styles:['driver']}]},
+        {en:'Track stage, value, probability, decision timing and next action, and review the pipeline weekly',es:'Registrar etapa, valor, probabilidad, momento de decisión y siguiente acción, y revisar la cartera semanalmente',fit:100,styles:['strategic','technical']},
+        {en:'Keep detailed notes on priority accounts and use CRM for key opportunities',es:'Mantener notas detalladas de cuentas prioritarias y usar el CRM para oportunidades clave',fit:70,styles:['relationship','strategic']},
+        {en:'Manage mainly through personal notes, calendar and direct customer knowledge',es:'Gestionar principalmente mediante notas personales, calendario y conocimiento directo del cliente',fit:36,styles:['relationship']},
+        {en:'Update CRM at major milestones such as quote, win or loss',es:'Actualizar el CRM en hitos principales como cotización, ganancia o pérdida',fit:12,styles:['driver']}]},
     {id:9,weight:6,tierLabel:{en:'Performance under pressure',es:'Rendimiento bajo presión'},catLabel:{en:'Target response',es:'Respuesta a objetivos'},read:9,answer:25,
       en:'You are behind target halfway through the quarter. What is the strongest response?',es:'Vas por debajo del objetivo a mitad del trimestre. ¿Cuál es la respuesta más sólida?',options:[
-        {en:'Diagnose conversion and pipeline gaps, protect high-probability opportunities, reactivate useful relationships and add measured net-new prospecting',es:'Diagnosticar brechas de conversión y cartera, proteger oportunidades de alta probabilidad, reactivar relaciones útiles y añadir prospección nueva medida',fit:100,styles:['strategic','driver']},
-        {en:'Increase activity sharply: more calls, more visits and more direct asks for business',es:'Aumentar mucho la actividad: más llamadas, más visitas y más solicitudes directas de negocio',fit:72,styles:['driver']},
-        {en:'Concentrate on existing relationships because warm accounts are most likely to produce revenue quickly',es:'Concentrarme en relaciones existentes porque las cuentas cálidas tienen más probabilidad de producir ingresos rápidamente',fit:66,styles:['relationship']},
-        {en:'Spend more time improving proposals and technical detail so the opportunities already in play convert better',es:'Dedicar más tiempo a mejorar propuestas y detalles técnicos para que conviertan mejor las oportunidades existentes',fit:48,styles:['technical','strategic']}]},
-    {id:10,weight:6,tierLabel:{en:'Trust & judgement',es:'Confianza y criterio'},catLabel:{en:'Professional integrity',es:'Integridad profesional'},read:9,answer:25,
-      en:'A client asks you to promise a mobilisation date or scope commitment that operations have not confirmed. What do you do?',es:'Un cliente te pide prometer una fecha de movilización o compromiso de alcance que operaciones no ha confirmado. ¿Qué haces?',options:[
-        {en:'Be clear about what is confirmed, understand the client priority, involve operations quickly and propose the strongest achievable alternative',es:'Ser claro sobre lo confirmado, entender la prioridad del cliente, involucrar rápidamente a operaciones y proponer la mejor alternativa alcanzable',fit:100,styles:['technical','relationship']},
-        {en:'Make the commitment to secure the opportunity, then work internally to make it happen',es:'Hacer el compromiso para asegurar la oportunidad y luego trabajar internamente para lograrlo',fit:16,styles:['driver']},
-        {en:'Keep the answer deliberately flexible until operations can confirm the detail',es:'Mantener la respuesta deliberadamente flexible hasta que operaciones pueda confirmar el detalle',fit:34,styles:['relationship']},
-        {en:'Decline the request until operations confirms everything, even if that slows the sale',es:'Rechazar la solicitud hasta que operaciones confirme todo, aunque eso ralentice la venta',fit:62,styles:['technical','strategic']}]}
+        {en:'Review conversion and pipeline gaps, protect likely deals, reactivate relationships and add targeted prospecting',es:'Revisar brechas de conversión y cartera, proteger negocios probables, reactivar relaciones y añadir prospección dirigida',fit:100,styles:['strategic','driver']},
+        {en:'Increase activity through more calls, visits and direct asks for business',es:'Aumentar la actividad con más llamadas, visitas y solicitudes directas de negocio',fit:72,styles:['driver']},
+        {en:'Focus on warm accounts most likely to produce near-term revenue',es:'Centrarse en cuentas activas con mayor probabilidad de generar ingresos a corto plazo',fit:66,styles:['relationship']},
+        {en:'Improve proposals and technical detail to strengthen current opportunity conversion',es:'Mejorar propuestas y detalle técnico para aumentar la conversión de oportunidades actuales',fit:48,styles:['technical','strategic']}]},
+    {id:10,weight:6,tierLabel:{en:'Trust & judgment',es:'Confianza y criterio'},catLabel:{en:'Professional integrity',es:'Integridad profesional'},read:9,answer:25,
+      en:'A client asks you to promise a mobilization date or scope commitment that operations have not confirmed. What do you do?',es:'Un cliente te pide prometer una fecha de movilización o compromiso de alcance que operaciones no ha confirmado. ¿Qué haces?',options:[
+        {en:'State what is confirmed, clarify the priority, involve operations, and offer an achievable alternative',es:'Indicar lo confirmado, aclarar la prioridad, involucrar a operaciones y ofrecer una alternativa viable',fit:100,styles:['technical','relationship']},
+        {en:'Make the commitment to secure the opportunity, then solve delivery internally',es:'Hacer el compromiso para asegurar la oportunidad y resolver después la entrega internamente',fit:16,styles:['driver']},
+        {en:'Keep the response flexible until operations can confirm the details',es:'Mantener la respuesta flexible hasta que operaciones pueda confirmar los detalles',fit:34,styles:['relationship']},
+        {en:'Hold the commitment until operations confirms scope and timing',es:'Esperar para comprometerse hasta que operaciones confirme alcance y tiempos',fit:62,styles:['technical','strategic']}]}
   ];
 
   const $ = id => document.getElementById(id);
   const $$ = selector => Array.from(document.querySelectorAll(selector));
   const SCREENS = ['language-screen','journey-choice-screen','setup-screen','profile-intro-screen','profile-screen','instructions-screen','knowledge-screen','result-screen'];
-  let settings = loadJson(SETTINGS_KEY, {lang:'en',audio:false,supportReason:0,deviceMode:'choice'});
+  let settings = loadJson(SETTINGS_KEY, {lang:'en',audio:false,supportReason:0,deviceMode:'choice',voiceMode:'recorded'});
+  settings.voiceMode=['recorded','device'].includes(settings.voiceMode)?settings.voiceMode:'recorded';
   settings.deviceMode=['assessment','application','choice'].includes(settings.deviceMode)?settings.deviceMode:'choice';
   let session = loadJson(SESSION_KEY, null);
   let profileIndex = 0;
@@ -228,8 +236,12 @@
   let currentLoadedRecord = null;
   let currentBackgroundScreening = null;
   let backgroundQuote = null;
+  let currentEmploymentContract = null;
+  let contractEligibilityConfirmed = false;
   let ssnOverrideState = { approved:false, valueKey:'', reason:'', other:'' };
   let nativeFullscreenActive = false;
+  let dancoPlusPollTimer = null;
+  let dancoPlusRequestContext = '';
 
   function t(key, ...args){ const value = TEXT[settings.lang]?.[key] ?? TEXT.en[key] ?? key; return typeof value === 'function' ? value(...args) : value; }
   function loadJson(key, fallback){ try{ const raw=localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }catch(_){ return fallback; } }
@@ -243,6 +255,116 @@
     if(!response.ok) throw new Error(data.error||'The shared submission service is unavailable.');
     return data;
   }
+
+  async function dancoPlusRequest(payload){
+    const response=await fetch(DANCO_PLUS_ACCESS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    let data={};try{data=await response.json();}catch(_){}
+    if(!response.ok)throw new Error(data.error||'The Danco+ approval service is unavailable.');
+    return data;
+  }
+  function getDeviceId(){
+    let id=localStorage.getItem(DEVICE_ID_KEY)||'';
+    if(!id){id=(crypto.randomUUID?.()||`danco-${Date.now()}-${Math.random().toString(36).slice(2)}`);localStorage.setItem(DEVICE_ID_KEY,id);}
+    return id;
+  }
+  function dancoPlusApproval(){return loadJson(DANCO_PLUS_APPROVAL_KEY,{status:'none'});}
+  function ownerPresentationMode(){return localStorage.getItem(OWNER_PRESENTATION_KEY)==='standard'?'standard':'advanced';}
+  function dancoPlusActive(){return isOwner()?ownerPresentationMode()==='advanced':dancoPlusApproval().status==='approved';}
+  function dancoPlusRequested(){return loadJson(DANCO_PLUS_REQUEST_KEY,{status:'none'});}
+  function ownerSession(){return loadJson(OWNER_SESSION_KEY,null);}
+  function saveOwnerSession(token,expiresInMs){saveJson(OWNER_SESSION_KEY,{token,expiresAt:Date.now()+Number(expiresInMs||0)});}
+  function currentOwnerToken(){const x=ownerSession();return x&&x.token&&Number(x.expiresAt||0)>Date.now()?x.token:'';}
+  function advancedQueueStatus(status){return ['background_to_action','background_eligible','background_not_eligible','employment_contracts','signed_employment_contracts'].includes(status);}
+  function suggestedDancoPlusName(){return String(currentLoadedRecord?.name||session?.name||'').trim();}
+  function setBrowserIconForMode(active){
+    const icon=document.querySelector('link[rel="icon"]');
+    const appleIcon=document.querySelector('link[rel="apple-touch-icon"]');
+    const theme=document.querySelector('meta[name="theme-color"]');
+    if(icon)icon.href=active?'icon-danco-plus-192.png':'icon-192.png';
+    if(appleIcon)appleIcon.href=active?'apple-touch-icon-danco-plus.png':'apple-touch-icon.png';
+    if(theme)theme.content=active?'#082b58':'#0b3f89';
+  }
+  function applyDancoPlusMode(){
+    const active=dancoPlusActive();
+    document.body.classList.toggle('danco-plus-mode',active);
+    document.body.classList.toggle('danco-standard-mode',!active);
+    const badge=$('danco-plus-header-status');if(badge){badge.textContent=active?'DANCO+':'STANDARD';badge.classList.toggle('active',active);}
+    const eyebrow=$('product-eyebrow');if(eyebrow)eyebrow.innerHTML=active?'DANCO ROOFING SERVICES, INC. · <b>DANCO+</b> ADVANCED PROTOTYPE':'DANCO ROOFING SERVICES, INC. · WORKFORCE &amp; APPLICANT PROTOTYPE';
+    const card=$('danco-plus-access-card'),state=$('danco-plus-access-state'),title=$('danco-plus-access-title'),copy=$('danco-plus-access-copy'),requestButton=$('request-danco-plus');
+    if(card){card.classList.toggle('active',active);card.classList.toggle('owner-standard',isOwner()&&!active);}
+    if(state)state.textContent=active?'ACTIVE':'STANDARD';
+    if(title)title.textContent=active?'Danco+ advanced workflow is active':isOwner()?'Owner presentation is currently in Standard mode':'Advanced hiring tools are available to request';
+    if(copy)copy.textContent=active?'Integrated screening demonstration, employment agreement creation and secure employment-file progression are enabled on this device.':isOwner()?'Use the owner presentation toggle below to switch into Danco+ without changing any trial access.':'The assessment, applications, DISC/work-style profiling and role-specific reports operate normally. Danco+ can be requested when you are ready to demonstrate the connected hiring workflow.';
+    if(requestButton){requestButton.hidden=active||isOwner();const req=dancoPlusRequested();requestButton.textContent=req.status==='pending'?'Danco+ request pending':'Request Danco+ trial';}
+    const ownerPanel=$('owner-danco-plus-panel');if(ownerPanel)ownerPanel.hidden=!isOwner();
+    $$('[data-owner-product-mode]').forEach(button=>button.classList.toggle('active',button.dataset.ownerProductMode===(active?'advanced':'standard')));
+    $$('.advanced-queue-tab,[data-advanced-feature]').forEach(el=>el.classList.toggle('advanced-locked',!active));
+    setBrowserIconForMode(active);
+    if(!active&&advancedQueueStatus(currentQueueStatus))currentQueueStatus='pending';
+    if(adminAuthenticated&&currentLoadedRecord){renderBackgroundActions(currentLoadedRecord);renderEmploymentContractActions(currentLoadedRecord);}
+  }
+  function requireDancoPlus(feature='advanced hiring workflow'){
+    if(dancoPlusActive())return true;
+    openDancoPlusRequest(feature);return false;
+  }
+  function openDancoPlusRequest(feature=''){
+    dancoPlusRequestContext=feature||'';
+    const input=$('danco-plus-request-name');if(input)input.value=suggestedDancoPlusName();
+    const error=$('danco-plus-request-error');if(error)error.textContent='';
+    const status=$('danco-plus-request-status');if(status){status.hidden=true;status.textContent='';}
+    openModal('danco-plus-request-modal');
+  }
+  async function submitDancoPlusRequest(){
+    const name=$('danco-plus-request-name').value.trim(),error=$('danco-plus-request-error'),button=$('submit-danco-plus-request');error.textContent='';
+    if(!name){error.textContent='Enter the name to show on the owner approval request.';return;}
+    button.disabled=true;button.textContent='Sending request…';
+    try{
+      const response=await dancoPlusRequest({action:'request',deviceId:getDeviceId(),requesterName:name});const req=response.request||{};
+      saveJson(DANCO_PLUS_REQUEST_KEY,{status:req.status||'pending',requesterName:name,requestedAt:req.requested_at||new Date().toISOString()});
+      const status=$('danco-plus-request-status');status.hidden=false;status.innerHTML=req.status==='approved'?'<b>Approved.</b> Danco+ is activating on this device.':'<b>Request sent.</b> The Danco owner can approve this device from the owner-only dashboard. This screen will unlock automatically after approval.';
+      if(req.status==='approved'){saveJson(DANCO_PLUS_APPROVAL_KEY,{status:'approved',approvedAt:req.decided_at||new Date().toISOString()});applyDancoPlusMode();showDancoPlusWelcomeIfNeeded();}
+      else startDancoPlusPolling();applyDancoPlusMode();
+    }catch(e){error.textContent=e.message;}
+    finally{button.disabled=false;button.textContent='Send request to owner';}
+  }
+  function showDancoPlusWelcomeIfNeeded(){
+    if(isOwner()||!dancoPlusActive()||localStorage.getItem(DANCO_PLUS_INTRO_KEY)==='1')return;
+    openModal('danco-plus-welcome-modal');
+  }
+  async function refreshDancoPlusStatus({welcome=true}={}){
+    if(isOwner()){applyDancoPlusMode();return;}
+    try{
+      const response=await dancoPlusRequest({action:'status',deviceId:getDeviceId()});const status=response.status||'none';
+      if(status==='approved'){
+        const wasActive=dancoPlusApproval().status==='approved';saveJson(DANCO_PLUS_APPROVAL_KEY,{status:'approved',approvedAt:response.request?.decided_at||new Date().toISOString()});saveJson(DANCO_PLUS_REQUEST_KEY,{status:'approved',requesterName:response.request?.requester_name||suggestedDancoPlusName()});applyDancoPlusMode();if(!wasActive&&welcome)showDancoPlusWelcomeIfNeeded();stopDancoPlusPolling();
+      }else{
+        if(status==='pending')saveJson(DANCO_PLUS_REQUEST_KEY,{status:'pending',requesterName:response.request?.requester_name||suggestedDancoPlusName(),requestedAt:response.request?.requested_at});
+        if(['denied','revoked'].includes(status)){saveJson(DANCO_PLUS_APPROVAL_KEY,{status});saveJson(DANCO_PLUS_REQUEST_KEY,{status});}
+        applyDancoPlusMode();if(status==='pending')startDancoPlusPolling();
+      }
+    }catch(_){applyDancoPlusMode();}
+  }
+  function startDancoPlusPolling(){if(dancoPlusPollTimer)return;dancoPlusPollTimer=setInterval(()=>refreshDancoPlusStatus({welcome:true}),12000);}
+  function stopDancoPlusPolling(){if(dancoPlusPollTimer){clearInterval(dancoPlusPollTimer);dancoPlusPollTimer=null;}}
+  async function establishOwnerSession(ownerCode){
+    const response=await dancoPlusRequest({action:'owner_login',ownerCode,deviceId:getDeviceId()});if(!response.ownerToken)throw new Error('Owner approval session could not be established.');saveOwnerSession(response.ownerToken,response.expiresInMs);return response.ownerToken;
+  }
+  async function refreshOwnerRequests(){
+    if(!isOwner())return;const list=$('owner-request-list'),error=$('owner-plus-error'),verify=$('verify-owner-session');if(error)error.textContent='';
+    const token=currentOwnerToken();if(!token){if(list)list.innerHTML='<div class="owner-session-note"><b>One-time owner verification required</b><span>Verify the existing owner access code to load and approve Danco+ device requests.</span></div>';if(verify)verify.hidden=false;return;}
+    if(verify)verify.hidden=true;if(list)list.innerHTML='<p class="fine">Loading advanced trial requests…</p>';
+    try{
+      const response=await dancoPlusRequest({action:'owner_list',ownerToken:token});const rows=response.requests||[];
+      if(!rows.length){list.innerHTML='<p class="fine">No Danco+ requests have been submitted yet.</p>';return;}
+      list.innerHTML=rows.map(row=>`<article class="owner-request-row ${escapeHtml(row.status)}"><div><b>${escapeHtml(row.requester_name||'Unnamed requester')}</b><span>Device ${escapeHtml(String(row.device_id||'').slice(-8).toUpperCase())} · ${escapeHtml(new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short'}).format(new Date(row.requested_at)))}</span></div><strong>${escapeHtml(String(row.status||'pending').toUpperCase())}</strong>${row.status==='pending'?`<div class="owner-request-actions"><button class="button button-primary" type="button" data-plus-decision="approved" data-plus-request-id="${escapeHtml(row.id)}">Approve</button><button class="button button-secondary" type="button" data-plus-decision="denied" data-plus-request-id="${escapeHtml(row.id)}">Decline</button></div>`:row.status==='approved'?`<div class="owner-request-actions"><button class="button button-secondary" type="button" data-plus-decision="revoked" data-plus-request-id="${escapeHtml(row.id)}">Revoke</button></div>`:''}</article>`).join('');
+      $$('[data-plus-decision]').forEach(button=>button.addEventListener('click',()=>ownerDancoPlusDecision(button.dataset.plusRequestId,button.dataset.plusDecision)));
+    }catch(e){if(error)error.textContent=e.message;if(String(e.message).toLowerCase().includes('owner session')){localStorage.removeItem(OWNER_SESSION_KEY);if(verify)verify.hidden=false;}}
+  }
+  async function ownerDancoPlusDecision(requestId,decision){
+    const token=currentOwnerToken();if(!token){openModal('owner-verify-modal');return;}
+    try{await dancoPlusRequest({action:'owner_decision',ownerToken:token,requestId,decision,decidedBy:'Danco owner'});toast(decision==='approved'?'Danco+ trial approved for that device.':decision==='revoked'?'Danco+ access revoked.':'Danco+ request declined.');await refreshOwnerRequests();}catch(e){$('owner-plus-error').textContent=e.message;}
+  }
+  function setOwnerProductMode(mode){if(!isOwner())return;localStorage.setItem(OWNER_PRESENTATION_KEY,mode==='standard'?'standard':'advanced');applyDancoPlusMode();if(adminAuthenticated&&currentSharedReference)reloadCurrentSharedRecord().catch(()=>{});toast(`Presentation mode: ${mode==='standard'?'Standard':'Danco+'}.`);}
   function escapeHtml(value){ return String(value ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
   function normalizeCode(value){ return String(value||'').toUpperCase().replace(/[^A-Z0-9]/g,''); }
   function accessHash(value){ let h=0x811c9dc5; for(const c of normalizeCode(value)){ h^=c.charCodeAt(0); h=Math.imul(h,0x01000193)>>>0; } return h.toString(16).toUpperCase().padStart(8,'0'); }
@@ -275,7 +397,7 @@
     document.body.classList.toggle('prototype-trial',mode==='trial');
     $('access-status').textContent=mode==='owner'?'FULL ACCESS':mode==='trial'?`PROTOTYPE TRIAL · ${remaining}`:'PROTOTYPE';
     $('locked-callout').classList.toggle('hidden',mode!=='locked');
-    renderSetupAccess();
+    renderSetupAccess(); applyDancoPlusMode();
   }
   function renderSetupAccess(){
     const card=$('setup-access-card'); if(!card) return;
@@ -393,11 +515,12 @@
   let narrationQueueToken=0;
   function initialiseNarration(){
     narrationPlayers={
-      en:new Audio('./narration-en.mp3?v=23.0.0'),
-      es:new Audio('./narration-es.mp3?v=23.0.0')
+      en:new Audio('./narration-en.mp3?v=28.0.0'),
+      es:new Audio('./narration-es.mp3?v=28.0.0')
     };
     Object.values(narrationPlayers).forEach(audio=>{audio.preload='auto';audio.load();});
     narrationAudio=narrationPlayers[settings.lang];
+    applyVoiceModeUi();
   }
   function speechSegments(value){
     return (Array.isArray(value)?value:[value]).map(item=>String(item||'').trim()).filter(Boolean);
@@ -405,25 +528,26 @@
   function narrationSource(text,language){
     return globalThis.DANCO_NARRATION?.[language]?.[text]||'';
   }
+  function shouldUseDeviceForQueue(segments){
+    if(settings.voiceMode==='device') return true;
+    return segments.some(text=>!narrationSource(text,settings.lang));
+  }
+  function speakDeviceQueue(segments,token,index=0){
+    if(token!==narrationQueueToken||index>=segments.length)return;
+    if(!('speechSynthesis' in window)){ if(index+1<segments.length)speakDeviceQueue(segments,token,index+1);else toast(t('narrationUnavailable')); return; }
+    try{
+      const utterance=new SpeechSynthesisUtterance(segments[index]);
+      utterance.lang=settings.lang==='es'?'es-US':'en-US'; utterance.rate=.94;
+      utterance.onend=()=>speakDeviceQueue(segments,token,index+1);
+      utterance.onerror=()=>speakDeviceQueue(segments,token,index+1);
+      speechSynthesis.cancel(); speechSynthesis.speak(utterance);
+    }catch(_){ speakDeviceQueue(segments,token,index+1); }
+  }
   function playNarrationSegment(token,index){
     if(token!==narrationQueueToken||index>=narrationQueue.length) return;
     const clip=narrationSource(narrationQueue[index],settings.lang);
     const audio=narrationPlayers[settings.lang];
-    if(!clip||!audio){
-      const text=narrationQueue[index];
-      if('speechSynthesis' in window && text){
-        try{
-          const utterance=new SpeechSynthesisUtterance(text);
-          utterance.lang=settings.lang==='es'?'es-US':'en-US'; utterance.rate=.94;
-          utterance.onend=()=>playNarrationSegment(token,index+1);
-          utterance.onerror=()=>playNarrationSegment(token,index+1);
-          speechSynthesis.cancel(); speechSynthesis.speak(utterance); return;
-        }catch(_){}
-      }
-      if(index+1<narrationQueue.length) playNarrationSegment(token,index+1);
-      else toast(t('narrationUnavailable'));
-      return;
-    }
+    if(!clip||!audio){ speakDeviceQueue(narrationQueue,token,index); return; }
     if(narrationAudio&&narrationAudio!==audio) narrationAudio.pause();
     narrationAudio=audio;
     const finish=()=>{
@@ -434,10 +558,10 @@
     const begin=()=>{
       if(token!==narrationQueueToken) return;
       audio.onloadedmetadata=null;
-      try{audio.currentTime=Number(clip.start)||0;}catch(_){setTimeout(begin,60);return;}
-      audio.ontimeupdate=()=>{if(audio.currentTime>=Number(clip.end)-.035)finish();};
+      try{audio.currentTime=Math.max(0,Number(clip.start)||0);}catch(_){setTimeout(begin,60);return;}
+      audio.ontimeupdate=()=>{if(audio.currentTime>=Math.max(Number(clip.start)||0,Number(clip.end)-.045))finish();};
       audio.onended=finish;
-      audio.onerror=()=>playNarrationSegment(token,index+1);
+      audio.onerror=()=>speakDeviceQueue(narrationQueue,token,index);
       const playback=audio.play();
       if(playback?.catch) playback.catch(()=>toast(t('tapRepeatAudio')));
     };
@@ -447,20 +571,31 @@
     const segments=speechSegments(value);
     if(!segments.length) return;
     if(options.remember!==false) lastRepeatableSpeech=[...segments];
-    if((!settings.audio&&!options.force)||!narrationPlayers[settings.lang]) return;
+    if(!settings.audio&&!options.force) return;
     narrationQueueToken++;
     narrationQueue=[...segments];
     Object.values(narrationPlayers).forEach(audio=>audio.pause());
-    playNarrationSegment(narrationQueueToken,0);
+    if('speechSynthesis' in window)speechSynthesis.cancel();
+    if(options.preferDevice||shouldUseDeviceForQueue(segments)) speakDeviceQueue(narrationQueue,narrationQueueToken,0);
+    else playNarrationSegment(narrationQueueToken,0);
   }
   function cancelSpeech(){
     narrationQueueToken++;
     narrationQueue=[];
     Object.values(narrationPlayers).forEach(audio=>{audio.pause();audio.ontimeupdate=null;audio.onended=null;audio.onloadedmetadata=null;audio.onerror=null;});
+    if('speechSynthesis' in window)speechSynthesis.cancel();
+  }
+  function applyVoiceModeUi(){
+    $$('[data-voice-mode]').forEach(button=>button.classList.toggle('active',button.dataset.voiceMode===settings.voiceMode));
+    const title=$('selected-voice-title'); if(title)title.textContent=settings.voiceMode==='device'?t('deviceVoiceTitle'):t('standardVoiceTitle');
+    const copy=$('selected-voice-copy'); if(copy)copy.textContent=settings.voiceMode==='device'?t('deviceVoiceCopy'):t('standardVoiceCopy');
+  }
+  function setVoiceMode(mode){
+    settings.voiceMode=mode==='device'?'device':'recorded';saveSettings();cancelSpeech();applyVoiceModeUi();toast(settings.voiceMode==='device'?t('deviceVoiceTitle'):t('standardVoiceTitle'));
   }
   function testNarration(){ speak(t('voiceSample'),{remember:false,force:true}); }
   function closeHelp(){ $('help-drawer').classList.remove('open'); $('help-backdrop').classList.remove('open'); $('help-drawer').setAttribute('aria-hidden','true'); }
-  function openHelp(){ $('help-drawer').classList.add('open'); $('help-backdrop').classList.add('open'); $('help-drawer').setAttribute('aria-hidden','false'); speak([t('helpTitle'),t('helpDefault')],{remember:false}); }
+  function openHelp(){ $('help-drawer').classList.add('open'); $('help-backdrop').classList.add('open'); $('help-drawer').setAttribute('aria-hidden','false'); applyVoiceModeUi(); speak([t('helpTitle'),t('helpDefault')],{remember:false}); }
   function repeatHelpAudio(){ speak(Array.isArray(lastRepeatableSpeech)&&lastRepeatableSpeech.length?lastRepeatableSpeech:[t('helpTitle'),t('helpDefault')],{remember:false,force:true}); }
   async function toggleAppFullscreen(forceExit=false){
     const active=document.body.classList.contains('immersive-mode');
@@ -650,7 +785,7 @@
     const sales=activeAssessmentTrack()==='account_manager';
     $('instructions-title').textContent=sales?(settings.lang==='es'?'Diez preguntas de idoneidad comercial':'Ten commercial suitability questions'):t('instructionsTitle');
     const lead=document.querySelector('#instructions-screen .lead.small');
-    if(lead)lead.textContent=sales?(settings.lang==='es'?'Esta evaluación explora experiencia comercial, cartera transferible, desarrollo de negocio, criterio, disciplina de ventas y estilo de venta.':'This assessment explores commercial experience, transferable relationships, new-business development, judgement, sales discipline and selling style.'):t('instructionsLead');
+    if(lead)lead.textContent=sales?(settings.lang==='es'?'Esta evaluación explora experiencia comercial, cartera transferible, desarrollo de negocio, criterio, disciplina de ventas y estilo de venta.':'This assessment explores commercial experience, transferable relationships, new-business development, judgment, sales discipline and selling style.'):t('instructionsLead');
     const featureCopy=document.querySelector('[data-i18n="featureQuestionsCopy"]');
     if(featureCopy)featureCopy.textContent=sales?(settings.lang==='es'?'Todas son preguntas de opción múltiple basadas en escenarios':'All are multiple-choice commercial scenarios'):t('featureQuestionsCopy');
     showScreen('instructions-screen'); speak([$('instructions-title').textContent,lead?.textContent||'',t('timingNotice')]);
@@ -684,7 +819,7 @@
     $('knowledge-repeat').hidden=!accessibilitySupportActive();
     $('knowledge-confirm').disabled=true;
     $$('[data-answer-index]').forEach(button=>button.addEventListener('click',()=>selectKnowledgeAnswer(button)));
-    startPhase('review',questionReviewSeconds(q)); speak(q[settings.lang]);
+    startPhase('review',questionReviewSeconds(q)); speak(q[settings.lang],{preferDevice:activeAssessmentTrack()==='account_manager'});
   }
   function startPhase(nextPhase, seconds){
     clearInterval(timer); phase=nextPhase; phaseRemaining=seconds; updateTimer();
@@ -692,7 +827,7 @@
       $('phase-label').textContent=t('answer'); $('.phase-display'); $('timer-display').parentElement.classList.add('answer'); $('knowledge-hint').textContent=t('answerHint');
       $$('[data-answer-index]').forEach(button=>button.disabled=false);
       $('knowledge-confirm').disabled=knowledgeSelectedIndex===null;
-      const q=currentQuestion(); if(settings.audio) speak(q.hideText?q[settings.lang]:[q[settings.lang],...currentDisplayOptions.map(({option})=>option[settings.lang])]);
+      const q=currentQuestion(); if(settings.audio) speak(q.hideText?q[settings.lang]:[q[settings.lang],...currentDisplayOptions.map(({option})=>option[settings.lang])],{preferDevice:activeAssessmentTrack()==='account_manager'});
     }else{
       $('phase-label').textContent=t('review'); $('timer-display').parentElement.classList.remove('answer');
     }
@@ -701,7 +836,7 @@
   function updateTimer(){ $('timer-display').textContent=String(Math.max(0,phaseRemaining)).padStart(2,'0'); }
   function repeatCurrentQuestion(){
     const q=currentQuestion(); if(!q) return;
-    speak(q.hideText?q[settings.lang]:[q[settings.lang],...currentDisplayOptions.map(({option})=>option[settings.lang])],{force:true});
+    speak(q.hideText?q[settings.lang]:[q[settings.lang],...currentDisplayOptions.map(({option})=>option[settings.lang])],{force:true,preferDevice:activeAssessmentTrack()==='account_manager'});
   }
   function selectKnowledgeAnswer(button){
     if(optionLocked || phase!=='answer') return;
@@ -756,14 +891,17 @@
     select.disabled=true; select.innerHTML='<option value="">Loading shared submissions…</option>';
     if(!adminAccessPin){ select.innerHTML='<option value="">Administrator access required</option>'; return; }
     try{
-      const statuses=['pending','actioned','archived','background_to_action','background_eligible','background_not_eligible'];
+      const standardStatuses=['pending','actioned','archived'];
+      const advancedStatuses=['background_to_action','background_eligible','background_not_eligible','employment_contracts','signed_employment_contracts'];
+      const statuses=dancoPlusActive()?[...standardStatuses,...advancedStatuses]:standardStatuses;
+      if(!dancoPlusActive()&&advancedQueueStatus(currentQueueStatus))currentQueueStatus='pending';
       const responses=await Promise.all(statuses.map(status=>sharedRequest('/api/admin',{action:'list',status,adminPin:adminAccessPin})));
       const grouped=Object.fromEntries(statuses.map((status,index)=>[status,Array.isArray(responses[index].submissions)?responses[index].submissions:[]]));
-      $$('[data-queue-status]').forEach(button=>{const status=button.dataset.queueStatus;button.classList.toggle('active',status===currentQueueStatus);const count=button.querySelector('[data-queue-count]');if(count)count.textContent=String(grouped[status]?.length||0);});
+      $$('[data-queue-status]').forEach(button=>{const status=button.dataset.queueStatus;button.classList.toggle('active',status===currentQueueStatus);const count=button.querySelector('[data-queue-count]');if(count)count.textContent=!dancoPlusActive()&&advancedQueueStatus(status)?'+':String(grouped[status]?.length||0);});
       sharedQueueRecords=grouped[currentQueueStatus]||[];
       select.innerHTML=sharedQueueRecords.length?'<option value="">Select a shared submission</option>':'<option value="">No submissions in this queue</option>';
       sharedQueueRecords.forEach(item=>{const option=document.createElement('option');option.value=`remote:${item.reference}`;const kind=item.recordType==='application'?'Application':'Assessment';const role=item.role?` · ${item.role}`:'';option.textContent=`${item.name||'Unnamed applicant'} — ${item.reference} · ${kind}${role}`;select.appendChild(option);});
-      $('shared-service-status').textContent='Live shared list · available on every authorised device';
+      $('shared-service-status').textContent='Live shared list · available on every authorized device';
       select.disabled=false;
     }catch(error){
       const local=storedApplications().filter(item=>(item.queueStatus||'pending')===currentQueueStatus).sort((a,b)=>String(b.submittedAt).localeCompare(String(a.submittedAt)));
@@ -800,19 +938,19 @@
     try{
       let record;
       if(selected.startsWith('remote:')){const reference=selected.slice(7);const response=await sharedRequest('/api/admin',{action:'get',reference,adminPin:adminAccessPin});record=response.submission;currentSharedReference=reference;$('submission-status-actions').hidden=false;}
-      else{record=findStoredApplication(selected.slice(6));currentSharedReference='';$('submission-status-actions').hidden=true;}
+      else{record=findStoredApplication(selected.slice(6));currentSharedReference='';currentEmploymentContract=null;$('submission-status-actions').hidden=true;}
       if(!record)throw new Error('Submission was not found.');
-      currentLoadedRecord=record; currentBackgroundScreening=record.backgroundScreening||null;
+      currentLoadedRecord=record; currentBackgroundScreening=record.backgroundScreening||null; currentEmploymentContract=record.employmentContract||null;
       const data=record.assessment?.knowledgeAnswers?record.assessment:decodeResult(record.resultCode||record.code); $('decode-error').textContent='';
-      renderDashboard(data,{code:'',name:record.name,reference:record.reference||record.code,application:record.recordType==='assessment'?null:(record.application||null),submittedAt:record.submittedAt,backgroundScreening:record.backgroundScreening||null});
-      renderBackgroundActions(record);
+      renderDashboard(data,{code:'',name:record.name,reference:record.reference||record.code,application:record.recordType==='assessment'?null:(record.application||null),submittedAt:record.submittedAt,backgroundScreening:record.backgroundScreening||null,employmentContract:record.employmentContract||null});
+      renderBackgroundActions(record); renderEmploymentContractActions(record);
     }catch(error){ $('decode-error').textContent=error.message; $('dashboard-output').innerHTML=''; }
   }
   async function updateSharedStatus(status){
     if(!currentSharedReference)return;
     try{
       await sharedRequest('/api/admin',{action:'status',reference:currentSharedReference,status,adminPin:adminAccessPin});
-      currentSharedReference='';currentLoadedRecord=null;currentBackgroundScreening=null;$('submission-status-actions').hidden=true;$('background-screening-actions').hidden=true;$('dashboard-output').innerHTML='';await populateStoredApplicants();toast(`Submission moved to ${status}.`);
+      currentSharedReference='';currentLoadedRecord=null;currentBackgroundScreening=null;currentEmploymentContract=null;$('submission-status-actions').hidden=true;$('background-screening-actions').hidden=true;$('employment-contract-actions').hidden=true;$('signed-contract-actions').hidden=true;$('dashboard-output').innerHTML='';await populateStoredApplicants();toast(`Submission moved to ${status}.`);
     }catch(error){$('decode-error').textContent=error.message;}
   }
 
@@ -888,19 +1026,75 @@
     else if(suitability>=70)recommendation='Strong indicated potential — progress to face-to-face interview';
     else if(suitability>=55)recommendation='Moderate indicated potential — explore strengths and gaps at interview';
     else if(suitability>=40)recommendation='Limited indicated fit — verify experience, network and sales discipline carefully';
-    const rationale=`Suitability is an advisory ${suitability}% estimate derived from commercial experience, transferable relationships, business-development approach, technical credibility, commercial judgement and sales discipline. It is not a hiring decision.`;
+    const rationale=`Suitability is an advisory ${suitability}% estimate derived from commercial experience, transferable relationships, business-development approach, technical credibility, commercial judgment and sales discipline. It is not a hiring decision.`;
     return {suitability,answered,recommendation,rationale,categoryPct,salesType,breakdown};
   }
 
   function personalityResult(data){
     if(data.profileSkipped) return null; const counts={D:0,I:0,S:0,C:0}; data.profileAnswers.forEach(code=>{if(counts[code]!==undefined)counts[code]++;});
     const ordered=Object.entries(counts).sort((a,b)=>b[1]-a[1]); const main=ordered[0][0],second=ordered[1][0],blend=ordered[0][1]-ordered[1][1]<=1; const codes=blend?[main,second]:[main];
-    const info={D:{name:'Red · Direct',color:'#d9474f',guidance:'Be concise, lead with the goal and key action, offer practical choices, and give room for ownership.'},I:{name:'Yellow · Interactive',color:'#e7ad20',guidance:'Use a friendly conversational approach, invite ideas, acknowledge enthusiasm, and confirm the agreed next step.'},S:{name:'Green · Supportive',color:'#2a9a68',guidance:'Use a calm, considerate pace, explain changes early, provide reassurance, and allow time for questions.'},C:{name:'Blue · Considered',color:'#2473cf',guidance:'Provide accurate detail, clear standards and organised instructions, and allow time to check or clarify information.'}};
+    const info={D:{name:'Red · Direct',color:'#d9474f',guidance:'Be concise, lead with the goal and key action, offer practical choices, and give room for ownership.'},I:{name:'Yellow · Interactive',color:'#e7ad20',guidance:'Use a friendly conversational approach, invite ideas, acknowledge enthusiasm, and confirm the agreed next step.'},S:{name:'Green · Supportive',color:'#2a9a68',guidance:'Use a calm, considerate pace, explain changes early, provide reassurance, and allow time for questions.'},C:{name:'Blue · Considered',color:'#2473cf',guidance:'Provide accurate detail, clear standards and organized instructions, and allow time to check or clarify information.'}};
     const label=codes.map(code=>info[code].name).join(' / '); const guidance=codes.map(code=>info[code].guidance).join(' '); const color=codes.length>1?`linear-gradient(135deg,${info[codes[0]].color},${info[codes[1]].color})`:info[main].color;
     return {short:codes.join('/'),label,guidance,color,counts};
   }
   function answerText(q,value,lang='en'){ return value? q.options[value-1]?.[lang] || 'Invalid answer' : 'Timed out / no answer'; }
-  function renderDashboard(data,{demo=false,name='',reference='',code='',application=null,submittedAt='',backgroundScreening=null}={}){
+
+  function roofingSuitabilityBrief(result,application){
+    const catLabels={materials:'materials knowledge',installation:'installation technique',service:'service diagnosis',safety:'safety judgment',supervision:'supervision'};
+    const sorted=Object.entries(result.catPct).sort((a,b)=>b[1]-a[1]);
+    const strongest=catLabels[sorted[0]?.[0]]||'practical roofing knowledge';
+    const weakest=catLabels[sorted[sorted.length-1]?.[0]]||'role-specific detail';
+    const target=result.recommendation.replace(' interview track','');
+    const strength=result.overall>=80?'strong':result.overall>=60?'credible':result.overall>=40?'developing':'limited';
+    const safety=result.criticalWrong?` ${result.criticalWrong} critical safety response${result.criticalWrong===1?' requires':'s require'} direct interview verification.`:' Critical safety responses were completed without a recorded gap.';
+    const roleNote=application?.role?` They applied for ${application.role}; the assessment currently points most strongly toward the ${target} interview path.`:` The assessment currently points most strongly toward the ${target} interview path.`;
+    return `This applicant shows ${strength} indicated role readiness, with the strongest evidence in ${strongest} and the clearest interview need around ${weakest}.${roleNote}${safety}`;
+  }
+  function salesSuitabilityBrief(result){
+    const labels={experience:'commercial sales experience',network:'transferable construction relationships',development:'new-business development',consultative:'consultative and technical selling',commercial:'commercial discipline'};
+    const sorted=Object.entries(result.categoryPct).sort((a,b)=>b[1]-a[1]);
+    const strongest=labels[sorted[0]?.[0]]||'commercial selling';
+    const second=labels[sorted[1]?.[0]]||'business development';
+    const weakest=labels[sorted[sorted.length-1]?.[0]]||'commercial discipline';
+    const tier=result.suitability>=85?'exceptional':result.suitability>=70?'strong':result.suitability>=55?'moderate':result.suitability>=40?'limited':'low';
+    return `This applicant shows ${tier} indicated suitability for Danco's Commercial Account Manager role at ${result.suitability}%. Their strongest evidence sits in ${strongest} and ${second}, with a ${result.salesType.primary.label.toLowerCase()} primary sales approach. The face-to-face interview should verify the depth of ${weakest}, the portability of claimed relationships, and recent evidence of personally won commercial business.`;
+  }
+  function roofingInterviewQuestions(result,disc){
+    const map={
+      materials:{q:'Which roofing systems do you work with most confidently?',tags:['Materials','Experience','Depth']},
+      installation:{q:'Talk me through an installation detail you personally owned.',tags:['Installation','Workmanship','Evidence']},
+      service:{q:'How do you diagnose a leak before proposing a repair?',tags:['Service','Problem solving','Process']},
+      safety:{q:'Describe a time you stopped work for a safety concern.',tags:['Safety','Judgment','Confidence']},
+      supervision:{q:'How do you keep a crew on standard when conditions change?',tags:['Supervision','Communication','Standards']}
+    };
+    const ordered=Object.entries(result.catPct).sort((a,b)=>a[1]-b[1]).map(([k])=>k);
+    const picks=[];
+    if(result.criticalWrong)picks.push(map.safety);
+    ordered.forEach(k=>{if(picks.length<3&&!picks.includes(map[k]))picks.push(map[k]);});
+    const roleQ=result.recommendation.startsWith('Foreman')?{q:'What would your crew say you do when production falls behind?',tags:['Leadership','Pressure','Accountability']}:result.recommendation.startsWith('Roofer')?{q:'Which tasks can you complete independently from day one?',tags:['Role readiness','Independence','Training need']}:{q:'What practical skills would you want to build first at Danco?',tags:['Development','Coachability','Entry readiness']};
+    picks.push(roleQ);
+    if(picks.length<4&&disc)picks.push({q:'What management style gets the best work from you?',tags:['Work style','Communication','Engagement']});
+    return picks.slice(0,4);
+  }
+  function salesInterviewQuestions(result){
+    const map={
+      experience:{q:'What commercial accounts have you personally won and retained?',tags:['Experience','Ownership','Evidence']},
+      network:{q:'Which relationships could realistically open doors in this territory?',tags:['Network','Portability','Territory']},
+      development:{q:'How would you build a 90-day new-business pipeline here?',tags:['Prospecting','Planning','Cadence']},
+      consultative:{q:'How do you sell when technical support is needed to close?',tags:['Discovery','Credibility','Teamwork']},
+      commercial:{q:'How do you protect margin when a strong prospect pushes on price?',tags:['Value','Margin','Judgment']}
+    };
+    const ordered=Object.entries(result.categoryPct).sort((a,b)=>a[1]-b[1]).map(([k])=>k);
+    const picks=ordered.slice(0,3).map(k=>map[k]);
+    const style=result.salesType.primary.label;
+    const styleQ=style.startsWith('Driver')?{q:'When does persistence become pressure with a prospect?',tags:['Sales style','Self-awareness','Judgment']}:style.startsWith('Relationship')?{q:'How do you turn a strong relationship into measurable pipeline?',tags:['Sales style','Conversion','Account growth']}:style.startsWith('Technical')?{q:'How do you avoid over-selling the technical detail?',tags:['Sales style','Commercial focus','Communication']}:{q:'How do you keep planning from slowing prospecting activity?',tags:['Sales style','Execution','Pace']};
+    picks.push(styleQ);
+    return picks.slice(0,4);
+  }
+  function suitabilityBriefHtml(text){return `<section class="candidate-brief-card"><span class="eyebrow">OVERALL SUITABILITY BRIEF</span><h3>Assessment-led hiring direction</h3><p>${escapeHtml(text)}</p></section>`;}
+  function interviewQuestionsHtml(items){return `<section class="interview-guidance-card"><div><span class="eyebrow">INTERVIEW DIRECTION</span><h3>Suggested follow-up questions</h3><p class="fine">Short prompts generated from this applicant's assessment indicators. Use them as fact-finding direction, not a fixed interview script.</p></div><div class="interview-question-grid">${items.map((item,i)=>`<div class="interview-question"><b>${i+1}. ${escapeHtml(item.q)}</b><div class="interview-tags">${item.tags.map(tag=>`<span>${escapeHtml(tag)}</span>`).join('')}</div></div>`).join('')}</div></section>`;}
+
+  function renderDashboard(data,{demo=false,name='',reference='',code='',application=null,submittedAt='',backgroundScreening=null,employmentContract=null}={}){
     const sales=(application?.role==='Commercial Account Manager')||data?.assessmentTrack==='account_manager';
     const disc=personalityResult(data); const language=data.lang==='es'?'Spanish':'English'; const supportInfo=supportReportInfo(data);
     const applicantMeta=[reference,language,supportInfo.label,code].filter(Boolean).map(escapeHtml).join(' · ');
@@ -914,30 +1108,42 @@
       ...(application.backgroundConsent==='No'?[['Reason provided',application.backgroundConsentReason]]:[])
     ]:[];
     const bg=backgroundScreening||null;
-    const backgroundHtml=application?`<section class="background-report-card"><div class="background-report-heading"><div><small>BACKGROUND SCREENING</small><h3>${bg?'Prototype screening record':'Not yet requested'}</h3></div><span class="background-status-pill">${escapeHtml(bg?.status?bg.status.replaceAll('_',' ').toUpperCase():'AWAITING ADMIN ACTION')}</span></div>${bg?`<div class="background-meta-grid"><div><span>Provider</span><b>${escapeHtml(bg.provider||'Provider to be selected')}</b></div><div><span>Package</span><b>${escapeHtml(bg.packageLabel||'Employment background screen')}</b></div><div><span>Approved cost</span><b>${bg.quotedCost?`$${Number(bg.quotedCost).toFixed(2)} ${escapeHtml(bg.currency||'USD')}`:'Not recorded'}</b></div><div><span>Decision</span><b>${escapeHtml(bg.decision?bg.decision.replaceAll('_',' '):'To action')}</b></div></div><div class="background-result-grid">${Object.values(bg.results||{}).map(item=>`<div><span>${escapeHtml(item.label||'Screening category')}</span><b>${escapeHtml(item.result||'Results will be displayed when live')}</b></div>`).join('')}</div><p class="fine">Advanced prototype demonstration. No third-party screening has been ordered and no charge has been made. A live provider integration would return only the agreed status/summary data into this Danco record.</p>`:`<p>The applicant's consent response is stored with the application. An authorised Danco reviewer can start the prototype background-screening workflow after reviewing the assessment.</p>`}</section>`:'';
+    let backgroundHtml=application?`<section class="background-report-card"><div class="background-report-heading"><div><small>BACKGROUND SCREENING</small><h3>${bg?'Prototype screening record':'Not yet requested'}</h3></div><span class="background-status-pill">${escapeHtml(bg?.status?bg.status.replaceAll('_',' ').toUpperCase():'AWAITING ADMIN ACTION')}</span></div>${bg?`<div class="background-meta-grid"><div><span>Provider</span><b>${escapeHtml(bg.provider||'Provider to be selected')}</b></div><div><span>Package</span><b>${escapeHtml(bg.packageLabel||'Employment background screen')}</b></div><div><span>Approved cost</span><b>${bg.quotedCost?`$${Number(bg.quotedCost).toFixed(2)} ${escapeHtml(bg.currency||'USD')}`:'Not recorded'}</b></div><div><span>Decision</span><b>${escapeHtml(bg.decision?bg.decision.replaceAll('_',' '):'To action')}</b></div></div><div class="background-result-grid">${Object.values(bg.results||{}).map(item=>`<div><span>${escapeHtml(item.label||'Screening category')}</span><b>${escapeHtml(item.result||'Results will be displayed when live')}</b></div>`).join('')}</div><p class="fine">Advanced prototype demonstration. No third-party screening has been ordered and no charge has been made. A live provider integration would return only the agreed status/summary data into this Danco record.</p>`:`<p>The applicant's consent response is stored with the application. An authorized Danco reviewer can start the prototype background-screening workflow after reviewing the assessment.</p>`}</section>`:'';
+    if(application&&!dancoPlusActive()) backgroundHtml=`<section class="danco-plus-report-teaser"><div class="danco-plus-mark small"><b>Danco+</b><span>LOCKED</span></div><div><small>OPTIONAL ADVANCED HIRING WORKFLOW</small><h3>Continue beyond assessment when Danco is ready</h3><p>Integrated background screening, offer-document creation and secure employment-file progression are available in the owner-approved Danco+ trial.</p></div></section>`;
+    const ec=employmentContract||currentEmploymentContract||null;
+    const contractHtml=application&&ec?`<section class="background-report-card contract-report-card"><div class="background-report-heading"><div><small>EMPLOYMENT CONTRACT</small><h3>${escapeHtml(ec.contractReference||'Contract created')}</h3></div><span class="background-status-pill">${ec.signedStoragePath?'SIGNED FILE UPLOADED':'CONTRACT CREATED'}</span></div><div class="background-meta-grid"><div><span>Role offered</span><b>${escapeHtml(ec.offeredRole||'Not recorded')}</b></div><div><span>Created by</span><b>${escapeHtml(ec.createdBy||'Danco administrator')}</b></div><div><span>Created</span><b>${escapeHtml(ec.createdAt?new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short'}).format(new Date(ec.createdAt)):'Not recorded')}</b></div><div><span>Signed document</span><b>${escapeHtml(ec.signedFilename||'Awaiting signed upload')}</b></div></div></section>`:'';
+    const contractDisplayHtml=dancoPlusActive()?contractHtml:'';
 
     if(sales){
       const result=scoreSalesAssessment(data.knowledgeAnswers);
       const categoryNames={experience:'Commercial sales experience',network:'Transferable construction network',development:'New-business & territory development',consultative:'Consultative / technical selling',commercial:'Commercial discipline'};
+      const overallBrief=salesSuitabilityBrief(result);
+      const interviewQuestions=salesInterviewQuestions(result);
       $('dashboard-output').innerHTML=`
         ${demo?'<div class="dashboard-banner">Example report only — these results do not belong to an applicant.</div>':''}
         ${application?`<section class="application-details-card"><div class="application-details-heading"><div><small>JOB APPLICANT · COMMERCIAL ACCOUNT MANAGER</small><h3>${escapeHtml(name||'Applicant name not supplied')}</h3></div><span>${escapeHtml(reference||'')}</span></div><div class="application-details-grid">${applicationFields.map(([label,value])=>`<div><span>${escapeHtml(label)}</span><b>${escapeHtml(value||'Not supplied')}</b></div>`).join('')}</div>${submittedAt?`<p class="application-stored-at">Submitted to shared review: ${escapeHtml(new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short'}).format(new Date(submittedAt)))}</p>`:''}</section>`:''}
+        ${suitabilityBriefHtml(overallBrief)}
         <div class="dashboard-summary sales-dashboard-summary"><div class="score-ring" style="--score:${result.suitability}%"><div><b>${result.suitability}%</b><span>SALES SUITABILITY</span></div></div><div class="recommendation-card"><small>COMMERCIAL ACCOUNT MANAGER</small><h3>${escapeHtml(result.recommendation)}</h3><p>${escapeHtml(result.rationale)}</p></div></div>
         <div class="metric-grid"><div class="metric-card"><b>${result.answered}/10</b><span>Scenarios answered</span></div><div class="metric-card"><b>${escapeHtml(result.salesType.primary.label)}</b><span>Primary sales approach</span></div><div class="metric-card"><b>${escapeHtml(result.salesType.secondary.label)}</b><span>Secondary sales approach</span></div></div>
         <div class="metric-card"><b>${escapeHtml(name||'Applicant name not supplied')}</b><span>${applicantMeta}</span></div>
         ${data.audio?`<div class="accessibility-report-card"><span>ACCESSIBILITY &amp; AUDIO SUPPORT</span><b>${escapeHtml(supportInfo.label)}</b><p>${escapeHtml(supportInfo.detail)}</p></div>`:''}
         <h3>Sales suitability indicators</h3><div class="bar-list">${Object.entries(result.categoryPct).map(([key,value])=>`<div class="bar-row"><span>${categoryNames[key]}</span><div class="bar"><i style="width:${value}%"></i></div><b>${value}%</b></div>`).join('')}</div>
-        <div class="sales-style-card"><div><small>PRIMARY SALES APPROACH</small><h3>${escapeHtml(result.salesType.primary.label)}</h3><p>${escapeHtml(result.salesType.primary.copy)}</p></div><div><small>SECONDARY INFLUENCE</small><h3>${escapeHtml(result.salesType.secondary.label)}</h3><p>${escapeHtml(result.salesType.secondary.copy)}</p></div><p class="fine">Advisory behavioural sales-style estimate only. It is not a psychometric diagnosis and should be tested through structured interview, references and real sales evidence.</p></div>
+        <div class="sales-style-card"><div><small>PRIMARY SALES APPROACH</small><h3>${escapeHtml(result.salesType.primary.label)}</h3><p>${escapeHtml(result.salesType.primary.copy)}</p></div><div><small>SECONDARY INFLUENCE</small><h3>${escapeHtml(result.salesType.secondary.label)}</h3><p>${escapeHtml(result.salesType.secondary.copy)}</p></div><p class="fine">Advisory behavioral sales-style estimate only. It is not a psychometric diagnosis and should be tested through structured interview, references and real sales evidence.</p></div>
         ${disc?`<div class="disc-card"><div class="disc-swatch" style="background:${disc.color}">${disc.short}</div><div><h3>Estimated engagement profile: ${escapeHtml(disc.label)}</h3><p>${escapeHtml(disc.guidance)}</p><p class="fine">The general work-style primer is separate from the sales-suitability score.</p></div></div>`:'<div class="disc-card"><div class="disc-swatch" style="background:#718198">—</div><div><h3>Work-style primer not completed</h3><p>The applicant chose to skip the optional questions.</p></div></div>'}
         <h3 class="breakdown-title">Commercial scenario breakdown</h3><table class="breakdown-table"><thead><tr><th>#</th><th>Area</th><th>Question</th><th>Applicant response</th><th>Indicator</th></tr></thead><tbody>${result.breakdown.map(({q,answer,option,indicator})=>`<tr><td>${q.id}</td><td>${escapeHtml(q.catLabel.en)}</td><td>${escapeHtml(q.en)}</td><td>${escapeHtml(answer?option?.en||'Invalid answer':'Timed out / no answer')}</td><td class="${indicator==='Strong indicator'?'result-good':indicator==='Weak indicator'?'result-bad':''}">${escapeHtml(indicator)}</td></tr>`).join('')}</tbody></table>
-        ${backgroundHtml}`;
+        ${backgroundHtml}
+        ${contractDisplayHtml}
+        ${interviewQuestionsHtml(interviewQuestions)}`;
       return;
     }
 
     const result=scoreAssessment(data.knowledgeAnswers);
+    const overallBrief=roofingSuitabilityBrief(result,application);
+    const interviewQuestions=roofingInterviewQuestions(result,disc);
     $('dashboard-output').innerHTML=`
       ${demo?'<div class="dashboard-banner">Example report only — these results do not belong to an applicant.</div>':''}
       ${application?`<section class="application-details-card"><div class="application-details-heading"><div><small>JOB APPLICANT</small><h3>${escapeHtml(name||'Applicant name not supplied')}</h3></div><span>${escapeHtml(reference||'')}</span></div><div class="application-details-grid">${applicationFields.map(([label,value])=>`<div><span>${escapeHtml(label)}</span><b>${escapeHtml(value||'Not supplied')}</b></div>`).join('')}</div>${submittedAt?`<p class="application-stored-at">Submitted to shared review: ${escapeHtml(new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short'}).format(new Date(submittedAt)))}</p>`:''}</section>`:''}
+      ${suitabilityBriefHtml(overallBrief)}
       <div class="dashboard-summary"><div class="score-ring" style="--score:${result.overall}%"><div><b>${result.overall}%</b><span>KNOWLEDGE SCORE</span></div></div><div class="recommendation-card"><small>RECOMMENDED INTERVIEW PATH</small><h3>${escapeHtml(result.recommendation)}</h3><p>${escapeHtml(result.rationale)}</p></div></div>
       <div class="metric-grid"><div class="metric-card"><b>${result.correct}/10</b><span>Correct responses</span></div><div class="metric-card"><b>${result.criticalWrong}</b><span>Critical safety gaps</span></div><div class="metric-card"><b>${result.timeouts}</b><span>Timed out / unanswered</span></div></div>
       <div class="metric-card"><b>${escapeHtml(name||'Applicant name not supplied')}</b><span>${applicantMeta}</span></div>
@@ -946,7 +1152,9 @@
       <h3>Progressive assessment tiers</h3><div class="bar-list">${Object.entries(result.tierPct).map(([key,value])=>`<div class="bar-row"><span>${TEXT.en.tiers[key]}</span><div class="bar"><i style="width:${value}%"></i></div><b>${value}%</b></div>`).join('')}</div>
       ${disc?`<div class="disc-card"><div class="disc-swatch" style="background:${disc.color}">${disc.short}</div><div><h3>Estimated engagement profile: ${escapeHtml(disc.label)}</h3><p>${escapeHtml(disc.guidance)}</p><p class="fine">Advisory estimate from five friendly preference questions; it is not a diagnostic personality test and should not be used as a pass/fail criterion.</p></div></div>`:'<div class="disc-card"><div class="disc-swatch" style="background:#718198">—</div><div><h3>Work-style primer not completed</h3><p>The applicant chose to skip the optional questions. No profile inference has been made.</p></div></div>'}
       <h3 class="breakdown-title">Question breakdown</h3><table class="breakdown-table"><thead><tr><th>#</th><th>Tier</th><th>Question</th><th>Applicant response</th><th>Outcome</th></tr></thead><tbody>${result.breakdown.map(({q,answer,ok})=>`<tr><td>${q.id}</td><td>${TEXT.en.tiers[q.tier]}${q.critical?' · Critical':''}</td><td>${escapeHtml(q.en)}</td><td>${escapeHtml(answerText(q,answer,'en'))}</td><td class="${ok?'result-good':'result-bad'}">${ok?'Correct':answer?'Incorrect':'Timed out'}</td></tr>`).join('')}</tbody></table>
-      ${backgroundHtml}`;
+      ${backgroundHtml}
+      ${contractDisplayHtml}
+      ${interviewQuestionsHtml(interviewQuestions)}`;
   }
 
 
@@ -957,17 +1165,24 @@
     if(panel.hidden)return;
     const consent=application?.backgroundConsent||''; const screening=record?.backgroundScreening||currentBackgroundScreening;
     const ssnReady=application?.ssnStatus==='valid'||application?.ssnPrototypeBypass===true||application?.ssnStatus==='prototype';
-    const noSsnMessage='Unable to request a background check on this applicant due to no Social Security number being provided. Danco does not recognise or accept no Social Security number background checks.';
+    if(!dancoPlusActive()){
+      panel.classList.add('advanced-locked');
+      $('background-action-copy').innerHTML='<b>Danco+ feature.</b> Demonstrate a controlled background-screening request, visible provider cost approval and screening filing from this candidate record.';
+      $('request-background-check').disabled=false;$('request-background-check').textContent='Request Danco+ · Background screening';$('background-decision-actions').hidden=true;return;
+    }
+    panel.classList.remove('advanced-locked');
+    const noSsnMessage='Unable to request a background check on this applicant due to no Social Security number being provided. Danco does not recognize or accept no Social Security number background checks.';
     $('background-action-copy').innerHTML=consent==='Yes'?(ssnReady?`<b>Applicant consent and SSN requirement recorded.</b> ${screening?'A screening demonstration is attached to this record.':'This candidate can be progressed to the background-screening demonstration.'}`:`<b>Background check unavailable.</b> ${escapeHtml(noSsnMessage)}`):consent==='No'?`<b>Applicant declined background screening.</b> ${escapeHtml(application?.backgroundConsentReason||'No reason supplied.')}`:'<b>No background-screening consent response is stored.</b>';
     $('request-background-check').disabled=consent!=='Yes'||!ssnReady||!!screening;
     $('request-background-check').textContent=screening?'Background check requested':'Request background check';
     $('background-decision-actions').hidden=!screening;
   }
   async function openBackgroundRequest(){
+    if(!requireDancoPlus('Integrated background screening'))return;
     if(!currentSharedReference||!currentLoadedRecord)return;
     const application=currentLoadedRecord.application||{};
     const ssnReady=application.ssnStatus==='valid'||application.ssnPrototypeBypass===true||application.ssnStatus==='prototype';
-    if(!ssnReady){ $('decode-error').textContent='Unable to request a background check on this applicant due to no Social Security number being provided. Danco does not recognise or accept no Social Security number background checks.'; return; }
+    if(!ssnReady){ $('decode-error').textContent='Unable to request a background check on this applicant due to no Social Security number being provided. Danco does not recognize or accept no Social Security number background checks.'; return; }
     try{
       const quoteResponse=await sharedRequest('/api/background',{action:'quote',reference:currentSharedReference,adminPin:adminAccessPin}); backgroundQuote=quoteResponse.quote; const identity=quoteResponse.identityReadiness||{};
       $('background-candidate').textContent=`${currentLoadedRecord.name||'Applicant'} · ${currentSharedReference}`;
@@ -979,6 +1194,7 @@
     }catch(error){$('decode-error').textContent=error.message;}
   }
   async function confirmBackgroundRequest(){
+    if(!requireDancoPlus('Integrated background screening'))return;
     $('background-error').textContent='';
     if(!$('background-approval').checked){$('background-error').textContent='Approve the displayed estimated cost before continuing.';return;}
     const approvedBy=$('background-approved-by').value.trim(); if(!approvedBy){$('background-error').textContent='Enter the approving administrator name.';return;}
@@ -991,6 +1207,7 @@
     finally{button.disabled=false;button.textContent='Approve cost & request screening';}
   }
   async function setBackgroundDecision(decision){
+    if(!requireDancoPlus('Background-screening filing'))return;
     if(!currentSharedReference)return;
     const labels={eligible:'Background checked — Eligible',not_eligible:'Background checked — Not eligible',further_review:'Background checked — To action'};
     if(!confirm(`Move this candidate to “${labels[decision]}”? This is a prototype administrative classification, not an automated employment decision.`))return;
@@ -1003,12 +1220,133 @@
     if(!currentSharedReference)return;
     const response=await sharedRequest('/api/admin',{action:'get',reference:currentSharedReference,adminPin:adminAccessPin});
     const record=response.submission; if(!record)return;
-    currentLoadedRecord=record; currentBackgroundScreening=record.backgroundScreening||null;
+    currentLoadedRecord=record; currentBackgroundScreening=record.backgroundScreening||null; currentEmploymentContract=record.employmentContract||null;
     const data=record.assessment?.knowledgeAnswers?record.assessment:decodeResult(record.resultCode||record.code);
-    renderDashboard(data,{code:'',name:record.name,reference:record.reference||record.code,application:record.recordType==='assessment'?null:(record.application||null),submittedAt:record.submittedAt,backgroundScreening:record.backgroundScreening||null});
-    renderBackgroundActions(record);
+    renderDashboard(data,{code:'',name:record.name,reference:record.reference||record.code,application:record.recordType==='assessment'?null:(record.application||null),submittedAt:record.submittedAt,backgroundScreening:record.backgroundScreening||null,employmentContract:record.employmentContract||null});
+    renderBackgroundActions(record); renderEmploymentContractActions(record);
   }
 
+
+
+  function renderEmploymentContractActions(record){
+    const application=record?.recordType==='assessment'?null:record?.application;
+    const panel=$('employment-contract-actions'), signedPanel=$('signed-contract-actions');
+    if(!panel||!signedPanel)return;
+    panel.hidden=!application||!currentSharedReference;
+    signedPanel.hidden=!application||!currentSharedReference;
+    if(!application||!currentSharedReference)return;
+    const contract=record?.employmentContract||currentEmploymentContract;
+    currentEmploymentContract=contract||null;
+    if(!dancoPlusActive()){
+      panel.classList.add('advanced-locked');signedPanel.classList.add('advanced-locked');
+      $('employment-contract-copy').innerHTML='<b>Danco+ feature.</b> Turn a successful candidate record into a consistent pre-filled offer and employment agreement without re-keying application details.';
+      $('create-employment-contract').hidden=false;$('create-employment-contract').textContent='Request Danco+ · Create employment agreement';$('view-employment-contract').hidden=true;$('signed-upload-controls').hidden=true;$('open-signed-contract').hidden=true;return;
+    }
+    panel.classList.remove('advanced-locked');signedPanel.classList.remove('advanced-locked');$('create-employment-contract').textContent='Create employment contract';
+    $('employment-contract-copy').innerHTML=contract?`<b>${escapeHtml(contract.contractReference||'Employment contract')} is stored.</b> ${contract.signedStoragePath?'A signed file has also been uploaded.':'The candidate is now filed under Employment contracts until a signed copy is uploaded.'}`:'Create a pre-filled Danco employment contract from the stored applicant record after confirming the background-check criteria.';
+    $('create-employment-contract').hidden=!!contract;
+    $('view-employment-contract').hidden=!contract;
+    const signed=!!contract?.signedStoragePath;
+    $('signed-upload-controls').hidden=!contract||signed;
+    $('open-signed-contract').hidden=!signed;
+    $('signed-contract-error').textContent='';
+  }
+  function contractPrefillSummary(){
+    const app=currentLoadedRecord?.application||{};
+    const fields=[['Applicant',currentLoadedRecord?.name||'—'],['Application',currentSharedReference||'—'],['Current application role',app.role||'—'],['Email',app.email||'—'],['Phone',app.phone||'—'],['Address',[app.address,app.city,app.state,app.zip].filter(Boolean).join(', ')||'—']];
+    $('contract-prefill-summary').innerHTML=fields.map(([label,value])=>`<div><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></div>`).join('');
+  }
+  function resetContractModal(){
+    contractEligibilityConfirmed=false;
+    $('contract-eligibility-step').hidden=false;$('contract-form-step').hidden=true;$('contract-preview-step').hidden=true;$('contract-blocked').hidden=true;$('contract-error').textContent='';
+  }
+  function prefillContractForm(){
+    const app=currentLoadedRecord?.application||{};
+    $('contract-role').value=['Service Helper','Roofer','Foreman','Commercial Account Manager'].includes(app.role)?app.role:'';
+    $('contract-start-date').value=/^\d{4}-\d{2}-\d{2}$/.test(app.availability||'')?app.availability:'';
+    $('contract-work-location').value=[app.city,app.state].filter(Boolean).join(', ');
+    $('contract-employment-type').value='Full-time';$('contract-classification').value=app.role==='Commercial Account Manager'?'Salaried / exempt':'Hourly / non-exempt';
+    $('contract-pay-frequency').value='Biweekly';$('contract-intro-period').value='90 days';$('contract-created-by').value='';
+    $('contract-benefits').value='Per Danco plan terms and eligibility rules';$('contract-pto').value='Per Danco policy';$('contract-overtime').value=app.role==='Commercial Account Manager'?'Per classification and applicable law':'Eligible as required by applicable law';$('contract-travel').value='As required by role and assigned projects/territory';
+    contractPrefillSummary();
+  }
+  function openContractWorkflow(existing=false){
+    if(!requireDancoPlus('Offer & employment agreement builder'))return;
+    if(!currentSharedReference||!currentLoadedRecord?.application)return;
+    resetContractModal();
+    if(existing&&currentEmploymentContract){$('contract-eligibility-step').hidden=true;$('contract-preview-step').hidden=false;renderContractPreview(currentEmploymentContract);}
+    openModal('contract-modal');
+  }
+  function collectContractData(){
+    return {
+      employmentType:$('contract-employment-type').value,
+      classification:$('contract-classification').value,
+      startDate:$('contract-start-date').value,
+      compensation:$('contract-compensation').value.trim(),
+      payFrequency:$('contract-pay-frequency').value,
+      workLocation:$('contract-work-location').value.trim(),
+      supervisor:$('contract-supervisor').value.trim(),
+      schedule:$('contract-schedule').value.trim(),
+      introductoryPeriod:$('contract-intro-period').value,
+      benefits:$('contract-benefits').value.trim(),
+      pto:$('contract-pto').value.trim(),
+      overtime:$('contract-overtime').value.trim(),
+      travel:$('contract-travel').value.trim(),
+      additionalTerms:$('contract-additional-terms').value.trim(),
+      preparedBy:$('contract-created-by').value.trim()
+    };
+  }
+  function contractValue(value,fallback='To be completed'){return escapeHtml(value||fallback);}
+  function renderContractPreview(contract){
+    const app=currentLoadedRecord?.application||{};const d=contract?.contractData||{};
+    const address=[app.address,app.city,app.state,app.zip].filter(Boolean).join(', ');
+    $('contract-preview').innerHTML=`
+      <article class="contract-document">
+        <header class="contract-document-header"><img src="danco-logo-white.png" alt="Danco Roofing Services, Inc."><div><h2>Employment Agreement / Offer Terms</h2><small>${escapeHtml(contract?.contractReference||'Prototype contract')}</small></div></header>
+        <div class="contract-document-body">
+          <div class="contract-document-meta"><div><span>Employee</span><b>${contractValue(currentLoadedRecord?.name,'Applicant')}</b></div><div><span>Role offered</span><b>${contractValue(contract?.offeredRole)}</b></div><div><span>Proposed start date</span><b>${contractValue(d.startDate)}</b></div></div>
+          <section class="contract-section"><h3>Employee particulars</h3><div class="contract-grid"><div><span>Email</span><b>${contractValue(app.email)}</b></div><div><span>Phone</span><b>${contractValue(app.phone)}</b></div><div><span>Home address</span><b>${contractValue(address)}</b></div><div><span>Work authorization</span><b>${contractValue(app.authorization)}</b></div></div></section>
+          <section class="contract-section"><h3>Position and compensation</h3><div class="contract-grid"><div><span>Employment type</span><b>${contractValue(d.employmentType)}</b></div><div><span>FLSA classification</span><b>${contractValue(d.classification)}</b></div><div><span>Compensation</span><b>${contractValue(d.compensation)}</b></div><div><span>Pay frequency</span><b>${contractValue(d.payFrequency)}</b></div><div><span>Primary work location</span><b>${contractValue(d.workLocation)}</b></div><div><span>Reports to</span><b>${contractValue(d.supervisor)}</b></div><div><span>Normal schedule</span><b>${contractValue(d.schedule)}</b></div><div><span>Introductory period</span><b>${contractValue(d.introductoryPeriod)}</b></div></div></section>
+          <section class="contract-section"><h3>Benefits and working conditions</h3><div class="contract-grid"><div><span>Benefits eligibility</span><b>${contractValue(d.benefits)}</b></div><div><span>PTO / leave</span><b>${contractValue(d.pto)}</b></div><div><span>Overtime</span><b>${contractValue(d.overtime)}</b></div><div><span>Travel / vehicle</span><b>${contractValue(d.travel)}</b></div></div></section>
+          <section class="contract-section"><h3>Employment terms</h3><div class="contract-terms"><p>Employment is intended to be at-will to the extent permitted by applicable law. Either Danco or the employee may end the employment relationship at any time, with or without advance notice or cause, subject to applicable law and any final Danco-approved agreement.</p><p>The employee is expected to perform the duties of the offered role, comply with Danco safety rules, workplace policies, confidentiality requirements, equipment/property controls and lawful management instructions. Employment remains subject to completion of required work-authorization, background-screening and onboarding requirements.</p>${d.additionalTerms?`<p><b>Additional offer terms:</b> ${escapeHtml(d.additionalTerms)}</p>`:''}<p class="fine">Prototype document generated from the Danco recruitment workflow. Final production wording should be approved by Danco HR and qualified employment counsel before use as a binding agreement.</p></div></section>
+          <div class="signature-grid"><div class="signature-line">Employee signature / date</div><div class="signature-line">For Danco Roofing Services, Inc. / date</div></div>
+        </div><footer class="contract-document-footer"><span>Danco Roofing Services, Inc. · Employment Contract Prototype</span><span>Generated by Danco Workforce Assessment · JW EDS</span></footer>
+      </article>`;
+  }
+  async function createEmploymentContract(){
+    if(!requireDancoPlus('Offer & employment agreement builder'))return;
+    $('contract-error').textContent='';
+    const role=$('contract-role').value;if(!role){$('contract-error').textContent='Choose the role being offered.';return;}
+    const data=collectContractData();if(!data.startDate||!data.compensation||!data.preparedBy){$('contract-error').textContent='Enter the proposed start date, compensation and administrator name before creating the contract.';return;}
+    const button=$('confirm-create-contract');button.disabled=true;button.textContent='Creating contract…';
+    try{
+      const response=await sharedRequest('/api/contracts',{action:'create',reference:currentSharedReference,adminPin:adminAccessPin,backgroundCriteriaMet:true,offeredRole:role,createdBy:data.preparedBy,contractData:data});
+      currentEmploymentContract=response.contract||null;if(!currentEmploymentContract)throw new Error('The contract could not be created.');
+      $('contract-form-step').hidden=true;$('contract-preview-step').hidden=false;renderContractPreview(currentEmploymentContract);currentQueueStatus='employment_contracts';toast('Employment contract created and filed.');await reloadCurrentSharedRecord();await populateStoredApplicants();
+    }catch(error){$('contract-error').textContent=error.message;}
+    finally{button.disabled=false;button.textContent='Create pre-filled contract';}
+  }
+  function fileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');reader.onerror=()=>reject(new Error('The selected file could not be read.'));reader.readAsDataURL(file);});}
+  async function uploadSignedContract(){
+    if(!requireDancoPlus('Secure employment file progression'))return;
+    const file=$('signed-contract-file').files?.[0],uploadedBy=$('signed-contract-uploaded-by').value.trim();$('signed-contract-error').textContent='';
+    if(!currentEmploymentContract){$('signed-contract-error').textContent='Create the employment contract before uploading a signed copy.';return;}
+    if(!file){$('signed-contract-error').textContent='Choose the signed PDF or scanned image first.';return;}
+    if(!['application/pdf','image/jpeg','image/png'].includes(file.type)){ $('signed-contract-error').textContent='Use a PDF, JPEG or PNG file.';return; }
+    if(file.size>8*1024*1024){$('signed-contract-error').textContent='Prototype upload limit: 8 MB.';return;}
+    if(!uploadedBy){$('signed-contract-error').textContent='Enter the administrator name for the upload audit trail.';return;}
+    const button=$('upload-signed-contract');button.disabled=true;button.textContent='Uploading…';
+    try{const base64=await fileToBase64(file);const response=await sharedRequest('/api/contracts',{action:'upload_signed',reference:currentSharedReference,adminPin:adminAccessPin,fileName:file.name,mimeType:file.type,fileBase64:base64,uploadedBy});currentEmploymentContract=response.contract||currentEmploymentContract;currentQueueStatus='signed_employment_contracts';toast('Signed employment contract uploaded and filed.');$('signed-contract-file').value='';await reloadCurrentSharedRecord();await populateStoredApplicants();}
+    catch(error){$('signed-contract-error').textContent=error.message;}
+    finally{button.disabled=false;button.textContent='Upload signed contract';}
+  }
+  async function openSignedContract(){
+    if(!requireDancoPlus('Secure employment file progression'))return;
+    if(!currentSharedReference)return;try{const response=await sharedRequest('/api/contracts',{action:'signed_url',reference:currentSharedReference,adminPin:adminAccessPin});if(!response.url)throw new Error('No signed contract file is available.');window.open(response.url,'_blank','noopener');}catch(error){$('signed-contract-error').textContent=error.message;}
+  }
+  function printEmploymentContract(){
+    document.body.classList.add('print-contract-mode');const clean=()=>document.body.classList.remove('print-contract-mode');window.addEventListener('afterprint',clean,{once:true});window.print();setTimeout(clean,1500);
+  }
 
   function initEvents(){
     $$('[data-language]').forEach(button=>button.addEventListener('click',()=>{setLanguage(button.dataset.language);routeAfterLanguage();}));
@@ -1019,6 +1357,7 @@
     $$('[data-action="close-help"]').forEach(button=>button.addEventListener('click',closeHelp));
     document.querySelector('[data-action="repeat-audio"]').addEventListener('click',repeatHelpAudio);
     document.querySelector('[data-action="test-narration"]').addEventListener('click',testNarration);
+    $$('[data-voice-mode]').forEach(button=>button.addEventListener('click',()=>setVoiceMode(button.dataset.voiceMode)));
     document.querySelector('.brand-button').addEventListener('click',()=>{if(session?.status==='complete')renderResult();else showScreen('language-screen');});
     $('help-tab').addEventListener('click',openHelp); $('help-backdrop').addEventListener('click',closeHelp);
     $('language-toggle').addEventListener('click',()=>setLanguage(settings.lang==='en'?'es':'en'));
@@ -1033,13 +1372,14 @@
     $('candidate-role')?.addEventListener('change',updateRoleExperienceLabel);
     $('candidate-ssn')?.addEventListener('input',()=>{const input=$('candidate-ssn');const formatted=formatSsnInput(input.value);if(input.value!==formatted)input.value=formatted;resetSsnOverrideIfChanged();updateSsnStatus();});
     $('begin-beginner').addEventListener('click',beginBeginner); $('start-profile').addEventListener('click',startProfile); $('skip-profile').addEventListener('click',skipProfile); $('profile-confirm').addEventListener('click',confirmProfileAnswer); $('start-knowledge').addEventListener('click',startKnowledge); $('knowledge-repeat').addEventListener('click',repeatCurrentQuestion); $('knowledge-confirm').addEventListener('click',confirmKnowledgeAnswer);
-    $('unlock-submit').addEventListener('click',()=>{ $('unlock-error').textContent=''; try{const result=activateCode($('unlock-code').value);if(result.mode==='owner')toast(t('ownerSuccess'));else{if(result.remaining<=0)throw new Error(t('usedError'));toast(t('unlockSuccess',result.remaining));} $('unlock-code').value='';closeModal('unlock-modal');}catch(error){$('unlock-error').textContent=error.message;} });
+    $('unlock-submit').addEventListener('click',async()=>{ $('unlock-error').textContent=''; const raw=$('unlock-code').value; try{const result=activateCode(raw);if(result.mode==='owner'){try{await establishOwnerSession(raw);}catch(_){}toast(t('ownerSuccess'));applyDancoPlusMode();}else{if(result.remaining<=0)throw new Error(t('usedError'));toast(t('unlockSuccess',result.remaining));} $('unlock-code').value='';closeModal('unlock-modal');}catch(error){$('unlock-error').textContent=error.message;} });
     $('copy-code').addEventListener('click',async()=>{try{const value=session.mode==='application'?(session.submissionReference||''):session.resultCode;if(!value)return;await navigator.clipboard.writeText(value);toast(t('copied'));}catch(_){toast(t('copyFailed'));}});
     $('submit-application').addEventListener('click',()=>{$('submit-error').textContent='';openModal('submit-modal');});
     $('confirm-submit').addEventListener('click',storeCurrentApplication);
     $('next-applicant').addEventListener('click',()=>{if(!isOwner()&&trialRemaining()<=0){openModal('unlock-modal');return;}localStorage.removeItem(SESSION_KEY);session=null;newSession();showScreen('language-screen');});
     $('admin-open').addEventListener('click',()=>{openModal('admin-modal');$('admin-login').hidden=adminAuthenticated;$('admin-dashboard').hidden=!adminAuthenticated;if(!adminAuthenticated)setTimeout(()=>$('admin-pin').focus(),80);else prepareAdmin();});
-    $('admin-login-button').addEventListener('click',()=>{const pin=$('admin-pin').value.trim();if(accessHash(pin)!==ADMIN_HASH){$('admin-error').textContent='Administrator PIN not recognised.';return;}adminAuthenticated=true;adminAccessPin=pin;$('admin-error').textContent='';$('admin-pin').value='';$('admin-login').hidden=true;$('admin-dashboard').hidden=false;prepareAdmin();});
+    $('admin-login-button').addEventListener('click',()=>{const pin=$('admin-pin').value.trim();if(accessHash(pin)!==ADMIN_HASH){$('admin-error').textContent='Administrator PIN not recognized.';return;}adminAuthenticated=true;adminAccessPin=pin;$('admin-error').textContent='';$('admin-pin').value='';$('admin-login').hidden=true;$('admin-dashboard').hidden=false;prepareAdmin();});
+    $('owner-access-open')?.addEventListener('click',()=>{if($('owner-verify-error'))$('owner-verify-error').textContent='';openModal('owner-verify-modal');setTimeout(()=>$('owner-verify-code')?.focus(),80);});
     $$('[data-admin-device-mode]').forEach(button=>button.addEventListener('click',()=>setDeviceMode(button.dataset.adminDeviceMode)));
     $$('[data-journey-mode]').forEach(button=>button.addEventListener('click',()=>chooseJourney(button.dataset.journeyMode)));
     $$('[data-action="close-ssn-warning"]').forEach(button=>button.addEventListener('click',()=>closeModal('ssn-warning-modal')));
@@ -1047,22 +1387,40 @@
     $('ssn-proceed-without')?.addEventListener('click',()=>{$('ssn-warning-choice-actions').hidden=true;$('ssn-reason-panel').hidden=false;});
     $('ssn-missing-reason')?.addEventListener('change',updateSsnOtherReason);
     $('ssn-confirm-proceed')?.addEventListener('click',confirmSsnOverride);
-    $$('[data-queue-status]').forEach(button=>button.addEventListener('click',()=>{currentQueueStatus=button.dataset.queueStatus;currentSharedReference='';$('submission-status-actions').hidden=true;$('dashboard-output').innerHTML='';populateStoredApplicants();}));
+    $$('[data-queue-status]').forEach(button=>button.addEventListener('click',()=>{const target=button.dataset.queueStatus;if(advancedQueueStatus(target)&&!requireDancoPlus('Advanced candidate filing'))return;currentQueueStatus=target;currentSharedReference='';currentLoadedRecord=null;currentBackgroundScreening=null;currentEmploymentContract=null;$('submission-status-actions').hidden=true;$('background-screening-actions').hidden=true;$('employment-contract-actions').hidden=true;$('signed-contract-actions').hidden=true;$('dashboard-output').innerHTML='';populateStoredApplicants();}));
     $$('[data-set-submission-status]').forEach(button=>button.addEventListener('click',()=>updateSharedStatus(button.dataset.setSubmissionStatus)));
     $('load-stored-applicant').addEventListener('click',loadStoredApplicant);
     $('request-background-check').addEventListener('click',openBackgroundRequest);
+    $('create-employment-contract').addEventListener('click',()=>openContractWorkflow(false));
+    $('view-employment-contract').addEventListener('click',()=>openContractWorkflow(true));
+    $('contract-eligibility-no').addEventListener('click',()=>{$('contract-blocked').hidden=false;$('contract-form-step').hidden=true;});
+    $('contract-eligibility-yes').addEventListener('click',()=>{contractEligibilityConfirmed=true;$('contract-eligibility-step').hidden=true;$('contract-form-step').hidden=false;prefillContractForm();});
+    $('confirm-create-contract').addEventListener('click',createEmploymentContract);
+    $('upload-signed-contract').addEventListener('click',uploadSignedContract);
+    $('open-signed-contract').addEventListener('click',openSignedContract);
+    $('print-contract').addEventListener('click',printEmploymentContract);
     $('confirm-background-request').addEventListener('click',confirmBackgroundRequest);
     $$('[data-background-decision]').forEach(button=>button.addEventListener('click',()=>setBackgroundDecision(button.dataset.backgroundDecision)));
     $$('[data-action="close-background"]').forEach(button=>button.addEventListener('click',()=>closeModal('background-modal')));
+    $$('[data-action="close-contract"]').forEach(button=>button.addEventListener('click',()=>closeModal('contract-modal')));
+    $('request-danco-plus')?.addEventListener('click',()=>openDancoPlusRequest('Danco+ advanced hiring workflow'));
+    $('submit-danco-plus-request')?.addEventListener('click',submitDancoPlusRequest);
+    $$('[data-action="close-danco-plus-request"]').forEach(button=>button.addEventListener('click',()=>closeModal('danco-plus-request-modal')));
+    $('enter-danco-plus')?.addEventListener('click',()=>{localStorage.setItem(DANCO_PLUS_INTRO_KEY,'1');closeModal('danco-plus-welcome-modal');toast('Danco+ advanced mode active.');});
+    $$('[data-owner-product-mode]').forEach(button=>button.addEventListener('click',()=>setOwnerProductMode(button.dataset.ownerProductMode)));
+    $('refresh-danco-plus-requests')?.addEventListener('click',refreshOwnerRequests);
+    $('verify-owner-session')?.addEventListener('click',()=>{if($('owner-verify-error'))$('owner-verify-error').textContent='';openModal('owner-verify-modal');setTimeout(()=>$('owner-verify-code')?.focus(),80);});
+    $$('[data-action="close-owner-verify"]').forEach(button=>button.addEventListener('click',()=>closeModal('owner-verify-modal')));
+    $('owner-verify-submit')?.addEventListener('click',async()=>{const code=$('owner-verify-code').value,error=$('owner-verify-error'),button=$('owner-verify-submit');error.textContent='';button.disabled=true;button.textContent='Verifying…';try{if(accessHash(code)!==OWNER_HASH)throw new Error('Owner access code not recognized.');localStorage.setItem(OWNER_KEY,'1');await establishOwnerSession(code);applyAccessState();$('owner-verify-code').value='';closeModal('owner-verify-modal');toast('Owner access active.');if(adminAuthenticated)await refreshOwnerRequests();}catch(e){error.textContent=e.message;}finally{button.disabled=false;button.textContent='Verify owner';}});
     $('load-example').addEventListener('click',()=>{const demo={knowledgeAnswers:[1,1,1,1,1,1,2,1,1,1],profileSkipped:false,profileAnswers:['S','C','S','I','S'],assessmentTrack:'roofing',lang:'en',audio:false};currentLoadedRecord=null;renderBackgroundActions(null);renderDashboard(demo,{demo:true,name:'Example Applicant',reference:'DEMO-001'});});
     $('print-report').addEventListener('click',()=>window.print());
     $('reset-device').addEventListener('click',()=>{if(!confirm('Reset the current applicant on this device? Access status and remaining trial runs will be preserved.'))return;clearInterval(timer);localStorage.removeItem(SESSION_KEY);session=null;$('dashboard-output').innerHTML='';closeModal('admin-modal');newSession();showScreen('language-screen');toast('Applicant reset.');});
-    [$('unlock-modal'),$('admin-modal'),$('submit-modal'),$('background-modal'),$('ssn-warning-modal')].forEach(modal=>modal.addEventListener('click',event=>{if(event.target===modal)modal.classList.remove('open');}));
-    document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeModal('unlock-modal');closeModal('admin-modal');closeModal('submit-modal');closeModal('background-modal');closeModal('ssn-warning-modal');closeHelp();}});
+    [$('unlock-modal'),$('admin-modal'),$('submit-modal'),$('background-modal'),$('contract-modal'),$('ssn-warning-modal'),$('danco-plus-request-modal'),$('danco-plus-welcome-modal'),$('owner-verify-modal')].forEach(modal=>modal.addEventListener('click',event=>{if(event.target===modal)modal.classList.remove('open');}));
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeModal('unlock-modal');closeModal('admin-modal');closeModal('submit-modal');closeModal('background-modal');closeModal('contract-modal');closeModal('ssn-warning-modal');closeModal('danco-plus-request-modal');closeModal('danco-plus-welcome-modal');closeModal('owner-verify-modal');closeHelp();}});
   }
   function prepareAdmin(){
-    $('print-date').textContent=new Intl.DateTimeFormat('en-GB',{dateStyle:'long',timeStyle:'short'}).format(new Date());
-    populateStoredApplicants(); applyProductMode();
+    $('print-date').textContent=new Intl.DateTimeFormat('en-US',{dateStyle:'long',timeStyle:'short'}).format(new Date());
+    populateStoredApplicants(); applyProductMode(); applyDancoPlusMode(); refreshDancoPlusStatus({welcome:true}); if(isOwner())refreshOwnerRequests();
     if(session?.status==='complete'){
       try{const decoded=decodeResult(session.resultCode);decoded.assessmentTrack=session.assessmentTrack||'roofing';renderDashboard(decoded,{code:'',name:session.name,reference:session.submissionReference||session.reference,application:session.mode==='application'?(session.application||{}):null,submittedAt:session.submittedAt||''});}catch(_){}
     }
@@ -1070,13 +1428,14 @@
 
   function init(){
     settings.deviceMode=normaliseDeviceMode(settings.deviceMode); if(session&&session.status!=='complete'&&!['assessment','application',''].includes(session.mode)){session.mode='';saveSession();}
-    initialiseNarration(); setLanguage(settings.lang); $('audio-toggle').textContent=settings.audio?'🔊':'🔇'; applyAccessState(); initEvents(); applyProductMode();
+    initialiseNarration(); setLanguage(settings.lang); $('audio-toggle').textContent=settings.audio?'🔊':'🔇'; applyAccessState(); initEvents(); applyProductMode(); applyDancoPlusMode(); refreshDancoPlusStatus({welcome:true});
     if(session?.status==='complete'&&session.resultCode){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);renderResult();}
     else if(session?.status==='knowledge'){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);showInstructions();$('start-knowledge').textContent=t('resume');}
     else if(session?.status==='profile'){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);profileIndex=session.profileAnswers?.length||0;renderProfile();}
     else if(session?.status==='profile-intro'){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);showScreen('profile-intro-screen');}
     else showScreen('language-screen');
-    if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=26.0.0').catch(()=>{}));
+    if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=28.0.0').catch(()=>{}));
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDancoPlusStatus({welcome:true});});
   }
 
   document.addEventListener('DOMContentLoaded',init);
