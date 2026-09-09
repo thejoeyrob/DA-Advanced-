@@ -38,3 +38,9 @@ Creating a contract automatically files the record in **Employment contracts**.
 - Supabase secret/service credentials remain server-side.
 - Signed contract files are held in a private bucket and opened through short-lived signed URLs.
 - This is a prototype workflow; Danco HR/counsel should approve final employment contract wording and production retention/access rules.
+
+## v28.1 responsive character and Danco+ visual refinement
+- Character placements audited across hero, setup, profile intro, profile questions, instructions, assessment questions, result and Help drawer.
+- Mobile guide screens reserve a dedicated character stage; helper speech copy sits below rather than over the figures.
+- Short landscape screens retain visible character staging with compact guide copy and reduced form padding.
+- Danco+ retains Danco navy/blue as the dominant identity while adding controlled metallic-gold accents, premium panel borders and subtle highlight effects.

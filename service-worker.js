@@ -1,17 +1,17 @@
-importScripts('./narration-manifest.js?v=28.0.0');
+importScripts('./narration-manifest.js?v=28.1.0');
 
-const CACHE_NAME = 'danco-workforce-standard-plus-v28-20260909';
+const CACHE_NAME = 'danco-workforce-standard-plus-v28-1-20260909';
 
 const OLD_BACKEND = 'https://danco-assessment-service.josephrwhelan.chatgpt.site';
 const NEW_BACKEND = 'https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-service';
 
 const CORE_ASSETS = [
   './',
-  './index.html?v=28.0.0',
-  './app.css?v=28.0.0',
-  './app.js?v=28.0.0',
-  './narration-manifest.js?v=28.0.0',
-  './manifest.webmanifest?v=28.0.0',
+  './index.html?v=28.1.0',
+  './app.css?v=28.1.0',
+  './app.js?v=28.1.0',
+  './narration-manifest.js?v=28.1.0',
+  './manifest.webmanifest?v=28.1.0',
   './danco-logo.webp',
   './danco-logo-white.png',
   './joseph-whelan-eds-white.png',
@@ -55,8 +55,8 @@ const CORE_ASSETS = [
 ];
 
 const NARRATION_ASSETS = [
-  './narration-en.mp3?v=28.0.0',
-  './narration-es.mp3?v=28.0.0'
+  './narration-en.mp3?v=28.1.0',
+  './narration-es.mp3?v=28.1.0'
 ];
 
 self.addEventListener('install', event => event.waitUntil(
@@ -116,7 +116,7 @@ self.addEventListener('fetch', event => {
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
           return response;
         })
-        .catch(() => caches.match('./index.html?v=28.0.0'))
+        .catch(() => caches.match('./index.html?v=28.1.0'))
     );
     return;
   }

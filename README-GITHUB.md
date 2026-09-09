@@ -24,3 +24,8 @@ GitHub Pages: Settings > Pages > Deploy from a branch > `main` > `/ (root)`.
 Do not enter a real Social Security number during a public demonstration. Use `PROTOTYPE`.
 
 The ordinary Danco applicant record strips raw SSN values and stores only identity-readiness metadata / last four digits when structurally valid. Signed contracts are designed for private Supabase Storage rather than public GitHub assets.
+
+## v28.1 responsive visual refinement
+- Rebuilt helper-character staging for portrait, tablet and short-landscape layouts.
+- Character art now has a reserved visual zone and is not covered by helper copy/cards.
+- Danco+ receives a stronger but restrained prestige layer: metallic-gold hairlines, premium panel edges, richer navy treatment and subtle highlight effects while retaining Danco corporate blue/navy as the dominant palette.
