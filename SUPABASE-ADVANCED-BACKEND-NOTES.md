@@ -17,3 +17,8 @@ Expanded agreement data remains in the JSONB `contract_data` payload; no schema 
 
 ## Sensitive data
 Do not place CRA secret keys, full SSNs, bank account numbers or routing numbers in GitHub/client code. Banking information belongs in a separate approved payroll system. The signed-contract bucket remains private.
+
+## v30 background-screening correction
+- `danco_background_screenings.screening_status` now accepts the v30 prototype status values `completed_clear` and `completed_issue` used by `danco-service-v5`, in addition to the established live workflow states.
+- A database trigger assigns a prototype screening reference and stores a self-contained demonstration full-report artifact in `provider_report_url` for new `prototype_demo` screening rows. This keeps the detailed prototype report separate from the ordinary applicant summary while remaining tied to the stored screening record and application reference.
+- The trigger is `SECURITY INVOKER` and direct execution is revoked from public/anon/authenticated roles.

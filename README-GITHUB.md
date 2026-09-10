@@ -1,4 +1,4 @@
-# Danco Workforce Assessment — Standard + Danco+ Prototype v29
+# Danco Workforce Assessment — Standard + Danco+ Prototype v30
 
 Flat GitHub Pages PWA containing the current Standard Danco Workforce Assessment and the owner-approved Danco+ demonstration layer.
 
@@ -32,10 +32,26 @@ Flat GitHub Pages PWA containing the current Standard Danco Workforce Assessment
 Upload all files in the full package to the repository root, or use the update-only ZIP to replace changed files in an existing v28.1 deployment.
 
 The PWA uses:
-- `danco-service-v5` for v29 background/contract behavior while proxying unchanged Standard endpoints to the established service.
+- `danco-service-v5` for the restored background/contract behavior while proxying unchanged Standard endpoints to the established service.
 - `danco-plus-access` for owner-approved Danco+ trial requests.
 
 ## Prototype privacy
 Do not enter a real Social Security number in a public demonstration. Use `PROTOTYPE`.
 
 The ordinary applicant record excludes the full raw SSN. Signed employment files remain in private Supabase Storage and are opened through time-limited signed links.
+
+
+## v30 — Why Danco+ business pitch
+- Optional in-app Dan & Brenda presentation offered once after language selection to activated prototype reviewers.
+- Replayable from **Why Danco+?** controls.
+- Alternating U.S.-English device voices, captions, progress, pause/skip and manual scene navigation.
+- Sales narrative focuses on end-to-end hiring, sales-role suitability, interview direction, screening, Danco agreement generation, secure file progression and payroll handoff.
+- No unsupported claim that Danco+ is the only hiring platform of its kind; the pitch emphasizes the Danco-specific connected workflow.
+
+## v30 corrected — background-screening filing repair
+- Fixed the post-approval server error caused by a screening-status schema mismatch.
+- Restored the demonstration screening workflow after administrator cost approval.
+- Applicant reports show concise category status only; detailed demonstration content is separated from the ordinary applicant report.
+- Added **Background Check Reports** as a Danco+ file-store view in Administrator.
+- Each completed demo screening is filed against its application reference and can be opened as a fuller demonstration report.
+- Production/live screening remains provider-led; the prototype does not claim that its synthetic report is a real consumer report.

@@ -1,4 +1,4 @@
-# Danco Workforce Assessment — v29 implementation brief
+# Danco Workforce Assessment — v30 implementation brief
 
 ## Release intent
 v29 restores and strengthens the Danco+ screening demonstration while preserving every Standard assessment/application capability developed through v28.1.
@@ -64,3 +64,10 @@ Applicant narration remains bilingual. Existing recorded narration is preserved.
 - CRA/vendor secrets remain server-side.
 - The demo pass/fail control is prototype-only and cannot represent a real vendor result.
 - Signed contracts remain private and use time-limited signed links.
+
+
+## v30 presentation layer
+A short buyer-facing **Why Danco+?** presentation is built into the prototype. It uses Dan and Brenda as alternating presenters, keeps captions visible, uses available `en-US` system voices for an American-English presentation, and remains replayable without affecting the applicant assessment logic.
+
+## v30 corrected screening workflow
+The Danco+ screening demonstration continues to use the existing `danco-service-v5` endpoint. A database compatibility migration now permits the v30 demonstration status values used by that service. A protected database trigger creates a prototype full-report artifact reference whenever a demonstration screening record is inserted. The applicant report displays only status-level screening categories; the Administrator **Background Check Reports** folder opens the fuller prototype report using the stored screening record. Real provider data must replace all synthetic outcome generation in production.

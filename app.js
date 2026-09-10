@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 15;
+  const VERSION = 16;
   const SESSION_KEY = 'dancoAssessment_adv_v13_session';
   const SETTINGS_KEY = 'dancoAssessment_adv_v13_settings';
   const APPLICATIONS_KEY = 'dancoAssessment_adv_v13_applications';
@@ -17,6 +17,7 @@
   const DANCO_PLUS_REQUEST_KEY = 'dancoAssessment_dancoPlus_request';
   const OWNER_SESSION_KEY = 'dancoAssessment_dancoPlus_ownerSession';
   const OWNER_PRESENTATION_KEY = 'dancoAssessment_dancoPlus_ownerPresentation';
+  const DANCO_PLUS_PITCH_PROMPT_KEY = 'dancoAssessment_dancoPlus_pitchPromptSeen_v1';
   const OWNER_HASH = '5986B210';
   const TRIAL_RUNS = 3;
   const TRIAL_HASHES = new Set(['F083233F','AE44D52A','8CBCD409','AB6BB9D6','C0BA6D81','26399FF4','E2556F1A','9988758A','E61E252E','C495C2E8']);
@@ -24,6 +25,19 @@
   const XOR_STREAM = [0x31,0x9a,0x57,0xc4,0x0d,0xe3,0x68,0xb2,0x7f];
   const DISC_INDEX = { D:1, I:2, S:3, C:4 };
   const DISC_CODE = ['', 'D', 'I', 'S', 'C'];
+  const DANCO_PLUS_PITCH_SCENES = [
+    {speaker:'dan',headline:'One connected Danco hiring journey',visual:'journey',line:'Hi, I’m Dan. Danco Plus brings the same discipline Danco puts into its work to the hiring process: one connected journey, from application to payroll handoff.'},
+    {speaker:'brenda',headline:'One candidate record. Fewer handoffs.',visual:'record',line:'I’m Brenda. Instead of candidate information moving between forms, calls and inboxes, Danco Plus keeps the application, DISC profile, role assessment, review notes and next actions in one live candidate record.'},
+    {speaker:'dan',headline:'Measure sales suitability for the role that matters now',visual:'sales',line:'For Commercial Account Manager candidates, Danco Plus measures sales suitability directly: commercial judgment, relationship strength, pipeline discipline, technical confidence and sales approach.'},
+    {speaker:'brenda',headline:'A better interview, not a longer one',visual:'interview',line:'It doesn’t replace the interview. It makes it sharper, with a suitability brief, risk areas and four focused questions built around that candidate.'},
+    {speaker:'dan',headline:'Screening moves into the same workflow',visual:'screening',line:'When someone looks promising, the administrator can request screening, see the expected vendor cost and approve it from the same report.'},
+    {speaker:'brenda',headline:'Turn an accepted candidate into Danco paperwork',visual:'contract',line:'When the result is satisfactory, Danco’s own employment agreement can be pre-filled, generated, signed, securely filed and handed to payroll without re-entering the same information.'},
+    {speaker:'dan',headline:'Compress the administration around every hire',visual:'speed',line:'That means fewer handoffs, less duplicate administration and less waiting. When candidate availability and screening timing align, stages that normally span days can move in hours.'},
+    {speaker:'brenda',headline:'Make the application itself part of the attraction',visual:'attract',line:'And the front end works just as hard: bilingual, role-specific and engaging enough to turn a LinkedIn post, QR code or shared link into a structured application path.'},
+    {speaker:'dan',headline:'Keep the decision human',visual:'human',line:'Danco Plus doesn’t make hiring less human. It gives the people making the decision better information and a faster, more consistent process.'},
+    {speaker:'brenda',headline:'Then hand a complete hiring file to payroll',visual:'payroll',line:'From promising applicant to employment-ready: one Danco process, better evidence, faster decisions. And when they’re hired? Hand it to payroll.'}
+  ];
+
   const BACKGROUND_DEMO_FALLBACK = {
     providers:['Checkr','GoodHire'],
     packages:[
@@ -243,6 +257,7 @@
   let currentSharedReference = '';
   let currentQueueStatus = 'pending';
   let sharedQueueRecords = [];
+  let backgroundReportRecords = [];
   let currentLoadedRecord = null;
   let currentBackgroundScreening = null;
   let backgroundQuote = null;
@@ -506,9 +521,9 @@
   function routeAfterLanguage(){
     if(!session||session.status==='complete') newSession();
     if(settings.deviceMode==='choice'){
-      session.mode=''; saveSession(); showScreen('journey-choice-screen'); return;
+      session.mode=''; saveSession(); showScreen('journey-choice-screen'); maybeOfferDancoPitch(); return;
     }
-    session.mode=settings.deviceMode; saveSession(); goToSetup();
+    session.mode=settings.deviceMode; saveSession(); goToSetup(); maybeOfferDancoPitch();
   }
   function showScreen(id){
     SCREENS.forEach(screen=>$(screen).classList.toggle('active',screen===id));
@@ -524,6 +539,118 @@
   let narrationPlayers={};
   let narrationQueue=[];
   let narrationQueueToken=0;
+  let pitchIndex=0;
+  let pitchPlaying=false;
+  let pitchMuted=false;
+  let pitchAdvanceTimer=null;
+  let pitchSpeechToken=0;
+  function dancoPitchVisual(type){
+    const visual={
+      journey:'<div class="pitch-flow"><span>APPLY</span><i>→</i><span>ASSESS</span><i>→</i><span>REVIEW</span><i>→</i><span>SCREEN</span><i>→</i><span>OFFER</span><i>→</i><span>PAYROLL</span></div>',
+      record:'<div class="pitch-record"><b>LIVE CANDIDATE RECORD</b><div><span>Application</span><span>DISC</span><span>Role assessment</span><span>Review</span><span>Next action</span></div></div>',
+      sales:'<div class="pitch-sales"><div class="pitch-score-mini"><b>86%</b><span>SALES SUITABILITY</span></div><div><span>Commercial judgment</span><i></i><span>Relationship value</span><i></i><span>Pipeline discipline</span><i></i></div></div>',
+      interview:'<div class="pitch-interview"><b>INTERVIEW DIRECTION</b><span>Probe the sales pipeline</span><span>Test margin discipline</span><span>Validate relationships</span><span>Explore technical confidence</span></div>',
+      screening:'<div class="pitch-screening"><div><small>BACKGROUND SCREEN</small><b>Vendor cost visible</b><span>Admin approval → request → status</span></div><strong>$59.99</strong></div>',
+      contract:'<div class="pitch-contract"><div class="pitch-doc"><b>DANCO</b><span>Employment Agreement</span><i></i><i></i><i></i></div><div class="pitch-contract-arrow">→</div><div class="pitch-folder">SIGNED<br>EMPLOYMENT<br>FILE</div></div>',
+      speed:'<div class="pitch-speed"><div><small>TRADITIONAL HANDOFFS</small><b>Forms → calls → re-entry → waiting</b></div><div><small>DANCO+</small><b>One record → next action</b></div></div>',
+      attract:'<div class="pitch-attract"><div class="pitch-phone"><b>DANCO</b><span>Apply now</span><em>Commercial Account Manager</em><button>Start application</button></div><div><b>ONE SHAREABLE LINK</b><span>Professional · bilingual · role-specific</span></div></div>',
+      human:'<div class="pitch-human"><div>DATA</div><i>+</i><div>JUDGMENT</div><i>=</i><strong>BETTER<br>DECISIONS</strong></div>',
+      payroll:'<div class="pitch-payroll"><span>APPLICATION</span><i>✓</i><span>ASSESSMENT</span><i>✓</i><span>SCREENING</span><i>✓</i><span>AGREEMENT</span><i>✓</i><strong>PAYROLL READY</strong></div>'
+    };
+    return visual[type]||'';
+  }
+  function clearPitchAdvance(){ if(pitchAdvanceTimer){clearTimeout(pitchAdvanceTimer);pitchAdvanceTimer=null;} }
+  function pitchUsVoices(){
+    if(!('speechSynthesis' in window))return [];
+    return speechSynthesis.getVoices().filter(v=>String(v.lang||'').toLowerCase().startsWith('en-us'));
+  }
+  function choosePitchVoice(speaker){
+    const voices=pitchUsVoices(); if(!voices.length)return null;
+    const preferred=speaker==='dan'?['Aaron','Alex','Fred','Tom','Matthew','Guy','Davis','Reed','Evan','Joey']:['Samantha','Ava','Allison','Susan','Zoe','Joelle','Nora','Nicky','Siri','Emma'];
+    for(const name of preferred){const found=voices.find(v=>String(v.name||'').toLowerCase().includes(name.toLowerCase()));if(found)return found;}
+    if(speaker==='brenda'&&voices.length>1)return voices[1];
+    return voices[0];
+  }
+  function schedulePitchAdvance(line){
+    clearPitchAdvance();
+    const words=String(line||'').trim().split(/\s+/).filter(Boolean).length;
+    pitchAdvanceTimer=setTimeout(()=>{if(pitchPlaying)advanceDancoPitch(1,true);},Math.max(4200,words*315));
+  }
+  function speakPitchScene(scene){
+    pitchSpeechToken++; const token=pitchSpeechToken; clearPitchAdvance();
+    if('speechSynthesis' in window)speechSynthesis.cancel();
+    if(pitchMuted||!('speechSynthesis' in window)){schedulePitchAdvance(scene.line);return;}
+    try{
+      const utterance=new SpeechSynthesisUtterance(scene.line); utterance.lang='en-US';
+      const voice=choosePitchVoice(scene.speaker); if(voice)utterance.voice=voice;
+      utterance.rate=scene.speaker==='dan'?.92:.96; utterance.pitch=scene.speaker==='dan'?.92:1.04; utterance.volume=1;
+      const words=String(scene.line||'').trim().split(/\s+/).filter(Boolean).length;
+      pitchAdvanceTimer=setTimeout(()=>{if(token===pitchSpeechToken&&pitchPlaying)advanceDancoPitch(1,true);},Math.max(9000,words*540));
+      utterance.onend=()=>{clearPitchAdvance();if(token===pitchSpeechToken&&pitchPlaying)advanceDancoPitch(1,true);};
+      utterance.onerror=()=>{clearPitchAdvance();if(token===pitchSpeechToken&&pitchPlaying)schedulePitchAdvance(scene.line);};
+      setTimeout(()=>{if(token===pitchSpeechToken&&pitchPlaying)speechSynthesis.speak(utterance);},45);
+    }catch(_){schedulePitchAdvance(scene.line);}
+  }
+  function updatePitchCta(){
+    const cta=$('pitch-primary-cta'); if(!cta)return;
+    cta.textContent=dancoPlusActive()?'Explore Danco+':'Request Danco+ trial';
+  }
+  function renderDancoPitchScene({speakLine=true}={}){
+    const scene=DANCO_PLUS_PITCH_SCENES[pitchIndex]; if(!scene)return;
+    $('pitch-speaker').textContent=scene.speaker==='dan'?'DAN':'BRENDA';
+    $('danco-plus-pitch-title').textContent=scene.headline; $('pitch-line').textContent=scene.line;
+    $('pitch-feature-visual').innerHTML=dancoPitchVisual(scene.visual);
+    $('pitch-scene-count').textContent=`${String(pitchIndex+1).padStart(2,'0')} / ${String(DANCO_PLUS_PITCH_SCENES.length).padStart(2,'0')}`;
+    $('pitch-progress-bar').style.width=`${((pitchIndex+1)/DANCO_PLUS_PITCH_SCENES.length)*100}%`;
+    $('pitch-character-dan').classList.toggle('active',scene.speaker==='dan');
+    $('pitch-character-brenda').classList.toggle('active',scene.speaker==='brenda');
+    $('pitch-cinema').dataset.scene=scene.visual;
+    $('pitch-prev').disabled=pitchIndex===0;
+    const last=pitchIndex===DANCO_PLUS_PITCH_SCENES.length-1;
+    $('pitch-next').disabled=last;
+    $('pitch-end-actions').hidden=!last;
+    $('pitch-play-pause').hidden=last;
+    updatePitchCta();
+    if(last){pitchPlaying=false; clearPitchAdvance(); if('speechSynthesis' in window)speechSynthesis.cancel();}
+    if(speakLine&&!last || (speakLine&&last)){pitchPlaying=true; $('pitch-play-pause').textContent='Pause'; speakPitchScene(scene); if(last){const finishToken=pitchSpeechToken; const markDone=()=>{};}}
+  }
+  function startDancoPitch(){
+    localStorage.setItem(DANCO_PLUS_PITCH_PROMPT_KEY,'1'); closeModal('danco-plus-pitch-prompt-modal'); cancelSpeech();
+    pitchIndex=0; pitchPlaying=true; pitchMuted=false; $('pitch-sound').textContent='🔊 Sound'; openModal('danco-plus-pitch-modal'); renderDancoPitchScene({speakLine:true});
+  }
+  function closeDancoPitch(){
+    pitchPlaying=false; pitchSpeechToken++; clearPitchAdvance(); if('speechSynthesis' in window)speechSynthesis.cancel(); closeModal('danco-plus-pitch-modal');
+  }
+  function pauseResumeDancoPitch(){
+    if(pitchPlaying){pitchPlaying=false; pitchSpeechToken++; clearPitchAdvance(); if('speechSynthesis' in window)speechSynthesis.cancel(); $('pitch-play-pause').textContent='Play';return;}
+    pitchPlaying=true; $('pitch-play-pause').textContent='Pause'; speakPitchScene(DANCO_PLUS_PITCH_SCENES[pitchIndex]);
+  }
+  function advanceDancoPitch(delta,fromAuto=false){
+    pitchSpeechToken++; clearPitchAdvance(); if('speechSynthesis' in window)speechSynthesis.cancel();
+    const next=Math.max(0,Math.min(DANCO_PLUS_PITCH_SCENES.length-1,pitchIndex+delta));
+    if(next===pitchIndex&&fromAuto){pitchPlaying=false;return;}
+    pitchIndex=next; pitchPlaying=true; renderDancoPitchScene({speakLine:true});
+  }
+  function togglePitchSound(){
+    pitchMuted=!pitchMuted; $('pitch-sound').textContent=pitchMuted?'🔇 Muted':'🔊 Sound';
+    if(pitchPlaying){pitchSpeechToken++; clearPitchAdvance(); if('speechSynthesis' in window)speechSynthesis.cancel(); speakPitchScene(DANCO_PLUS_PITCH_SCENES[pitchIndex]);}
+  }
+  function openDancoPitch({prompt=false}={}){
+    if(prompt){openModal('danco-plus-pitch-prompt-modal');return;}
+    startDancoPitch();
+  }
+  function skipDancoPitchPrompt(){localStorage.setItem(DANCO_PLUS_PITCH_PROMPT_KEY,'1');closeModal('danco-plus-pitch-prompt-modal');}
+  function maybeOfferDancoPitch(){
+    if(localStorage.getItem(DANCO_PLUS_PITCH_PROMPT_KEY))return;
+    if(!(isOwner()||trialRemaining()>0))return;
+    setTimeout(()=>{if(!$('danco-plus-pitch-modal').classList.contains('open'))openModal('danco-plus-pitch-prompt-modal');},360);
+  }
+  function pitchPrimaryAction(){
+    closeDancoPitch();
+    if(dancoPlusActive()){toast('Danco+ is active. Open Administrator to continue the advanced hiring workflow.');return;}
+    openDancoPlusRequest('Danco+ advanced hiring workflow');
+  }
+
   function initialiseNarration(){
     narrationPlayers={
       en:new Audio('./narration-en.mp3?v=29.0.0'),
@@ -897,6 +1024,103 @@
     const normalized=normalizeCode(code);
     return storedApplications().find(item=>normalizeCode(item.code)===normalized)||null;
   }
+
+  function demoBackgroundDisplayResults(bg){
+    if(!bg) return {};
+    if(bg.mode!=='prototype_demo') return bg.results||{};
+    const failed=bg.decision==='not_eligible';
+    return {
+      identity_trace:{label:'Identity / SSN trace',result:'Clear'},
+      national_criminal:{label:'National criminal search',result:failed?'Review required':'Clear'},
+      county_criminal:{label:'County criminal search',result:failed?'Review required':'Clear'},
+      sex_offender_registry:{label:'Sex offender registry',result:'No record'},
+      global_watchlist:{label:'Global watchlist',result:'No match'}
+    };
+  }
+  function backgroundStatusLabel(bg){
+    if(!bg) return 'AWAITING ADMIN ACTION';
+    if(bg.mode==='prototype_demo'){
+      if(bg.decision==='eligible') return 'CLEAR';
+      if(bg.decision==='not_eligible') return 'REVIEW REQUIRED';
+    }
+    return String(bg.status||'TO ACTION').replaceAll('_',' ').toUpperCase();
+  }
+  function backgroundReportFilename(record){
+    const bg=record?.backgroundScreening||{};
+    const ref=record?.reference||record?.code||'DEMO';
+    return bg.providerReportFilename||`Danco_Background_Check_Demo_${ref}_${bg.providerRequestId||'REPORT'}.html`;
+  }
+  function decodeDataHtml(dataUrl){
+    try{
+      if(!String(dataUrl||'').startsWith('data:text/html;base64,')) return '';
+      const raw=atob(String(dataUrl).slice('data:text/html;base64,'.length).replace(/\s+/g,''));
+      const bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));
+      return new TextDecoder().decode(bytes);
+    }catch(_){return '';}
+  }
+  function buildPrototypeBackgroundReportHtml(record){
+    const bg=record?.backgroundScreening||{};
+    const failed=bg.decision==='not_eligible';
+    const res=demoBackgroundDisplayResults(bg);
+    const rows=Object.values(res).map(item=>`<tr><td>${escapeHtml(item.label||'Screening area')}</td><td><b>${escapeHtml(item.result||'Status unavailable')}</b></td></tr>`).join('');
+    return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(backgroundReportFilename(record))}</title><style>
+      body{font-family:Arial,sans-serif;background:#eef4fb;color:#10213f;margin:0}.page{max-width:850px;margin:28px auto;background:white;box-shadow:0 12px 40px #17355722}.head{background:#092b55;color:white;padding:30px 34px;border-bottom:4px solid #cda434}.head small{letter-spacing:.16em;color:#f1d989}.body{padding:28px 34px}.demo{border:2px solid #cda434;background:#fff7da;padding:14px 18px;font-weight:700}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}.grid div{border:1px solid #d6e2f1;padding:12px}.grid span{display:block;font-size:11px;color:#64758e;text-transform:uppercase;letter-spacing:.06em}table{width:100%;border-collapse:collapse;margin:18px 0}th,td{padding:12px;border-bottom:1px solid #dbe4ef;text-align:left}.good{color:#246a49}.bad{color:#a43131}.fine{font-size:12px;color:#66758a}@media print{body{background:white}.page{margin:0;box-shadow:none}}</style></head><body><div class="page"><div class="head"><small>DANCO ROOFING SERVICES, INC. · DANCO+ PROTOTYPE</small><h1>Background Screening Report</h1></div><div class="body"><div class="demo">DEMONSTRATION ONLY — NOT A CONSUMER REPORT</div><div class="grid"><div><span>Candidate</span><b>${escapeHtml(record?.name||'Prototype applicant')}</b></div><div><span>Application reference</span><b>${escapeHtml(record?.reference||'DEMO')}</b></div><div><span>Screening reference</span><b>${escapeHtml(bg.providerRequestId||'DEMO')}</b></div><div><span>Provider</span><b>${escapeHtml(bg.provider||'Screening provider')}</b></div><div><span>Package</span><b>${escapeHtml(bg.packageLabel||'Employment background screen')}</b></div><div><span>Approved cost</span><b>${bg.quotedCost?`$${Number(bg.quotedCost).toFixed(2)} ${escapeHtml(bg.currency||'USD')}`:'Prototype price not recorded'}</b></div></div><h2 class="${failed?'bad':'good'}">${failed?'Review required · Does not meet Danco demo criteria':'Clear · Meets Danco demo criteria'}</h2><table><thead><tr><th>Screening area</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table><h3>Illustrative full-report detail</h3><p>${failed?'A synthetic review flag was selected by the administrator to demonstrate the non-eligible workflow. No real criminal record, court data or consumer report was obtained.':'All selected categories were configured to return clear or no-record statuses for workflow demonstration. No real criminal record, court data or consumer report was obtained.'}</p><p class="fine">This prototype file demonstrates the full-report filing position. Sensitive source details are intentionally excluded from the ordinary applicant summary and, in live service, would remain restricted to authorized personnel.</p></div></div></body></html>`;
+  }
+  async function populateBackgroundReportFolder(preloaded=null){
+    const select=$('background-report-select'), status=$('background-report-store-status');
+    if(!select||!status) return;
+    if(!dancoPlusActive()){
+      select.innerHTML='<option value="">Danco+ trial required</option>'; select.disabled=true;
+      status.textContent='Background-screening reports are part of Danco+.'; return;
+    }
+    if(!adminAccessPin){
+      select.innerHTML='<option value="">Administrator access required</option>'; select.disabled=true; return;
+    }
+    select.disabled=true; select.innerHTML='<option value="">Loading background-check reports…</option>';
+    try{
+      const statuses=['background_eligible','background_not_eligible','background_to_action'];
+      const all=preloaded
+        ? statuses.flatMap(status=>(preloaded[status]||[]).map(item=>({...item,queueStatus:status})))
+        : (await Promise.all(statuses.map(status=>sharedRequest('/api/admin',{action:'list',status,adminPin:adminAccessPin})))).flatMap((r,i)=>(r.submissions||[]).map(item=>({...item,queueStatus:statuses[i]})));
+      const seen=new Set();
+      backgroundReportRecords=all.filter(item=>item.reference&&!seen.has(item.reference)&&seen.add(item.reference));
+      select.innerHTML=backgroundReportRecords.length?'<option value="">Select a stored screening report</option>':'<option value="">No background-check reports filed yet</option>';
+      backgroundReportRecords.forEach(item=>{
+        const opt=document.createElement('option');
+        opt.value=item.reference;
+        const statusLabel=item.queueStatus==='background_eligible'?'Eligible':item.queueStatus==='background_not_eligible'?'Not eligible':'To action';
+        opt.textContent=`${item.name||'Applicant'} — ${item.reference} · ${statusLabel}`;
+        select.appendChild(opt);
+      });
+      status.textContent=backgroundReportRecords.length?`${backgroundReportRecords.length} stored screening report${backgroundReportRecords.length===1?'':'s'} · linked to application reference`:'A completed Danco+ screening demonstration will be filed here automatically.';
+      select.disabled=false;
+    }catch(error){
+      select.innerHTML='<option value="">Unable to load report folder</option>'; select.disabled=true;
+      status.textContent=error.message||'Unable to load background-check reports.';
+    }
+  }
+  async function openBackgroundReportFile(){
+    if(!requireDancoPlus('Background Check Reports')) return;
+    const select=$('background-report-select'), ref=select?.value||'';
+    if(!ref){toast('Select a background-check report first.');return;}
+    const tab=window.open('about:blank','_blank');
+    try{
+      const response=await sharedRequest('/api/admin',{action:'get',reference:ref,adminPin:adminAccessPin});
+      const record=response.submission;
+      if(!record?.backgroundScreening) throw new Error('No background-screening record is available for this applicant.');
+      let html=decodeDataHtml(record.backgroundScreening.providerReportUrl);
+      if(!html) html=buildPrototypeBackgroundReportHtml(record);
+      if(tab){tab.document.open();tab.document.write(html);tab.document.close();}
+      else{
+        const blob=new Blob([html],{type:'text/html'});
+        const url=URL.createObjectURL(blob); window.location.href=url; setTimeout(()=>URL.revokeObjectURL(url),60000);
+      }
+    }catch(error){
+      if(tab)tab.close();
+      toast(error.message||'Unable to open the background-check report.');
+    }
+  }
+
   async function populateStoredApplicants(){
     const select=$('stored-applicant-select'); if(!select) return;
     select.disabled=true; select.innerHTML='<option value="">Loading shared submissions…</option>';
@@ -914,12 +1138,14 @@
       sharedQueueRecords.forEach(item=>{const option=document.createElement('option');option.value=`remote:${item.reference}`;const kind=item.recordType==='application'?'Application':'Assessment';const role=item.role?` · ${item.role}`:'';option.textContent=`${item.name||'Unnamed applicant'} — ${item.reference} · ${kind}${role}`;select.appendChild(option);});
       $('shared-service-status').textContent='Live shared list · available on every authorized device';
       select.disabled=false;
+      await populateBackgroundReportFolder(grouped);
     }catch(error){
       const local=storedApplications().filter(item=>(item.queueStatus||'pending')===currentQueueStatus).sort((a,b)=>String(b.submittedAt).localeCompare(String(a.submittedAt)));
       select.innerHTML=local.length?'<option value="">Shared service unavailable — local copies</option>':'<option value="">Shared service unavailable</option>';
       local.forEach(item=>{const option=document.createElement('option');option.value=`local:${item.code}`;option.textContent=`${item.name||'Unnamed applicant'} — local copy`;select.appendChild(option);});
       $('shared-service-status').textContent=error.message;
       select.disabled=false;
+      await populateBackgroundReportFolder();
     }
   }
   async function storeCurrentApplication(){
@@ -1122,7 +1348,7 @@
     const bgFailed=bg?.decision==='not_eligible';
     const bgPassed=bg?.decision==='eligible';
     const bgDecisionLabel=bgFailed?'DOES NOT MEET DANCO CRITERIA':bgPassed?'MEETS DANCO CRITERIA':bg?.decision?bg.decision.replaceAll('_',' ').toUpperCase():'TO ACTION';
-    let backgroundHtml=application?`<section class="background-report-card ${bgFailed?'background-report-failed':bgPassed?'background-report-passed':''}"><div class="background-report-heading"><div><small>BACKGROUND SCREENING</small><h3>${bg?'Screening record':'Not yet requested'}</h3></div><span class="background-status-pill">${escapeHtml(bg?.status?bg.status.replaceAll('_',' ').toUpperCase():'AWAITING ADMIN ACTION')}</span></div>${bg?`${bgFailed?'<div class="background-failure-alert"><b>BACKGROUND CHECK ERROR · CONTRACT CREATION BLOCKED</b><span>This demonstration result is filed as Background checked — Not eligible. Senior review is required before the candidate can progress.</span></div>':bgPassed?'<div class="background-success-alert"><b>BACKGROUND CHECK DEMO · CRITERIA MET</b><span>This demonstration result has been filed automatically as Background checked — Eligible.</span></div>':''}<div class="background-meta-grid"><div><span>Provider</span><b>${escapeHtml(bg.provider||'Provider to be selected')}</b></div><div><span>Package</span><b>${escapeHtml(bg.packageLabel||'Employment background screen')}</b></div><div><span>Approved cost</span><b>${bg.quotedCost?`$${Number(bg.quotedCost).toFixed(2)} ${escapeHtml(bg.currency||'USD')}`:'Not recorded'}</b></div><div><span>${bg.mode==='prototype_demo'?'Prototype outcome':'Reviewer decision'}</span><b>${escapeHtml(bgDecisionLabel)}</b></div></div><div class="background-result-grid">${Object.values(bg.results||{}).map(item=>`<div><span>${escapeHtml(item.label||'Screening category')}</span><b>${escapeHtml(item.result||'Results will be displayed when live')}</b></div>`).join('')}</div><p class="fine">${bg.mode==='prototype_demo'?'Prototype demonstration only. The pass/fail outcome above was deliberately selected by the reviewer to demonstrate workflow behavior; no third-party screening was ordered and no charge was made. The category-level results remain placeholders until a live vendor is connected.':'Live screening status summary. Detailed provider reports and sensitive source records should remain in the approved screening environment and be accessed only by authorized staff.'}</p>`:`<p>The applicant's consent response is stored with the application. An authorized Danco reviewer can start the prototype background-screening workflow after reviewing the assessment.</p>`}</section>`:'';
+    let backgroundHtml=application?`<section class="background-report-card ${bgFailed?'background-report-failed':bgPassed?'background-report-passed':''}"><div class="background-report-heading"><div><small>BACKGROUND SCREENING</small><h3>${bg?'Screening record':'Not yet requested'}</h3></div><span class="background-status-pill">${escapeHtml(backgroundStatusLabel(bg))}</span></div>${bg?`${bgFailed?'<div class="background-failure-alert"><b>BACKGROUND CHECK ERROR · CONTRACT CREATION BLOCKED</b><span>This demonstration result is filed as Background checked — Not eligible. Senior review is required before the candidate can progress.</span></div>':bgPassed?'<div class="background-success-alert"><b>BACKGROUND CHECK DEMO · CRITERIA MET</b><span>This demonstration result has been filed automatically as Background checked — Eligible.</span></div>':''}<div class="background-meta-grid"><div><span>Provider</span><b>${escapeHtml(bg.provider||'Provider to be selected')}</b></div><div><span>Package</span><b>${escapeHtml(bg.packageLabel||'Employment background screen')}</b></div><div><span>Approved cost</span><b>${bg.quotedCost?`$${Number(bg.quotedCost).toFixed(2)} ${escapeHtml(bg.currency||'USD')}`:'Not recorded'}</b></div><div><span>${bg.mode==='prototype_demo'?'Prototype outcome':'Reviewer decision'}</span><b>${escapeHtml(bgDecisionLabel)}</b></div></div><div class="background-result-grid">${Object.values(demoBackgroundDisplayResults(bg)).map(item=>`<div><span>${escapeHtml(item.label||'Screening category')}</span><b>${escapeHtml(item.result||'Status unavailable')}</b></div>`).join('')}</div><p class="fine">${bg.mode==='prototype_demo'?'Prototype demonstration only. The pass/fail outcome above was deliberately selected by the reviewer to demonstrate workflow behavior; no third-party screening was ordered and no charge was made. The applicant report shows status only. The full demonstration report is filed separately under Background Check Reports; a live vendor would supply the authoritative detailed report.':'Live screening status summary. Detailed provider reports and sensitive source records should remain in the approved screening environment and be accessed only by authorized staff.'}</p><div class="background-file-location"><span>FULL REPORT</span><b>Filed under Background Check Reports · ${escapeHtml(reference||'application reference')}</b></div>`:`<p>The applicant's consent response is stored with the application. An authorized Danco reviewer can start the prototype background-screening workflow after reviewing the assessment.</p>`}</section>`:'';
     if(application&&!dancoPlusActive()) backgroundHtml=`<section class="danco-plus-report-teaser"><div class="danco-plus-mark small"><b>Danco+</b><span>LOCKED</span></div><div><small>OPTIONAL ADVANCED HIRING WORKFLOW</small><h3>Continue beyond assessment when Danco is ready</h3><p>Integrated background screening, offer-document creation and secure employment-file progression are available in the owner-approved Danco+ trial.</p></div></section>`;
     const ec=employmentContract||currentEmploymentContract||null;
     const contractHtml=application&&ec?`<section class="background-report-card contract-report-card"><div class="background-report-heading"><div><small>EMPLOYMENT CONTRACT</small><h3>${escapeHtml(ec.contractReference||'Contract created')}</h3></div><span class="background-status-pill">${ec.signedStoragePath?'SIGNED FILE UPLOADED':'CONTRACT CREATED'}</span></div><div class="background-meta-grid"><div><span>Role offered</span><b>${escapeHtml(ec.offeredRole||'Not recorded')}</b></div><div><span>Created by</span><b>${escapeHtml(ec.createdBy||'Danco administrator')}</b></div><div><span>Created</span><b>${escapeHtml(ec.createdAt?new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short'}).format(new Date(ec.createdAt)):'Not recorded')}</b></div><div><span>Signed document</span><b>${escapeHtml(ec.signedFilename||'Awaiting signed upload')}</b></div></div></section>`:'';
@@ -1272,7 +1498,7 @@
       });
       currentBackgroundScreening=response.screening||null;currentQueueStatus=response.queueStatus||(demoOutcome==='not_eligible'?'background_not_eligible':'background_eligible');closeModal('background-modal');
       toast(demoOutcome==='not_eligible'?'Background check demo failed — candidate filed as not eligible.':'Background check demo passed — candidate filed as eligible.');
-      await reloadCurrentSharedRecord(); await populateStoredApplicants();
+      await reloadCurrentSharedRecord(); await populateStoredApplicants(); await populateBackgroundReportFolder();
     }catch(error){$('background-error').textContent=error.message;}
     finally{button.disabled=false;button.textContent='Approve cost & run screening demo';}
   }
@@ -1478,6 +1704,16 @@
 
   function initEvents(){
     $$('[data-language]').forEach(button=>button.addEventListener('click',()=>{setLanguage(button.dataset.language);routeAfterLanguage();}));
+    $$('[data-action="open-danco-plus-pitch"]').forEach(button=>button.addEventListener('click',()=>openDancoPitch()));
+    $('play-danco-plus-pitch')?.addEventListener('click',startDancoPitch);
+    $('skip-danco-plus-pitch')?.addEventListener('click',skipDancoPitchPrompt);
+    $('close-danco-plus-pitch')?.addEventListener('click',closeDancoPitch);
+    $('pitch-play-pause')?.addEventListener('click',pauseResumeDancoPitch);
+    $('pitch-prev')?.addEventListener('click',()=>advanceDancoPitch(-1));
+    $('pitch-next')?.addEventListener('click',()=>advanceDancoPitch(1));
+    $('pitch-sound')?.addEventListener('click',togglePitchSound);
+    $('pitch-replay')?.addEventListener('click',startDancoPitch);
+    $('pitch-primary-cta')?.addEventListener('click',pitchPrimaryAction);
     $$('[data-action="open-unlock"]').forEach(button=>button.addEventListener('click',()=>openModal('unlock-modal')));
     $$('[data-action="close-unlock"]').forEach(button=>button.addEventListener('click',()=>closeModal('unlock-modal')));
     $$('[data-action="close-admin"]').forEach(button=>button.addEventListener('click',()=>closeModal('admin-modal')));
@@ -1527,6 +1763,7 @@
     $('confirm-create-contract').addEventListener('click',createEmploymentContract);
     $('upload-signed-contract').addEventListener('click',uploadSignedContract);
     $('open-signed-contract').addEventListener('click',openSignedContract);
+    $('open-background-report')?.addEventListener('click',openBackgroundReportFile);
     $('print-contract').addEventListener('click',printEmploymentContract);
     $('confirm-background-request').addEventListener('click',confirmBackgroundRequest);
     $$('[data-background-decision]').forEach(button=>button.addEventListener('click',()=>setBackgroundDecision(button.dataset.backgroundDecision)));
@@ -1545,7 +1782,9 @@
     $('print-report').addEventListener('click',()=>window.print());
     $('reset-device').addEventListener('click',()=>{if(!confirm('Reset the current applicant on this device? Access status and remaining trial runs will be preserved.'))return;clearInterval(timer);localStorage.removeItem(SESSION_KEY);session=null;$('dashboard-output').innerHTML='';closeModal('admin-modal');newSession();showScreen('language-screen');toast('Applicant reset.');});
     [$('unlock-modal'),$('admin-modal'),$('submit-modal'),$('background-modal'),$('contract-modal'),$('ssn-warning-modal'),$('danco-plus-request-modal'),$('danco-plus-welcome-modal'),$('owner-verify-modal')].forEach(modal=>modal.addEventListener('click',event=>{if(event.target===modal)modal.classList.remove('open');}));
-    document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeModal('unlock-modal');closeModal('admin-modal');closeModal('submit-modal');closeModal('background-modal');closeModal('contract-modal');closeModal('ssn-warning-modal');closeModal('danco-plus-request-modal');closeModal('danco-plus-welcome-modal');closeModal('owner-verify-modal');closeHelp();}});
+    $('danco-plus-pitch-prompt-modal')?.addEventListener('click',event=>{if(event.target===$('danco-plus-pitch-prompt-modal'))skipDancoPitchPrompt();});
+    $('danco-plus-pitch-modal')?.addEventListener('click',event=>{if(event.target===$('danco-plus-pitch-modal'))closeDancoPitch();});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeModal('unlock-modal');closeModal('admin-modal');closeModal('submit-modal');closeModal('background-modal');closeModal('contract-modal');closeModal('ssn-warning-modal');closeModal('danco-plus-request-modal');closeModal('danco-plus-welcome-modal');closeModal('danco-plus-pitch-prompt-modal');closeDancoPitch();closeModal('owner-verify-modal');closeHelp();}});
   }
   function prepareAdmin(){
     $('print-date').textContent=new Intl.DateTimeFormat('en-US',{dateStyle:'long',timeStyle:'short'}).format(new Date());

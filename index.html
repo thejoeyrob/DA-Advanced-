@@ -10,10 +10,10 @@
   <meta property="og:image" content="social-preview.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="manifest.webmanifest?v=29.0.0">
+  <link rel="manifest" href="manifest.webmanifest?v=30.0.1">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" href="icon-192.png">
-  <link rel="stylesheet" href="app.css?v=29.0.0">
+  <link rel="stylesheet" href="app.css?v=30.0.1">
   <title>Danco Workforce Assessment · Prototype</title>
 </head>
 <body class="prototype-locked">
@@ -55,6 +55,7 @@
             <button class="button button-gold" type="button" data-action="open-unlock">Unlock trial</button>
           </div>
           <p class="privacy-line">Fair &amp; inclusive · Secure &amp; confidential · Built for the Danco team</p>
+          <button class="danco-plus-story-button" type="button" data-action="open-danco-plus-pitch"><span aria-hidden="true">▶</span><span>Why Danco+?</span><small>See the connected hiring story</small></button>
         </div>
         <img class="hero-helper hero-helper-right slide-right" src="danco-helper-spanish.png" alt="Friendly Danco team helper holding a tablet">
       </div>
@@ -317,7 +318,7 @@
         <section class="danco-plus-access-card" id="danco-plus-access-card">
           <div class="danco-plus-mark"><b>Danco+</b><span id="danco-plus-access-state">STANDARD</span></div>
           <div class="danco-plus-access-copy"><span class="eyebrow">OPTIONAL ADVANCED HIRING WORKFLOW</span><h3 id="danco-plus-access-title">Advanced tools are visible in Standard mode</h3><p id="danco-plus-access-copy">Explore the standard assessment and application workflow normally. Danco+ can be requested on this device when you are ready to demonstrate integrated screening, offer creation and secure employment-file progression.</p></div>
-          <button class="button button-gold" id="request-danco-plus" type="button">Request Danco+ trial</button>
+          <div class="danco-plus-access-actions"><button class="button button-secondary" type="button" data-action="open-danco-plus-pitch">Why Danco+?</button><button class="button button-gold" id="request-danco-plus" type="button">Request Danco+ trial</button></div>
         </section>
         <section class="owner-danco-plus-panel" id="owner-danco-plus-panel" hidden>
           <div class="owner-panel-heading"><div><span class="eyebrow">OWNER ONLY · DANCO+ CONTROL</span><h3>Advanced trial approvals</h3><p>Approve requesting devices and switch this presentation device between Standard and Danco+ without re-entering the owner code.</p></div><span class="owner-badge">OWNER</span></div>
@@ -360,6 +361,10 @@
           <div><span class="eyebrow">UPLOAD-ONLY FILE STORE</span><h3>Signed employment contracts</h3><p>Upload the scanned, signed contract. Records enter this folder only after a signed file is uploaded; nothing can be moved here from another queue.</p></div>
           <div class="signed-upload-controls" id="signed-upload-controls"><label class="field"><span>Signed contract file</span><input id="signed-contract-file" type="file" accept="application/pdf,image/jpeg,image/png"></label><label class="field"><span>Uploaded by</span><input id="signed-contract-uploaded-by" maxlength="120" placeholder="Administrator name"></label><button class="button button-primary" id="upload-signed-contract" type="button">Upload signed contract</button></div>
           <button class="button button-secondary" id="open-signed-contract" type="button" hidden>Open signed contract</button><p class="form-error" id="signed-contract-error" role="alert"></p>
+        </section>
+        <section class="background-report-store danco-plus-feature-card" id="background-report-store" data-advanced-feature="filing">
+          <div class="background-report-store-heading"><div class="file-folder-icon" aria-hidden="true">▰</div><div><span class="eyebrow">PRIVATE SCREENING FILE STORE</span><h3>Background Check Reports</h3><p id="background-report-store-status">Completed Danco+ screening demonstrations are filed here against the matching application reference. The applicant report shows status only; open this folder to view the fuller demonstration report.</p></div></div>
+          <div class="stored-applicant-controls"><label class="field"><span>Stored background-check report</span><select id="background-report-select"><option value="">Open the dashboard to load reports</option></select></label><button class="button button-secondary" id="open-background-report" type="button">Open full background report</button></div>
         </section>
         <div class="submission-status-actions" id="submission-status-actions" hidden>
           <span>Move this shared record to:</span>
@@ -427,8 +432,53 @@
       <p class="danco-plus-tagline">Hire with confidence. Move at Danco speed.</p>
       <p class="lead small">This advanced prototype connects assessment insight, screening readiness, offer creation and secure employment-file handling into one guided workflow. It is designed to turn disconnected hiring handoffs that can take days into controlled actions that can take minutes — while keeping decisions, third-party costs and approvals in Danco's hands.</p>
       <div class="danco-plus-welcome-grid"><div><b>Screen</b><span>Progress promising applicants into a controlled background-screening demonstration.</span></div><div><b>Offer</b><span>Create a Danco-styled, pre-filled employment agreement from the applicant record.</span></div><div><b>File</b><span>Keep created and signed employment documents organized with the candidate workflow.</span></div></div>
-      <button class="button button-gold button-wide" id="enter-danco-plus" type="button">Enter Danco+</button>
+      <div class="danco-plus-welcome-actions"><button class="button button-secondary" type="button" data-action="open-danco-plus-pitch">▶ Watch the Danco+ story</button><button class="button button-gold" id="enter-danco-plus" type="button">Enter Danco+</button></div>
       <p class="fine">Prototype only. Real screening-provider services, pricing, turnaround and legal compliance remain independent third-party responsibilities.</p>
+    </div>
+  </div>
+
+
+  <div class="modal-backdrop" id="danco-plus-pitch-prompt-modal" role="dialog" aria-modal="true" aria-labelledby="danco-plus-pitch-prompt-title">
+    <div class="modal-card danco-plus-pitch-prompt-card">
+      <div class="pitch-prompt-characters" aria-hidden="true">
+        <img src="danco-helper-english.png" alt="">
+        <img src="danco-helper-spanish.png" alt="">
+      </div>
+      <div class="pitch-prompt-copy">
+        <div class="danco-plus-modal-mark">Danco+</div>
+        <span class="eyebrow">SHORT BUSINESS OVERVIEW</span>
+        <h2 id="danco-plus-pitch-prompt-title">See what happens when hiring becomes one Danco process.</h2>
+        <p class="lead small">Dan and Brenda can show you the bigger picture in about a minute: stronger candidate insight, fewer handoffs, screening and offer workflow, and a clean handoff to payroll.</p>
+        <div class="pitch-prompt-actions"><button class="button button-gold" id="play-danco-plus-pitch" type="button">▶ Play the pitch</button><button class="button button-secondary" id="skip-danco-plus-pitch" type="button">Skip for now</button></div>
+        <p class="fine">Internal prototype presentation · American English. The pitch can be replayed at any time from “Why Danco+?”.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop danco-plus-pitch-backdrop" id="danco-plus-pitch-modal" role="dialog" aria-modal="true" aria-labelledby="danco-plus-pitch-title">
+    <div class="danco-plus-pitch-stage" id="danco-plus-pitch-stage">
+      <button class="pitch-close" id="close-danco-plus-pitch" type="button" aria-label="Close Danco Plus presentation">×</button>
+      <div class="pitch-brandbar"><div><div class="danco-plus-glow-mark">Danco+</div><span>HIRING, CONNECTED END TO END</span></div><div class="pitch-brandbar-meta"><b id="pitch-scene-count">01 / 10</b><span>Business overview</span></div></div>
+      <div class="pitch-progress"><i id="pitch-progress-bar"></i></div>
+      <div class="pitch-cinema" id="pitch-cinema">
+        <div class="pitch-ambient" aria-hidden="true"></div>
+        <div class="pitch-character pitch-character-dan" id="pitch-character-dan" aria-hidden="true"><span class="pitch-nameplate">DAN</span><img src="danco-helper-english.png" alt=""></div>
+        <div class="pitch-message-card">
+          <div class="pitch-speaker"><span id="pitch-speaker">DAN</span><small>DANCO TEAM GUIDE</small></div>
+          <h2 id="danco-plus-pitch-title">One connected Danco hiring journey</h2>
+          <p id="pitch-line">Danco+ connects the hiring journey from application to payroll handoff.</p>
+          <div class="pitch-feature-visual" id="pitch-feature-visual" aria-hidden="true"></div>
+        </div>
+        <div class="pitch-character pitch-character-brenda" id="pitch-character-brenda" aria-hidden="true"><span class="pitch-nameplate">BRENDA</span><img src="danco-helper-spanish.png" alt=""></div>
+      </div>
+      <div class="pitch-controlbar">
+        <button class="pitch-control" id="pitch-prev" type="button" aria-label="Previous scene">←</button>
+        <button class="pitch-control pitch-control-primary" id="pitch-play-pause" type="button">Pause</button>
+        <button class="pitch-control" id="pitch-next" type="button" aria-label="Next scene">→</button>
+        <button class="pitch-control pitch-sound" id="pitch-sound" type="button" aria-label="Toggle pitch sound">🔊 Sound</button>
+        <div class="pitch-end-actions" id="pitch-end-actions" hidden><button class="button button-secondary" id="pitch-replay" type="button">Replay</button><button class="button button-gold" id="pitch-primary-cta" type="button">Explore Danco+</button></div>
+      </div>
+      <p class="pitch-disclaimer">Danco+ supports the hiring decision; it does not replace human judgment. Third-party screening turnaround and fees remain provider-dependent.</p>
     </div>
   </div>
 
@@ -519,7 +569,7 @@
     <img src="joseph-whelan-eds-white.png" alt="" aria-hidden="true">
   </aside>
 
-  <script src="narration-manifest.js?v=29.0.0" defer></script>
-  <script src="app.js?v=29.0.0" defer></script>
+  <script src="narration-manifest.js?v=30.0.1" defer></script>
+  <script src="app.js?v=30.0.1" defer></script>
 </body>
 </html>
