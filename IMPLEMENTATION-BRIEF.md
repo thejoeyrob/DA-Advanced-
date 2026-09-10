@@ -1,4 +1,4 @@
-# Danco Workforce Assessment — v32 implementation brief
+# Danco Workforce Assessment — v33 implementation brief
 
 ## Release intent
 v29 restores and strengthens the Danco+ screening demonstration while preserving every Standard assessment/application capability developed through v28.1.
@@ -73,5 +73,5 @@ A short buyer-facing **Why Danco+?** presentation is built into the prototype. I
 The Danco+ screening demonstration continues to use the existing `danco-service-v5` endpoint. A database compatibility migration now permits the v30 demonstration status values used by that service. A protected database trigger creates a prototype full-report artifact reference whenever a demonstration screening record is inserted. The applicant report displays only status-level screening categories; the Administrator **Background Check Reports** folder opens the fuller prototype report using the stored screening record. Real provider data must replace all synthetic outcome generation in production.
 
 
-## v32 presentation integrity layer
+## v33 presentation integrity layer
 The Danco+ pitch maintains a strict one-to-one scene/audio map. A missing or failed premium clip falls back to speech synthesis for the same on-screen line rather than advancing silently. The next premium scene is preloaded to reduce transition gaps. The Danco+ mode control now uses dedicated gold Danco and Danco+ brand assets; the plus state is a custom hand-drawn digital mark rather than plain text.
