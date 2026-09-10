@@ -39,18 +39,26 @@
     {speaker:'brenda',headline:'From first application to payroll-ready',visual:'payroll',line:'Exactly, Dan. Danco Plus can take the right candidate from first application to a signed employment agreement ready for payroll in one connected path. What can otherwise stretch across days or weeks can, when everything aligns, become hours. Less admin. Less waiting. Better evidence. Faster confidence. That’s Danco Plus: hiring, built to move at Danco speed.'}
   ];
 
+  // v32: complete scene-matched Danco+ narration. Every scene has its own full clip.
+  // The array order is deliberately locked to DANCO_PLUS_PITCH_SCENES; the integrity check below prevents silent omissions.
   const PREMIUM_PITCH_AUDIO = [
-    'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/096d0dd6-da7a-40e3-a45f-5342a206499d.mp3',
-    'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/94d3ad02-9857-4e8d-b1e0-fb00e38ec69d.mp3',
-    'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/fa4f3dd7-2615-477c-a290-c21002aba1c4.mp3',
-    'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f90539f4-abc1-4b98-b91e-c4a4bce48cd1.mp3',
-    'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/502fb2b7-96b9-4f29-9471-301dc369c169.mp3',
-    'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/fbfcbc5b-36c5-4158-8bda-5cbfe5510892b.mp3',
-    'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/60def49a-a1f6-4fe1-9b51-99694582f285.mp3',
-    'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/bd95d6da-b389-4ae8-9b41-4e7582ffd9a0.mp3',
-    'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/51858cee-2526-417f-8b7e-8d8874349852.mp3',
-    'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d73d3abe-fb7c-4f87-939e-19aef6d9bff0.mp3'
+    'https://www.aidocmaker.com/g0/audio?name=840de6a03a55431d862142736aad7d17',
+    'https://www.aidocmaker.com/g0/audio?name=a672e2d12ce847f78d71704e7a17f2b2',
+    'https://www.aidocmaker.com/g0/audio?name=86a3c396e45240a8bf973848a5b9b9e6',
+    'https://www.aidocmaker.com/g0/audio?name=9936da2d97264f92983eeaa5423421a9',
+    'https://www.aidocmaker.com/g0/audio?name=b76effda354e41d883c0a811f78f6414',
+    'https://www.aidocmaker.com/g0/audio?name=e50b8b73fd624ba6a7d78ec17a0d0a26',
+    'https://www.aidocmaker.com/g0/audio?name=6c20630387e940e59bcfa43972bbc2e0',
+    'https://www.aidocmaker.com/g0/audio?name=35ba882eb86043079da509b7a8625249',
+    'https://www.aidocmaker.com/g0/audio?name=383f9fba403f4367bd85500ff90ffe25',
+    'https://www.aidocmaker.com/g0/audio?name=d86cd33596284af499201a6f4e5c3d99'
   ];
+  if(PREMIUM_PITCH_AUDIO.length!==DANCO_PLUS_PITCH_SCENES.length){console.error('Danco+ pitch audio/scene mismatch');}
+  const pitchAudioPreload = new Map();
+  function preloadPitchAudio(index){
+    if(index<0||index>=PREMIUM_PITCH_AUDIO.length||pitchAudioPreload.has(index))return;
+    try{const a=new Audio(PREMIUM_PITCH_AUDIO[index]);a.preload='auto';pitchAudioPreload.set(index,a);}catch(_){/* fallback handled during playback */}
+  }
   const PREMIUM_GUIDE_AUDIO = {
     en:{
       setup:'https://www.aidocmaker.com/g0/audio?name=0ac81ab6646a4dd58c0d19df02bb9559',
@@ -365,7 +373,7 @@
     const active=dancoPlusActive();
     document.body.classList.toggle('danco-plus-mode',active);
     document.body.classList.toggle('danco-standard-mode',!active);
-    const badge=$('danco-plus-header-status');if(badge){badge.textContent=active?'DANCO+':'STANDARD';badge.classList.toggle('active',active);badge.setAttribute('aria-pressed',String(active));badge.title=active?'Danco+ active · tap for Standard':'Standard mode · tap to open or request Danco+';}
+    const badge=$('danco-plus-header-status');if(badge){badge.classList.toggle('active',active);badge.dataset.mode=active?'plus':'standard';badge.setAttribute('aria-pressed',String(active));badge.setAttribute('aria-label',active?'Danco Plus active. Switch to Standard mode':'Standard mode. Open or request Danco Plus');badge.title=active?'Danco+ active · tap for Standard':'Standard mode · tap to open or request Danco+';const stateLabel=badge.querySelector('.danco-plus-switch-state');if(stateLabel)stateLabel.textContent=active?'DANCO+':'STANDARD';}
     const eyebrow=$('product-eyebrow');if(eyebrow)eyebrow.innerHTML=active?'DANCO ROOFING SERVICES, INC. · <b>DANCO+</b> ADVANCED PROTOTYPE':'DANCO ROOFING SERVICES, INC. · WORKFORCE &amp; APPLICANT PROTOTYPE';
     const card=$('danco-plus-access-card'),state=$('danco-plus-access-state'),title=$('danco-plus-access-title'),copy=$('danco-plus-access-copy'),requestButton=$('request-danco-plus');
     if(card){card.classList.toggle('active',active);card.classList.toggle('owner-standard',isOwner()&&!active);}
@@ -639,20 +647,37 @@
     const words=String(line||'').trim().split(/\s+/).filter(Boolean).length;
     pitchAdvanceTimer=setTimeout(()=>{if(pitchPlaying)advanceDancoPitch(1,true);},Math.max(4200,words*315));
   }
+  function speakPitchDeviceFallback(scene,token){
+    if(token!==pitchSpeechToken||!pitchPlaying)return;
+    if(!('speechSynthesis' in window)){schedulePitchAdvance(scene.line);return;}
+    try{
+      speechSynthesis.cancel();
+      const utterance=new SpeechSynthesisUtterance(scene.line);
+      utterance.lang='en-US';utterance.rate=.96;utterance.pitch=scene.speaker==='dan'?.92:1.04;
+      const voice=choosePitchVoice(scene.speaker);if(voice)utterance.voice=voice;
+      utterance.onend=()=>{if(token===pitchSpeechToken&&pitchPlaying)advanceDancoPitch(1,true);};
+      utterance.onerror=()=>{if(token===pitchSpeechToken&&pitchPlaying)schedulePitchAdvance(scene.line);};
+      speechSynthesis.speak(utterance);
+    }catch(_){schedulePitchAdvance(scene.line);}
+  }
   function speakPitchScene(scene){
     pitchSpeechToken++; const token=pitchSpeechToken; clearPitchAdvance();
     if(premiumNarrationAudio){premiumNarrationAudio.pause();premiumNarrationAudio.src='';premiumNarrationAudio=null;}
     if('speechSynthesis' in window)speechSynthesis.cancel();
     if(pitchMuted){schedulePitchAdvance(scene.line);return;}
     const url=PREMIUM_PITCH_AUDIO[pitchIndex];
-    if(!url){schedulePitchAdvance(scene.line);return;}
+    if(!url){speakPitchDeviceFallback(scene,token);return;}
+    preloadPitchAudio(pitchIndex+1);
     try{
-      const audio=new Audio(url); premiumNarrationAudio=audio; audio.preload='auto';
-      audio.onended=()=>{if(token===pitchSpeechToken&&pitchPlaying)advanceDancoPitch(1,true);};
-      audio.onerror=()=>{if(token===pitchSpeechToken&&pitchPlaying){toast('Premium narration is temporarily unavailable. Captions remain active.');schedulePitchAdvance(scene.line);}};
+      const cached=pitchAudioPreload.get(pitchIndex);
+      const audio=cached||new Audio(url);pitchAudioPreload.delete(pitchIndex);premiumNarrationAudio=audio;audio.preload='auto';
+      let settled=false;
+      const fallback=()=>{if(settled||token!==pitchSpeechToken||!pitchPlaying)return;settled=true;premiumNarrationAudio=null;toast('Using device narration for this section.');speakPitchDeviceFallback(scene,token);};
+      audio.onended=()=>{if(settled)return;settled=true;if(token===pitchSpeechToken&&pitchPlaying)advanceDancoPitch(1,true);};
+      audio.onerror=fallback;
       const playback=audio.play();
-      if(playback?.catch)playback.catch(()=>{if(token===pitchSpeechToken&&pitchPlaying){toast('Tap Play to start Dan and Brenda audio.');pitchPlaying=false;$('pitch-play-pause').textContent='Play';}});
-    }catch(_){schedulePitchAdvance(scene.line);}
+      if(playback?.catch)playback.catch(err=>{if(err&&err.name==='NotAllowedError'){if(token===pitchSpeechToken&&pitchPlaying){pitchPlaying=false;$('pitch-play-pause').textContent='Play';toast('Tap Play once to allow presentation audio.');}}else fallback();});
+    }catch(_){speakPitchDeviceFallback(scene,token);}
   }
 
   function updatePitchCta(){
@@ -676,7 +701,7 @@
     $('pitch-play-pause').hidden=last;
     updatePitchCta();
     if(last){pitchPlaying=false; clearPitchAdvance(); if('speechSynthesis' in window)speechSynthesis.cancel();}
-    if(speakLine&&!last || (speakLine&&last)){pitchPlaying=true; $('pitch-play-pause').textContent='Pause'; speakPitchScene(scene); if(last){const finishToken=pitchSpeechToken; const markDone=()=>{};}}
+    if(speakLine){pitchPlaying=true; $('pitch-play-pause').textContent='Pause'; preloadPitchAudio(pitchIndex); speakPitchScene(scene);}
   }
   function startDancoPitch(){
     localStorage.setItem(DANCO_PLUS_PITCH_PROMPT_KEY,'1'); closeModal('danco-plus-pitch-prompt-modal'); cancelSpeech();
@@ -735,8 +760,8 @@
 
   function initialiseNarration(){
     narrationPlayers={
-      en:new Audio('./narration-en.mp3?v=31.0.0'),
-      es:new Audio('./narration-es.mp3?v=31.0.0')
+      en:new Audio('./narration-en.mp3?v=32.0.0'),
+      es:new Audio('./narration-es.mp3?v=32.0.0')
     };
     Object.values(narrationPlayers).forEach(audio=>{audio.preload='auto';audio.load();});
     narrationAudio=narrationPlayers[settings.lang];
@@ -1884,7 +1909,7 @@
     else if(session?.status==='profile'){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);profileIndex=session.profileAnswers?.length||0;renderProfile();}
     else if(session?.status==='profile-intro'){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);showScreen('profile-intro-screen');}
     else showScreen('language-screen');
-    if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=31.0.0').catch(()=>{}));
+    if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=32.0.0').catch(()=>{}));
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDancoPlusStatus({welcome:true});});
   }
 

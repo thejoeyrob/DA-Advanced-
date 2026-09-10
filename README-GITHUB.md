@@ -1,4 +1,4 @@
-# Danco Workforce Assessment — Standard + Danco+ Prototype v30
+# Danco Workforce Assessment — Standard + Danco+ Prototype v32
 
 Flat GitHub Pages PWA containing the current Standard Danco Workforce Assessment and the owner-approved Danco+ demonstration layer.
 
@@ -64,3 +64,12 @@ The ordinary applicant record excludes the full raw SSN. Signed employment files
 - STANDARD / DANCO+ in the header is now an in-place mode control. If Danco+ is not approved, tapping it opens the advanced-trial request; approved/owner presentation devices can switch modes without losing current progress.
 - Danco+ receives additional restrained metallic-gold detailing while retaining the Danco navy/blue identity.
 - v30 background-screening, report-store and employment-agreement functionality is preserved.
+
+
+## v32 — presentation audio integrity + Danco+ gold mode identity
+- All ten Danco+ business-pitch scenes now have dedicated full narration clips matched one-to-one with the displayed script.
+- Scene 06, “Danco paperwork, without re-keying the candidate”, has been restored with complete spoken narration.
+- The next scene is preloaded and any hosted-audio failure falls back to an appropriate US-English device voice without silently skipping the content.
+- The header mode switch now uses the official Danco roof/wordmark in metallic gold. Danco+ adds a digitally hand-drawn glowing plus and a roof alignment adjusted for the wider mark.
+- Tablet/desktop pitch geometry was tightened so Dan and Brenda remain clearly visible beside the message card.
+- Deploy the full flat package to the repository root; the v32 service-worker cache key clears stale v31 files.
