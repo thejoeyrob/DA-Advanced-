@@ -1,35 +1,34 @@
-DANCO+ — IN-APP BUSINESS PITCH SCRIPT (v30)
-Internal prototype presentation · American English
+DANCO+ · BUSINESS PITCH · v31
+American English · Dan + Brenda
 
-01 — DAN | One connected Danco hiring journey
-Hi, I’m Dan. Danco Plus brings the same discipline Danco puts into its work to the hiring process: one connected journey, from application to payroll handoff.
+1 · DAN — ONE CONNECTED DANCO HIRING JOURNEY
+Hi, I’m Dan. Think of Danco Plus as one connected hiring journey. Application, assessment, review, screening, offer and employment paperwork all move through the same Danco process instead of separate handoffs.
 
-02 — BRENDA | One candidate record. Fewer handoffs.
-I’m Brenda. Instead of candidate information moving between forms, calls and inboxes, Danco Plus keeps the application, DISC profile, role assessment, review notes and next actions in one live candidate record.
+2 · BRENDA — ONE CANDIDATE RECORD. FEWER HANDOFFS.
+Hi, I’m Brenda. And that matters, Dan, because the same candidate information stays with the candidate. No rebuilding the story from forms, calls and inboxes. Danco sees one live record, one clear status and one next action.
 
-03 — DAN | Measure sales suitability for the role that matters now
-For Commercial Account Manager candidates, Danco Plus measures sales suitability directly: commercial judgment, relationship strength, pipeline discipline, technical confidence and sales approach.
+3 · DAN — MEASURE SALES SUITABILITY FOR THE ROLE THAT MATTERS NOW
+Exactly. And for Commercial Account Manager candidates, Danco Plus measures the things that matter in the real role: commercial judgment, relationship strength, pipeline discipline, technical confidence and sales approach.
 
-04 — BRENDA | A better interview, not a longer one
-It doesn’t replace the interview. It makes it sharper, with a suitability brief, risk areas and four focused questions built around that candidate.
+4 · BRENDA — A BETTER INTERVIEW, NOT A LONGER ONE
+And that makes the interview better, not longer. The report gives the hiring team a suitability brief, the areas worth testing and four focused questions built around that individual candidate.
 
-05 — DAN | Screening moves into the same workflow
-When someone looks promising, the administrator can request screening, see the expected vendor cost and approve it from the same report.
+5 · DAN — SCREENING MOVES INTO THE SAME WORKFLOW
+Then, when a candidate looks right, screening moves into the same workflow. The administrator can see the package, see the expected vendor cost and approve the request from the candidate report instead of starting another process somewhere else.
 
-06 — BRENDA | Turn an accepted candidate into Danco paperwork
-When the result is satisfactory, Danco’s own employment agreement can be pre-filled, generated, signed, securely filed and handed to payroll without re-entering the same information.
+6 · BRENDA — DANCO PAPERWORK, WITHOUT RE-KEYING THE CANDIDATE
+And when the screening is satisfactory, Danco’s own employment agreement can be pre-filled from the same record, completed, signed and securely filed. No typing the same candidate information again just to move to the next stage.
 
-07 — DAN | Compress the administration around every hire
-That means fewer handoffs, less duplicate administration and less waiting. When candidate availability and screening timing align, stages that normally span days can move in hours.
+7 · DAN — TURN WAITING TIME INTO FORWARD MOTION
+That is where the time starts to disappear. Fewer handoffs, less duplicate administration and less waiting between stages. When the right candidate is available and screening timing lines up, a process that can stretch across days can move in hours.
 
-08 — BRENDA | Make the application itself part of the attraction
-And the front end works just as hard: bilingual, role-specific and engaging enough to turn a LinkedIn post, QR code or shared link into a structured application path.
+8 · BRENDA — MAKE THE APPLICATION ITSELF PART OF THE ATTRACTION
+And the front end works just as hard. It is bilingual, role-specific and professional enough to turn a LinkedIn post, QR code or shared link into a serious application route that feels like Danco from the first click.
 
-09 — DAN | Keep the decision human
-Danco Plus doesn’t make hiring less human. It gives the people making the decision better information and a faster, more consistent process.
+9 · DAN — BETTER EVIDENCE. HUMAN DECISION.
+So the decision stays where it belongs: with Danco. The app does not replace judgment. It gives the people making the decision better evidence, clearer direction and a consistent route from one stage to the next.
 
-10 — BRENDA | Then hand a complete hiring file to payroll
-From promising applicant to employment-ready: one Danco process, better evidence, faster decisions. And when they’re hired? Hand it to payroll.
+10 · BRENDA — FROM FIRST APPLICATION TO PAYROLL-READY
+Exactly, Dan. Danco Plus can take the right candidate from first application to a signed employment agreement ready for payroll in one connected path. What can otherwise stretch across days or weeks can, when everything aligns, become hours. Less admin. Less waiting. Better evidence. Faster confidence. That’s Danco Plus: hiring, built to move at Danco speed.
 
-POSITIONING NOTE
-The presentation deliberately does not claim Danco+ is the only integrated hiring platform in the market. Its commercial differentiation is that the workflow is built around Danco’s own roles, assessment logic, reports, screening process, employment agreement and hiring handoff rather than presenting Danco with a generic HR suite.
+Production note: Danco+ supports the hiring decision; it does not replace human judgment. Third-party screening turnaround and fees remain provider-dependent.

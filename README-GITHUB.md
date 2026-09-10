@@ -55,3 +55,12 @@ The ordinary applicant record excludes the full raw SSN. Signed employment files
 - Added **Background Check Reports** as a Danco+ file-store view in Administrator.
 - Each completed demo screening is filed against its application reference and can be opened as a fuller demonstration report.
 - Production/live screening remains provider-led; the prototype does not claim that its synthetic report is a real consumer report.
+
+## v31 premium voice + engagement update
+
+- Danco+ pitch now uses the generated Dan and Brenda premium American-English voice samples rather than the browser's default reader.
+- English assessment delivery alternates Dan and Brenda; Spanish uses Brenda. The existing bundled narration remains a local fallback, and the device reader remains an optional user-selected Help setting.
+- Long desktop/tablet forms keep the character stage visible while content scrolls.
+- STANDARD / DANCO+ in the header is now an in-place mode control. If Danco+ is not approved, tapping it opens the advanced-trial request; approved/owner presentation devices can switch modes without losing current progress.
+- Danco+ receives additional restrained metallic-gold detailing while retaining the Danco navy/blue identity.
+- v30 background-screening, report-store and employment-agreement functionality is preserved.
