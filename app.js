@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 18;
+  const VERSION = 19;
   const SESSION_KEY = 'dancoAssessment_adv_v13_session';
   const SETTINGS_KEY = 'dancoAssessment_adv_v13_settings';
   const APPLICATIONS_KEY = 'dancoAssessment_adv_v13_applications';
@@ -9,7 +9,8 @@
   const TRIAL_KEY = 'dancoAssessment_adv_v11_trial';
   const TRIAL_USAGE_KEY = 'dancoAssessment_adv_v11_trialUsage';
   const ADMIN_HASH = '9793703E';
-  const SHARED_SERVICE_URL = 'https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-service-v5';
+  const SHARED_SERVICE_URL = 'https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-service-v6';
+  const DANCO_INVITES_URL = 'https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-invites';
   const DANCO_PLUS_ACCESS_URL = 'https://uneqycntlykjedaaynou.supabase.co/functions/v1/danco-plus-access';
   const DEVICE_ID_KEY = 'dancoAssessment_dancoPlus_deviceId';
   const DANCO_PLUS_APPROVAL_KEY = 'dancoAssessment_dancoPlus_approval';
@@ -300,10 +301,10 @@
 
   const $ = id => document.getElementById(id);
   const $$ = selector => Array.from(document.querySelectorAll(selector));
-  const SCREENS = ['language-screen','journey-choice-screen','setup-screen','profile-intro-screen','profile-screen','instructions-screen','knowledge-screen','result-screen'];
+  const SCREENS = ['invite-welcome-screen','language-screen','journey-choice-screen','setup-screen','profile-intro-screen','profile-screen','instructions-screen','knowledge-screen','result-screen'];
   let settings = loadJson(SETTINGS_KEY, {lang:'en',audio:false,supportReason:0,deviceMode:'choice',voiceMode:'recorded'});
   settings.voiceMode=['recorded','device'].includes(settings.voiceMode)?settings.voiceMode:'recorded';
-  const RECORDED_AUDIO_DEFAULT_KEY='dancoAssessment_recordedAudioDefault_v35';
+  const RECORDED_AUDIO_DEFAULT_KEY='dancoAssessment_recordedAudioDefault_v36';
   if(localStorage.getItem(RECORDED_AUDIO_DEFAULT_KEY)!=='1'){settings.voiceMode='recorded';localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));localStorage.setItem(RECORDED_AUDIO_DEFAULT_KEY,'1');}
   settings.deviceMode=['assessment','application','choice'].includes(settings.deviceMode)?settings.deviceMode:'choice';
   let session = loadJson(SESSION_KEY, null);
@@ -334,6 +335,11 @@
   let nativeFullscreenActive = false;
   let dancoPlusPollTimer = null;
   let dancoPlusRequestContext = '';
+  const INVITE_TOKEN = new URLSearchParams(location.search).get('invite')||'';
+  let activeInvite = null;
+  let inviteBootError = '';
+  let pendingAccessibleCommit = false;
+  let currentBackgroundReportRecord = null;
 
   function t(key, ...args){ const value = TEXT[settings.lang]?.[key] ?? TEXT.en[key] ?? key; return typeof value === 'function' ? value(...args) : value; }
   function loadJson(key, fallback){ try{ const raw=localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }catch(_){ return fallback; } }
@@ -353,6 +359,67 @@
     let data={};try{data=await response.json();}catch(_){}
     if(!response.ok)throw new Error(data.error||'The Danco+ approval service is unavailable.');
     return data;
+  }
+  async function inviteRequest(payload){
+    const response=await fetch(DANCO_INVITES_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    let data={};try{data=await response.json();}catch(_){}
+    if(!response.ok)throw new Error(data.error||'The candidate-link service is unavailable.');
+    return data;
+  }
+  function inviteLiveMode(){return !!activeInvite&&!!INVITE_TOKEN;}
+  function inviteReferenceLabel(reference){return inviteLiveMode()&&reference?`LINK-${reference}`:reference||'';}
+  function isInviteRecord(record){return record?.application?.inviteSource===true;}
+  function displayRecordReference(record){const ref=record?.reference||record?.code||'';return isInviteRecord(record)&&ref?`LINK-${ref}`:ref;}
+  function prepareInviteWelcome(){
+    if(!activeInvite)return;
+    const named=String(activeInvite.inviteeName||'').trim();
+    $('invite-welcome-title').textContent=named?`Hello, ${named}`:'Welcome to Danco';
+    $('invite-welcome-role').textContent=activeInvite.role||'Invited role';
+    $('invite-welcome-message').textContent=named
+      ? `The Danco team would like you to complete an application and assessment for the ${activeInvite.role} role. The process includes a short work-style section followed by the role assessment.`
+      : `The Danco team would like you to complete an application and assessment for the ${activeInvite.role} role. The process includes a short work-style section followed by the role assessment.`;
+    const langLead=document.querySelector('#language-screen .lead');if(langLead)langLead.textContent='Choose your preferred language to continue your private Danco candidate application and role assessment.';
+    const langEyebrow=$('product-eyebrow');if(langEyebrow)langEyebrow.textContent='DANCO ROOFING SERVICES, INC. · CANDIDATE APPLICATION & ASSESSMENT';
+    const button=$('invite-welcome-continue');
+    if(activeInvite.blockedStarted){
+      $('invite-welcome-title').textContent='Assessment already started';
+      $('invite-welcome-message').textContent='This one-use link has already entered the timed assessment and cannot restart from the beginning. If the original assessment cannot be resumed on this device, please contact Danco for a new link.';
+      button.disabled=true;button.textContent='Contact Danco for a new link';
+    }else if(activeInvite.status==='cancelled'){
+      $('invite-welcome-title').textContent='Link no longer available';
+      $('invite-welcome-message').textContent='This candidate link has been cancelled. Please contact Danco if you need a replacement link.';
+      button.disabled=true;button.textContent='Link unavailable';
+    }else{button.disabled=false;button.textContent='Continue to language selection';}
+  }
+  async function handleInviteBoot(){
+    if(!INVITE_TOKEN)return false;
+    try{
+      const response=await inviteRequest({action:'status',token:INVITE_TOKEN});activeInvite=response.invite||null;
+      if(!activeInvite)throw new Error('This candidate link is unavailable.');
+      document.body.classList.add('invite-live-mode');
+      document.title='Danco Candidate Application & Assessment';
+      if(['completed','submitted'].includes(activeInvite.status)&&activeInvite.resultCode){
+        const decoded=decodeResult(activeInvite.resultCode),draft=activeInvite.draftRecord&&typeof activeInvite.draftRecord==='object'?activeInvite.draftRecord:{};
+        const draftAssessment=draft.assessment&&typeof draft.assessment==='object'?draft.assessment:{};
+        session={status:'complete',mode:'application',name:draft.name||activeInvite.inviteeName||'Candidate',reference:'',application:{...(draft.application||{}),role:activeInvite.role,inviteSource:true,inviteId:activeInvite.id,privacyAcknowledged:true},applicationSubmitted:activeInvite.status==='submitted'||!!activeInvite.submissionReference,submissionReference:activeInvite.submissionReference||'',assessmentTrack:activeInvite.role==='Commercial Account Manager'?'account_manager':'roofing',lang:draftAssessment.lang||decoded.lang||settings.lang,audio:typeof draftAssessment.audio==='boolean'?draftAssessment.audio:!!decoded.audio,supportReason:draftAssessment.supportReason??decoded.supportReason??0,profileSkipped:typeof draftAssessment.profileSkipped==='boolean'?draftAssessment.profileSkipped:!!decoded.profileSkipped,profileAnswers:Array.isArray(draftAssessment.profileAnswers)?draftAssessment.profileAnswers:(decoded.profileAnswers||[]),knowledgeAnswers:Array.isArray(draftAssessment.knowledgeAnswers)?draftAssessment.knowledgeAnswers:(decoded.knowledgeAnswers||[]),knowledgeIndex:10,resultCode:activeInvite.resultCode,inviteId:activeInvite.id,inviteToken:INVITE_TOKEN,trialConsumed:true};
+        saveSession();return true;
+      }
+      if(activeInvite.status==='started'){
+        const resumable=session?.inviteId===activeInvite.id&&session?.status==='knowledge';
+        if(!resumable)activeInvite.blockedStarted=true;
+        return true;
+      }
+      if(activeInvite.status==='created'){
+        localStorage.removeItem(SESSION_KEY);session=null;
+        return true;
+      }
+      return true;
+    }catch(error){
+      inviteBootError=error.message||'This candidate link is unavailable.';
+      activeInvite={id:'',role:'Candidate role',inviteeName:'',status:'cancelled'};
+      document.body.classList.add('invite-live-mode');prepareInviteWelcome();
+      $('invite-welcome-message').textContent=inviteBootError;return true;
+    }
   }
   function getDeviceId(){
     let id=localStorage.getItem(DEVICE_ID_KEY)||'';
@@ -381,7 +448,7 @@
     document.body.classList.toggle('danco-plus-mode',active);
     document.body.classList.toggle('danco-standard-mode',!active);
     const badge=$('danco-plus-header-status');if(badge){badge.classList.toggle('active',active);badge.dataset.mode=active?'plus':'standard';badge.setAttribute('aria-pressed',String(active));badge.setAttribute('aria-label',active?'Danco Plus active. Switch to Standard mode':'Standard mode. Open or request Danco Plus');badge.title=active?'Danco+ active · tap for Standard':'Standard mode · tap to open or request Danco+';const stateLabel=badge.querySelector('.danco-plus-switch-state');if(stateLabel)stateLabel.textContent=active?'DANCO+':'STANDARD';}
-    const eyebrow=$('product-eyebrow');if(eyebrow)eyebrow.innerHTML=active?'DANCO ROOFING SERVICES, INC. · <b>DANCO+</b> ADVANCED PROTOTYPE':'DANCO ROOFING SERVICES, INC. · WORKFORCE &amp; APPLICANT PROTOTYPE';
+    const eyebrow=$('product-eyebrow');if(eyebrow)eyebrow.innerHTML=inviteLiveMode()?'DANCO ROOFING SERVICES, INC. · CANDIDATE APPLICATION &amp; ASSESSMENT':active?'DANCO ROOFING SERVICES, INC. · <b>DANCO+</b> ADVANCED PROTOTYPE':'DANCO ROOFING SERVICES, INC. · WORKFORCE &amp; APPLICANT PROTOTYPE';
     const card=$('danco-plus-access-card'),state=$('danco-plus-access-state'),title=$('danco-plus-access-title'),copy=$('danco-plus-access-copy'),requestButton=$('request-danco-plus');
     if(card){card.classList.toggle('active',active);card.classList.toggle('owner-standard',isOwner()&&!active);}
     if(state)state.textContent=active?'ACTIVE':'STANDARD';
@@ -456,6 +523,22 @@
     const token=currentOwnerToken();if(!token){openModal('owner-verify-modal');return;}
     try{await dancoPlusRequest({action:'owner_decision',ownerToken:token,requestId,decision,decidedBy:'Danco owner'});toast(decision==='approved'?'Danco+ trial approved for that device.':decision==='revoked'?'Danco+ access revoked.':'Danco+ request declined.');await refreshOwnerRequests();}catch(e){$('owner-plus-error').textContent=e.message;}
   }
+  async function createCandidateInvite(){
+    const error=$('owner-invite-error'),output=$('owner-invite-output'),button=$('create-candidate-link');if(error)error.textContent='';
+    const ownerToken=currentOwnerToken();if(!ownerToken){openModal('owner-verify-modal');return;}
+    const role=$('owner-invite-role')?.value||'',inviteeName=$('owner-invite-name')?.value.trim()||'';
+    button.disabled=true;button.textContent='Creating secure link…';
+    try{
+      const response=await inviteRequest({action:'owner_create',ownerToken,role,inviteeName});if(!response.token)throw new Error('Candidate link could not be created.');
+      const url=new URL(location.href);url.search='';url.hash='';url.searchParams.set('invite',response.token);
+      $('owner-invite-link').value=url.toString();output.hidden=false;toast('One-use candidate link created.');
+    }catch(e){if(error)error.textContent=e.message||'Unable to create candidate link.';}
+    finally{button.disabled=false;button.textContent='Create one-use candidate link';}
+  }
+  async function copyCandidateInvite(){
+    const value=$('owner-invite-link')?.value||'';if(!value)return;
+    try{await navigator.clipboard.writeText(value);toast('Candidate link copied.');}catch(_){$('owner-invite-link')?.select();toast('Select and copy the candidate link.');}
+  }
   function setOwnerProductMode(mode){if(!isOwner())return;localStorage.setItem(OWNER_PRESENTATION_KEY,mode==='standard'?'standard':'advanced');applyDancoPlusMode();if(adminAuthenticated&&currentSharedReference)reloadCurrentSharedRecord().catch(()=>{});toast(`Presentation mode: ${mode==='standard'?'Standard':'Danco+'}.`);}
   function toggleHeaderDancoPlus(){
     const currentlyActive=dancoPlusActive();
@@ -474,10 +557,10 @@
   function trialHash(){ const h=localStorage.getItem(TRIAL_KEY)||''; return TRIAL_HASHES.has(h)?h:''; }
   function trialUsage(){ return loadJson(TRIAL_USAGE_KEY, {}); }
   function trialRemaining(){ const h=trialHash(); if(!h) return 0; const usage=trialUsage(); return Math.max(0, Number(usage[h]?.remaining ?? 0)); }
-  function accessMode(){ if(isOwner()) return 'owner'; if(trialHash()) return 'trial'; return 'locked'; }
-  function canBegin(){ return isOwner() || (trialHash() && trialRemaining()>0); }
+  function accessMode(){ if(inviteLiveMode()) return 'invite'; if(isOwner()) return 'owner'; if(trialHash()) return 'trial'; return 'locked'; }
+  function canBegin(){ return inviteLiveMode() || isOwner() || (trialHash() && trialRemaining()>0); }
   function consumeTrialCompletion(){
-    if(isOwner() || session?.trialConsumed) return;
+    if(inviteLiveMode() || isOwner() || session?.trialConsumed) return;
     const h=trialHash(); if(!h) return;
     const usage=trialUsage(); if(!usage[h]) usage[h]={remaining:TRIAL_RUNS,activatedAt:Date.now()};
     usage[h].remaining=Math.max(0,Number(usage[h].remaining||0)-1); usage[h].lastCompletedAt=Date.now();
@@ -495,16 +578,18 @@
   function applyAccessState(){
     const mode=accessMode(); const remaining=trialRemaining();
     document.body.classList.toggle('owner-access',mode==='owner');
+    document.body.classList.toggle('invite-live-mode',mode==='invite');
     document.body.classList.toggle('prototype-locked',mode==='locked');
     document.body.classList.toggle('prototype-trial',mode==='trial');
-    $('access-status').textContent=mode==='owner'?'FULL ACCESS':mode==='trial'?`PROTOTYPE TRIAL · ${remaining}`:'PROTOTYPE';
+    $('access-status').textContent=mode==='invite'?'CANDIDATE LINK':mode==='owner'?'FULL ACCESS':mode==='trial'?`PROTOTYPE TRIAL · ${remaining}`:'PROTOTYPE';
     $('locked-callout').classList.toggle('hidden',mode!=='locked');
     renderSetupAccess(); applyDancoPlusMode();
   }
   function renderSetupAccess(){
     const card=$('setup-access-card'); if(!card) return;
-    const mode=accessMode(); card.className=`access-card ${mode==='locked'?'locked':mode==='trial'?'trial':''}`;
-    if(mode==='owner') card.innerHTML=`<b>${escapeHtml(t('accessOwnerTitle'))}</b>${escapeHtml(t('accessOwnerCopy'))}`;
+    const mode=accessMode(); card.className=`access-card ${mode==='locked'?'locked':mode==='trial'?'trial':mode==='invite'?'invite':''}`;
+    if(mode==='invite') card.innerHTML='<b>Private Danco candidate link</b><span>This one-use link is authorized for the invited role. Complete the application, work-style profile and assessment, then submit once for Danco review.</span>';
+    else if(mode==='owner') card.innerHTML=`<b>${escapeHtml(t('accessOwnerTitle'))}</b>${escapeHtml(t('accessOwnerCopy'))}`;
     else if(mode==='trial') card.innerHTML=`<b>${escapeHtml(t('accessTrialTitle'))}</b>${escapeHtml(t('accessTrialCopy',trialRemaining()))}`;
     else card.innerHTML=`<b>${escapeHtml(t('accessLockedTitle'))}</b>${escapeHtml(t('accessLockedCopy'))}`;
   }
@@ -527,7 +612,7 @@
     $('help-tab').classList.toggle('right',settings.lang==='es'); $('help-drawer').classList.toggle('right',settings.lang==='es');
     renderSetupAccess(); applyProductMode(); renderAudioSupportControls();
   }
-  function activeProductMode(){ return session?.mode==='application'?'application':'assessment'; }
+  function activeProductMode(){ return inviteLiveMode()?'application':session?.mode==='application'?'application':'assessment'; }
   function normaliseDeviceMode(value){ return ['assessment','application','choice'].includes(value)?value:'choice'; }
   function normaliseSupportReason(value){ const reason=Number(value||0); return reason>=1&&reason<=3?reason:0; }
   function currentSupportReason(){
@@ -538,8 +623,8 @@
   function supportReportInfo(data){
     if(!data?.audio) return {label:'No audio support',detail:''};
     const reason=normaliseSupportReason(data.supportReason);
-    if(reason===2) return {label:'Reading support requested',detail:'Recorded narration, 15 seconds of additional answer time and Repeat question were enabled.'};
-    if(reason===3) return {label:'Sight support requested',detail:'Recorded narration, 15 seconds of additional answer time and Repeat question were enabled.'};
+    if(reason===2) return {label:'Reading support requested',detail:'Question narration and unlimited repeat were enabled before answers were revealed. The 60-second answer timer started only after Reveal answers was selected.'};
+    if(reason===3) return {label:'Sight support requested',detail:'Question narration and unlimited repeat were enabled before answers were revealed. The 60-second answer timer started only after Reveal answers was selected.'};
     return {label:'Spoken-guidance preference',detail:'Recorded narration was enabled without additional accessibility time.'};
   }
   function renderAudioSupportControls(){
@@ -570,12 +655,16 @@
   }
   function applyProductMode(){
     const applicationMode=activeProductMode()==='application';
+    const invited=inviteLiveMode();
     document.body.classList.toggle('application-mode',applicationMode);
     if($('application-fields')) $('application-fields').hidden=!applicationMode;
-    if($('setup-title')) $('setup-title').textContent=t(applicationMode?'applicationSetupTitle':'setupTitle');
-    const setupLead=document.querySelector('[data-i18n="setupLead"]'); if(setupLead) setupLead.textContent=t(applicationMode?'applicationSetupLead':'setupLead');
-    const setupHelper=document.querySelector('[data-i18n="setupHelper"]'); if(setupHelper) setupHelper.textContent=t(applicationMode?'applicationSetupHelper':'setupHelper');
-    if($('begin-beginner')) $('begin-beginner').textContent=t(applicationMode?'beginApplicationAssessment':'beginAssessment');
+    if($('setup-title')) $('setup-title').textContent=invited?'Danco candidate application':t(applicationMode?'applicationSetupTitle':'setupTitle');
+    const setupLead=document.querySelector('[data-i18n="setupLead"]'); if(setupLead) setupLead.textContent=invited?'Complete the details you are comfortable providing. Only your full name and the personal-information acknowledgement are required for this invitation.':t(applicationMode?'applicationSetupLead':'setupLead');
+    const setupHelper=document.querySelector('[data-i18n="setupHelper"]'); if(setupHelper) setupHelper.textContent=invited?'I’ll guide you through the application, short work-style profile and role assessment. You can leave optional personal details blank.':t(applicationMode?'applicationSetupHelper':'setupHelper');
+    if($('begin-beginner')) $('begin-beginner').textContent=invited?'Continue to work-style profile':t(applicationMode?'beginApplicationAssessment':'beginAssessment');
+    const ssnStatus=$('ssn-status');if(ssnStatus&&invited)ssnStatus.textContent='Optional. You may leave this blank if you prefer not to provide it at this stage.';
+    const consentNote=document.querySelector('[data-i18n="backgroundConsentNote"]');if(consentNote&&invited)consentNote.textContent='If your application progresses, Danco will confirm any required screening disclosure and authorization before a background check is requested.';
+    const fieldsTitle=$('application-fields-title');if(fieldsTitle&&invited)fieldsTitle.textContent='Candidate application details';
     $$('[data-admin-device-mode]').forEach(button=>{ const active=button.dataset.adminDeviceMode===settings.deviceMode; button.classList.toggle('active',active); button.setAttribute('aria-pressed',String(active)); });
   }
   function setDeviceMode(mode){
@@ -596,6 +685,9 @@
   }
   function routeAfterLanguage(){
     if(!session||session.status==='complete') newSession();
+    if(inviteLiveMode()){
+      session.mode='application';session.application={...(session.application||{}),role:activeInvite.role,inviteSource:true,inviteId:activeInvite.id};session.name=session.name||activeInvite.inviteeName||'';saveSession();goToSetup();return;
+    }
     if(settings.deviceMode==='choice'){
       session.mode=''; saveSession(); showScreen('journey-choice-screen'); maybeOfferDancoPitch(); return;
     }
@@ -788,8 +880,8 @@
 
   function initialiseNarration(){
     narrationPlayers={
-      en:new Audio('./narration-en.mp3?v=35.0.0'),
-      es:new Audio('./narration-es.mp3?v=35.0.0')
+      en:new Audio('./narration-en.mp3?v=36.0.0'),
+      es:new Audio('./narration-es.mp3?v=36.0.0')
     };
     Object.values(narrationPlayers).forEach(audio=>{audio.preload='auto';audio.load();});
     narrationAudio=narrationPlayers[settings.lang];
@@ -936,7 +1028,11 @@
       license:$('candidate-license')?.value||'',
       otherRoles:document.querySelector('input[name="other-roles"]:checked')?.value||'Yes',
       backgroundConsent:document.querySelector('input[name="background-consent"]:checked')?.value||'',
-      backgroundConsentReason:$('background-consent-reason')?.value.trim()||''
+      backgroundConsentReason:$('background-consent-reason')?.value.trim()||'',
+      privacyAcknowledged:!!$('candidate-privacy-ack')?.checked,
+      inviteSource:inviteLiveMode(),
+      inviteId:inviteLiveMode()?activeInvite?.id||'':'',
+      inviteCode:inviteLiveMode()?String(INVITE_TOKEN).slice(0,8).toUpperCase():''
     };
   }
   function populateApplicationForm(application={}){
@@ -963,6 +1059,7 @@
     $$('input[name="other-roles"]').forEach(input=>{input.checked=input.value===otherRoles;});
     const backgroundConsent=application.backgroundConsent||'';
     $$('input[name="background-consent"]').forEach(input=>{input.checked=input.value===backgroundConsent;});
+    if($('candidate-privacy-ack'))$('candidate-privacy-ack').checked=!!application.privacyAcknowledged;
     updateBackgroundConsentReason(); updateRoleExperienceLabel(); updateSsnStatus();
   }
   function openSsnWarning(){
@@ -998,16 +1095,27 @@
   }
 
   function newSession(){
-    const initialMode=settings.deviceMode==='choice'?'':settings.deviceMode;
-    session={status:'setup',mode:initialMode,name:'',reference:'',application:{},applicationSubmitted:false,assessmentTrack:'roofing',lang:settings.lang,audio:settings.audio,supportReason:settings.audio?normaliseSupportReason(settings.supportReason):0,profileSkipped:false,profileAnswers:[],knowledgeAnswers:Array(10).fill(0),questionOrder:shuffle(QUESTIONS.map(q=>q.id)),knowledgeIndex:0,startedAt:new Date().toISOString(),trialConsumed:false};
+    const invite=inviteLiveMode();
+    const initialMode=invite?'application':settings.deviceMode==='choice'?'':settings.deviceMode;
+    const inviteRole=invite?activeInvite?.role||'':'';
+    const track=inviteRole==='Commercial Account Manager'?'account_manager':'roofing';
+    const bank=track==='account_manager'?SALES_QUESTIONS:QUESTIONS;
+    session={status:'setup',mode:initialMode,name:invite?(activeInvite?.inviteeName||''):'',reference:'',application:invite?{role:inviteRole,inviteSource:true,inviteId:activeInvite?.id||'',privacyAcknowledged:false}:{},applicationSubmitted:false,assessmentTrack:track,lang:settings.lang,audio:settings.audio,supportReason:settings.audio?normaliseSupportReason(settings.supportReason):0,profileSkipped:false,profileAnswers:[],knowledgeAnswers:Array(10).fill(0),questionOrder:shuffle(bank.map(q=>q.id)),knowledgeIndex:0,startedAt:new Date().toISOString(),trialConsumed:invite,inviteId:invite?activeInvite?.id||'':'',inviteToken:invite?INVITE_TOKEN:''};
     ssnOverrideState={approved:false,valueKey:'',reason:'',other:''}; saveSession();
   }
   function goToSetup(){
     if(!session || session.status==='complete') newSession();
     if(!session.mode){ routeAfterLanguage(); return; }
     session.lang=settings.lang; session.audio=settings.audio;
+    if(inviteLiveMode()){session.mode='application';session.application={...(session.application||{}),role:activeInvite.role,inviteSource:true,inviteId:activeInvite.id};session.name=session.name||activeInvite.inviteeName||'';}
     $('candidate-name').value=session.name||''; $('setup-error').textContent='';
     populateApplicationForm(session.application||{}); applyProductMode(); renderAudioSupportControls();
+    if(inviteLiveMode()){
+      $('candidate-role').value=activeInvite.role;$('candidate-role').disabled=true;
+      document.querySelector('.prototype-optional')?.setAttribute('hidden','');
+      if($('candidate-privacy-ack-wrap'))$('candidate-privacy-ack-wrap').hidden=false;
+      updateRoleExperienceLabel();
+    }else{$('candidate-role').disabled=false;document.querySelector('.prototype-optional')?.removeAttribute('hidden');}
     showScreen('setup-screen'); {const appMode=activeProductMode()==='application';const line=t(appMode?'applicationSetupHelper':'setupHelper');speakPremiumGuide(appMode?'application':'setup',line);}
   }
   function beginBeginner(skipSsnPrompt=false){
@@ -1017,14 +1125,15 @@
     if(!canBegin()){ $('setup-error').textContent=trialHash()?t('usedError'):t('lockedError'); openModal('unlock-modal'); return; }
     if(!session || session.status==='complete') newSession();
     const mode=activeProductMode();
-    if(mode==='application'){
+    if(mode==='application'&&!inviteLiveMode()){
       resetSsnOverrideIfChanged();
       const check=validateSsn($('candidate-ssn')?.value||'');
       if(!check.valid&&!ssnOverrideState.approved&&!skipSsnPrompt){ openSsnWarning(); return; }
     }
     const application=mode==='application'?applicationFromForm():{};
-    if(mode==='application'&&!application.backgroundConsent){ $('setup-error').textContent=settings.lang==='es'?'Indica si autorizas una verificación de antecedentes si tu solicitud avanza.':'Please answer the background-screening consent question.'; return; }
-    if(mode==='application'&&application.backgroundConsent==='No'&&!application.backgroundConsentReason){ $('setup-error').textContent=settings.lang==='es'?'Indica brevemente el motivo.':'Please provide a brief reason for declining background screening.'; $('background-consent-reason')?.focus(); return; }
+    if(inviteLiveMode()){application.role=activeInvite.role;application.inviteSource=true;application.inviteId=activeInvite.id;if(!application.privacyAcknowledged){$('setup-error').textContent='Please confirm the personal information acknowledgement before continuing.';$('candidate-privacy-ack')?.focus();return;}}
+    if(mode==='application'&&!inviteLiveMode()&&!application.backgroundConsent){ $('setup-error').textContent=settings.lang==='es'?'Indica si autorizas una verificación de antecedentes si tu solicitud avanza.':'Please answer the background-screening consent question.'; return; }
+    if(mode==='application'&&!inviteLiveMode()&&application.backgroundConsent==='No'&&!application.backgroundConsentReason){ $('setup-error').textContent=settings.lang==='es'?'Indica brevemente el motivo.':'Please provide a brief reason for declining background screening.'; $('background-consent-reason')?.focus(); return; }
     const assessmentTrack=application.role==='Commercial Account Manager'?'account_manager':'roofing';
     const bank=assessmentTrack==='account_manager'?SALES_QUESTIONS:QUESTIONS;
     Object.assign(session,{mode,name,reference:'',application,assessmentTrack,questionOrder:shuffle(bank.map(q=>q.id)),knowledgeAnswers:Array(10).fill(0),knowledgeIndex:0,lang:settings.lang,audio:settings.audio,supportReason:settings.audio?normaliseSupportReason(settings.supportReason):0,status:'profile-intro'}); saveSession();
@@ -1071,62 +1180,122 @@
     return order.map(index=>({option:q.options[index],index})).filter(item=>item.option);
   }
   function currentQuestion(){ const id=session.questionOrder[session.knowledgeIndex]; return activeQuestionBank().find(q=>q.id===id); }
-  function questionReviewSeconds(q){ return q.read+(settings.audio?4:0)+(accessibilitySupportActive()?4:0); }
-  function questionAnswerSeconds(q){ return q.answer+(settings.audio?12:0)+(accessibilitySupportActive()?15:0); }
-  function startKnowledge(){
+  function standardQuestionSeconds(){return 45;}
+  function accessibleAnswerSeconds(){return 60;}
+  async function startKnowledge(){
     if(!canBegin() && !session?.trialConsumed){ openModal('unlock-modal'); return; }
+    if(inviteLiveMode()){
+      try{const response=await inviteRequest({action:'start',token:INVITE_TOKEN});activeInvite=response.invite||activeInvite;if(['completed','submitted'].includes(activeInvite?.status)&&activeInvite?.resultCode){session.resultCode=activeInvite.resultCode;session.status='complete';session.applicationSubmitted=activeInvite.status==='submitted';session.submissionReference=activeInvite.submissionReference||'';saveSession();renderResult();return;}}
+      catch(error){toast(error.message||'Unable to start this candidate assessment.');return;}
+    }
     session.status='knowledge'; session.knowledgeIndex=Number(session.knowledgeIndex||0); session.knowledgeAnswers=session.knowledgeAnswers||Array(10).fill(0); saveSession(); renderKnowledgeQuestion();
   }
   function renderKnowledgeQuestion(){
-    clearInterval(timer); optionLocked=false; knowledgeSelectedIndex=null;
+    clearInterval(timer); optionLocked=false; knowledgeSelectedIndex=null;pendingAccessibleCommit=false;
     if(session.knowledgeIndex>=activeQuestionBank().length){ completeAssessment(); return; }
     showScreen('knowledge-screen'); const q=currentQuestion(); currentDisplayOptions=seededOptions(q);
     $('knowledge-counter').textContent=t('knowledgeCounter',session.knowledgeIndex+1); $('knowledge-tier').textContent=q.tierLabel?q.tierLabel[settings.lang]:t('tiers')[q.tier]; $('knowledge-progress').style.width=`${(session.knowledgeIndex/10)*100}%`;
-    $('knowledge-category').textContent=q.catLabel?q.catLabel[settings.lang]:t('categories')[q.cat]; $('knowledge-question').textContent=q[settings.lang]; $('knowledge-hint').textContent=t('reviewHint');
+    $('knowledge-category').textContent=q.catLabel?q.catLabel[settings.lang]:t('categories')[q.cat]; $('knowledge-question').textContent=q[settings.lang];
     $('knowledge-options').innerHTML=currentDisplayOptions.map(({option,index},displayIndex)=>{
       const visual=!!option.img; const copy=q.hideText?'':`<span class="answer-copy"><span class="option-letter">${String.fromCharCode(65+displayIndex)}</span><span>${escapeHtml(option[settings.lang])}</span></span>`;
       const accessibleLabel=q.hideText?`${settings.lang==='es'?'Opción':'Option'} ${String.fromCharCode(65+displayIndex)}`:option[settings.lang];
-      return `<button class="knowledge-option ${visual?'visual':'text-only'}" type="button" data-answer-index="${index}" aria-label="${escapeHtml(accessibleLabel)}" aria-pressed="false" disabled>${visual?`<img src="${option.img}" alt="" draggable="false">`:''}${copy||`<span class="answer-copy"><span class="option-letter">${String.fromCharCode(65+displayIndex)}</span></span>`}</button>`;
+      return `<button class="knowledge-option ${visual?'visual':'text-only'}" type="button" data-answer-index="${index}" aria-label="${escapeHtml(accessibleLabel)}" aria-pressed="false">${visual?`<img src="${option.img}" alt="" draggable="false">`:''}${copy||`<span class="answer-copy"><span class="option-letter">${String.fromCharCode(65+displayIndex)}</span></span>`}</button>`;
     }).join('');
-    $('knowledge-repeat').hidden=!accessibilitySupportActive();
-    $('knowledge-confirm').disabled=true;
     $$('[data-answer-index]').forEach(button=>button.addEventListener('click',()=>selectKnowledgeAnswer(button)));
-    startPhase('review',questionReviewSeconds(q)); speak(q[settings.lang]);
+    $('knowledge-confirm').disabled=true;
+    const sameTimedQuestion=Number(session.activeKnowledgeIndex)===Number(session.knowledgeIndex);
+    const savedPhase=sameTimedQuestion?session.questionPhase:'';
+    const hasSavedDeadline=!!(sameTimedQuestion&&session.answerDeadline);
+    const savedRemaining=hasSavedDeadline?Math.ceil((Number(session.answerDeadline)-Date.now())/1000):0;
+    const savedSelection=sameTimedQuestion&&session.pendingKnowledgeSelection!==null&&session.pendingKnowledgeSelection!==undefined&&Number.isInteger(Number(session.pendingKnowledgeSelection))?Number(session.pendingKnowledgeSelection):null;
+    if(savedSelection!==null&&savedSelection>=0&&savedSelection<4)knowledgeSelectedIndex=savedSelection;
+    session.activeKnowledgeIndex=session.knowledgeIndex;saveSession();
+    if(accessibilitySupportActive()){
+      if(savedPhase==='answer'){
+        $('knowledge-options').hidden=false;$('knowledge-repeat').hidden=false;$('knowledge-reveal').hidden=true;
+        if(hasSavedDeadline&&savedRemaining<=0){phase='answer';$('phase-label').textContent=t('answer');$('timer-display').textContent='00';setTimeout(timeOutQuestion,0);}else startPhase('answer',Math.max(1,savedRemaining||accessibleAnswerSeconds()),{preserveDeadline:hasSavedDeadline&&savedRemaining>0});
+      }else{
+        phase='review';clearInterval(timer);session.questionPhase='review';session.answerDeadline=0;saveSession();$('phase-label').textContent=settings.lang==='es'?'PREGUNTA':'QUESTION';$('timer-display').textContent='--';$('timer-display').parentElement.classList.remove('answer');
+        $('knowledge-hint').textContent=settings.lang==='es'?'Escucha o repite la pregunta. Cuando estés listo, revela las respuestas para iniciar los 60 segundos.':'Listen to or repeat the question. When you are ready, reveal the answers to start the 60-second answer timer.';
+        $('knowledge-options').hidden=true;$('knowledge-repeat').hidden=false;$('knowledge-reveal').hidden=false;
+      }
+      speak(q[settings.lang]);
+    }else{
+      $('knowledge-options').hidden=false;$('knowledge-repeat').hidden=true;$('knowledge-reveal').hidden=true;
+      if(hasSavedDeadline&&savedRemaining<=0){phase='answer';$('phase-label').textContent=t('answer');$('timer-display').textContent='00';setTimeout(timeOutQuestion,0);}else startPhase('answer',Math.max(1,savedRemaining||standardQuestionSeconds()),{preserveDeadline:hasSavedDeadline&&savedRemaining>0});
+      if(settings.audio)speak(q[settings.lang]);
+    }
+    if(knowledgeSelectedIndex!==null){
+      const selectedButton=document.querySelector(`[data-answer-index="${knowledgeSelectedIndex}"]`);if(selectedButton){selectedButton.classList.add('selected');selectedButton.setAttribute('aria-pressed','true');$('knowledge-confirm').disabled=false;}
+    }
   }
-  function startPhase(nextPhase, seconds){
-    clearInterval(timer); phase=nextPhase; phaseRemaining=seconds; updateTimer();
+  function revealAccessibleAnswers(){
+    if(!accessibilitySupportActive()||phase!=='review'||optionLocked)return;
+    $('knowledge-options').hidden=false;$('knowledge-reveal').hidden=true;
+    startPhase('answer',accessibleAnswerSeconds());
+    speak(settings.lang==='es'?'Respuestas reveladas. Tienes sesenta segundos. Selecciona una respuesta para escucharla.':'Answers revealed. You have sixty seconds. Select an answer to hear it.',{force:true});
+  }
+  function startPhase(nextPhase, seconds,{preserveDeadline=false}={}){
+    clearInterval(timer); phase=nextPhase; phaseRemaining=seconds;
+    if(session){session.questionPhase=nextPhase;if(nextPhase==='answer'&&!preserveDeadline)session.answerDeadline=Date.now()+seconds*1000;saveSession();}
+    updateTimer();
     if(phase==='answer'){
-      $('phase-label').textContent=t('answer'); $('timer-display').parentElement.classList.add('answer'); $('knowledge-hint').textContent=t('answerHint');
+      $('phase-label').textContent=t('answer'); $('timer-display').parentElement.classList.add('answer');
+      $('knowledge-hint').textContent=accessibilitySupportActive()?(settings.lang==='es'?'Selecciona una respuesta. Se leerá en voz alta cuando la pulses.':'Select an answer. It will be read aloud when you press it.'):t('answerHint');
       $$('[data-answer-index]').forEach(button=>button.disabled=false);
       $('knowledge-confirm').disabled=knowledgeSelectedIndex===null;
-      const q=currentQuestion(); if(settings.audio){const fallback=q.hideText?q[settings.lang]:[q[settings.lang],...currentDisplayOptions.map(({option})=>option[settings.lang])];speakPremiumQuestion(activeAssessmentTrack()==='account_manager'?'sales':'roofing',q.id-1,fallback);}
-    }else{
-      $('phase-label').textContent=t('review'); $('timer-display').parentElement.classList.remove('answer');
     }
-    timer=setInterval(()=>{ phaseRemaining--; updateTimer(); if(phaseRemaining<=0){ clearInterval(timer); if(phase==='review') startPhase('answer',questionAnswerSeconds(currentQuestion())); else timeOutQuestion(); } },1000);
+    timer=setInterval(()=>{ phaseRemaining--; updateTimer(); if(phaseRemaining<=0){ clearInterval(timer); timeOutQuestion(); } },1000);
   }
-  function updateTimer(){ $('timer-display').textContent=String(Math.max(0,phaseRemaining)).padStart(2,'0'); }
+  function updateTimer(){ $('timer-display').textContent=phase==='review'&&accessibilitySupportActive()?'--':String(Math.max(0,phaseRemaining)).padStart(2,'0'); }
   function repeatCurrentQuestion(){
     const q=currentQuestion(); if(!q) return;
-    {const fallback=q.hideText?q[settings.lang]:[q[settings.lang],...currentDisplayOptions.map(({option})=>option[settings.lang])];speakPremiumQuestion(activeAssessmentTrack()==='account_manager'?'sales':'roofing',q.id-1,fallback);}
+    if(accessibilitySupportActive())speak(q[settings.lang],{force:true});
+    else speak(q[settings.lang],{force:true});
   }
   function selectKnowledgeAnswer(button){
     if(optionLocked || phase!=='answer') return;
-    knowledgeSelectedIndex=Number(button.dataset.answerIndex);
+    knowledgeSelectedIndex=Number(button.dataset.answerIndex);session.pendingKnowledgeSelection=knowledgeSelectedIndex;saveSession();
     $$('[data-answer-index]').forEach(optionButton=>{const selected=optionButton===button;optionButton.classList.toggle('selected',selected);optionButton.setAttribute('aria-pressed',String(selected));});
     $('knowledge-confirm').disabled=false; $('knowledge-hint').textContent=t('answerSelectedHint');
+    if(accessibilitySupportActive()){
+      const selected=currentDisplayOptions.find(item=>item.index===knowledgeSelectedIndex)?.option;
+      if(selected)speak(selected[settings.lang]||'',{force:true});
+    }
+  }
+  function commitKnowledgeAnswer(){
+    if(optionLocked||phase!=='answer'||knowledgeSelectedIndex===null) return;
+    optionLocked=true; clearInterval(timer); $('knowledge-confirm').disabled=true; $$('[data-answer-index]').forEach(button=>button.disabled=true);
+    const q=currentQuestion(); session.knowledgeAnswers[q.id-1]=knowledgeSelectedIndex+1;session.questionPhase='';session.answerDeadline=0;session.pendingKnowledgeSelection=null; saveSession(); setTimeout(advanceKnowledge,650);
   }
   function confirmKnowledgeAnswer(){
     if(optionLocked||phase!=='answer'||knowledgeSelectedIndex===null) return;
-    optionLocked=true; clearInterval(timer); $('knowledge-confirm').disabled=true; $$('[data-answer-index]').forEach(button=>button.disabled=true);
-    const q=currentQuestion(); session.knowledgeAnswers[q.id-1]=knowledgeSelectedIndex+1; saveSession(); setTimeout(advanceKnowledge,650);
+    if(accessibilitySupportActive()){
+      pendingAccessibleCommit=true;openModal('accessible-answer-confirm-modal');
+      speak(settings.lang==='es'?'¿Estás seguro de que quieres confirmar esta respuesta? Elige no para volver o sí para confirmar.':'Are you sure you want to commit this answer? Choose no to go back, or yes to commit.',{force:true});
+      return;
+    }
+    commitKnowledgeAnswer();
   }
-  function timeOutQuestion(){ if(optionLocked) return; optionLocked=true; $('knowledge-confirm').disabled=true; const q=currentQuestion(); session.knowledgeAnswers[q.id-1]=0; saveSession(); toast(t('timedOut')); setTimeout(advanceKnowledge,850); }
-  function advanceKnowledge(){ session.knowledgeIndex++; saveSession(); renderKnowledgeQuestion(); }
+  function accessibleCommitDecision(yes){
+    if(!pendingAccessibleCommit)return;pendingAccessibleCommit=false;closeModal('accessible-answer-confirm-modal');
+    speak(yes?(settings.lang==='es'?'Sí. Respuesta confirmada.':'Yes. Answer committed.'):(settings.lang==='es'?'No. Vuelve a elegir.':'No. Go back to your answer.'),{force:true});
+    if(yes)commitKnowledgeAnswer();
+  }
+  function timeOutQuestion(){
+    if(optionLocked) return; optionLocked=true; $('knowledge-confirm').disabled=true; $$('[data-answer-index]').forEach(button=>button.disabled=true);
+    const q=currentQuestion(); session.knowledgeAnswers[q.id-1]=knowledgeSelectedIndex===null?0:knowledgeSelectedIndex+1;session.questionPhase='';session.answerDeadline=0;session.pendingKnowledgeSelection=null; saveSession();
+    toast(knowledgeSelectedIndex===null?t('timedOut'):(settings.lang==='es'?'Tiempo agotado — se registró la respuesta seleccionada.':'Time expired — your selected answer was recorded.')); setTimeout(advanceKnowledge,850);
+  }
+  function advanceKnowledge(){ session.knowledgeIndex++;session.questionPhase='';session.answerDeadline=0;session.pendingKnowledgeSelection=null;session.activeKnowledgeIndex=session.knowledgeIndex; saveSession(); renderKnowledgeQuestion(); }
 
-  function completeAssessment(){
+  async function completeAssessment(){
     clearInterval(timer); if(session.status!=='complete'){
-      session.status='complete'; session.completedAt=new Date().toISOString(); session.lang=settings.lang; session.audio=settings.audio; session.supportReason=settings.audio?normaliseSupportReason(settings.supportReason):0; consumeTrialCompletion(); session.resultCode=encodeResult(session); saveSession(); applyAccessState();
+      session.status='complete'; session.completedAt=new Date().toISOString(); session.lang=settings.lang; session.audio=settings.audio; session.supportReason=settings.audio?normaliseSupportReason(settings.supportReason):0;session.questionPhase='';session.answerDeadline=0; consumeTrialCompletion(); session.resultCode=encodeResult(session); saveSession(); applyAccessState();
+    }
+    if(inviteLiveMode()&&session.resultCode){
+      try{const draftRecord={name:session.name||'',application:{...(session.application||{})},assessment:{knowledgeAnswers:[...(session.knowledgeAnswers||[])],profileSkipped:!!session.profileSkipped,profileAnswers:[...(session.profileAnswers||[])],assessmentTrack:activeAssessmentTrack(),lang:session.lang,audio:!!session.audio,supportReason:normaliseSupportReason(session.supportReason)},resultCode:session.resultCode};const r=await inviteRequest({action:'complete',token:INVITE_TOKEN,resultCode:session.resultCode,draftRecord});if(r?.invite)activeInvite=r.invite;}
+      catch(error){toast('Result saved on this device. Danco link status will retry when you submit.');}
     }
     renderResult();
   }
@@ -1141,16 +1310,16 @@
     $('result-code-label').textContent=t(applicationMode?'applicationNumberLabel':'resultCodeLabel');
     $('copy-code').textContent=t(applicationMode?'copyApplicationNumber':'copyCode');
     resultCard.querySelector('[data-i18n="resultInstruction"]').textContent=t(applicationMode?(submitted?'applicationSubmittedInstruction':'applicationResultInstruction'):'resultInstruction');
-    $('result-code').textContent=applicationMode?(session.submissionReference||t('applicationReferencePending')):session.resultCode;
+    $('result-code').textContent=applicationMode?(session.submissionReference?(isInviteRecord({application:session.application})?`LINK-${session.submissionReference}`:session.submissionReference):t('applicationReferencePending')):session.resultCode;
     $('copy-code').hidden=applicationMode&&!session.submissionReference;
-    $('completion-meta').innerHTML=`<b>${escapeHtml(session.name)}</b><br>${escapeHtml(session.profileSkipped?t('profileSkipped'):t('profileDone'))}${session.submissionReference?`<br>${escapeHtml(session.submissionReference)}`:''}`;
+    $('completion-meta').innerHTML=`<b>${escapeHtml(session.name)}</b><br>${escapeHtml(session.profileSkipped?t('profileSkipped'):t('profileDone'))}${session.submissionReference?`<br>${escapeHtml(isInviteRecord({application:session.application})?`LINK-${session.submissionReference}`:session.submissionReference)}`:''}`;
     const applicationSummary=$('application-result-summary');
     applicationSummary.hidden=!applicationMode;
     applicationSummary.innerHTML=applicationMode?`<div><span>${escapeHtml(t('appliedPositionLabel'))}</span><b>${escapeHtml(session.application?.role||t('notSpecified'))}</b></div><div><span>${escapeHtml(t('otherPositionsLabel'))}</span><b>${escapeHtml(session.application?.otherRoles==='Yes'?t('yesLabel'):session.application?.otherRoles==='No'?t('noLabel'):t('notSpecified'))}</b></div>`:'';
     $('submit-application').textContent=t(applicationMode?'submitApplication':'submitAssessment');
     $('submit-application').hidden=submitted;
     $('application-submit-note').hidden=submitted;
-    $('next-applicant').style.display=(isOwner()||trialRemaining()>0)?'inline-flex':'none';
+    $('next-applicant').style.display=inviteLiveMode()?'none':(isOwner()||trialRemaining()>0)?'inline-flex':'none';
     showScreen('result-screen'); speakPremiumGuide('complete',[t(applicationMode?(submitted?'applicationSubmittedTitle':'applicationCompleteTitle'):'completeTitle'),t(applicationMode?(submitted?'applicationSubmittedInstruction':'applicationResultInstruction'):'resultInstruction')]);
   }
 
@@ -1181,7 +1350,7 @@
   }
   function backgroundReportFilename(record){
     const bg=record?.backgroundScreening||{};
-    const ref=record?.reference||record?.code||'DEMO';
+    const ref=displayRecordReference(record)||record?.reference||record?.code||'DEMO';
     return bg.providerReportFilename||`Danco_Background_Check_Demo_${ref}_${bg.providerRequestId||'REPORT'}.html`;
   }
   function decodeDataHtml(dataUrl){
@@ -1200,6 +1369,15 @@
     return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(backgroundReportFilename(record))}</title><style>
       body{font-family:Arial,sans-serif;background:#eef4fb;color:#10213f;margin:0}.page{max-width:850px;margin:28px auto;background:white;box-shadow:0 12px 40px #17355722}.head{background:#092b55;color:white;padding:30px 34px;border-bottom:4px solid #cda434}.head small{letter-spacing:.16em;color:#f1d989}.body{padding:28px 34px}.demo{border:2px solid #cda434;background:#fff7da;padding:14px 18px;font-weight:700}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}.grid div{border:1px solid #d6e2f1;padding:12px}.grid span{display:block;font-size:11px;color:#64758e;text-transform:uppercase;letter-spacing:.06em}table{width:100%;border-collapse:collapse;margin:18px 0}th,td{padding:12px;border-bottom:1px solid #dbe4ef;text-align:left}.good{color:#246a49}.bad{color:#a43131}.fine{font-size:12px;color:#66758a}@media print{body{background:white}.page{margin:0;box-shadow:none}}</style></head><body><div class="page"><div class="head"><small>DANCO ROOFING SERVICES, INC. · DANCO+ PROTOTYPE</small><h1>Background Screening Report</h1></div><div class="body"><div class="demo">DEMONSTRATION ONLY — NOT A CONSUMER REPORT</div><div class="grid"><div><span>Candidate</span><b>${escapeHtml(record?.name||'Prototype applicant')}</b></div><div><span>Application reference</span><b>${escapeHtml(record?.reference||'DEMO')}</b></div><div><span>Screening reference</span><b>${escapeHtml(bg.providerRequestId||'DEMO')}</b></div><div><span>Provider</span><b>${escapeHtml(bg.provider||'Screening provider')}</b></div><div><span>Package</span><b>${escapeHtml(bg.packageLabel||'Employment background screen')}</b></div><div><span>Approved cost</span><b>${bg.quotedCost?`$${Number(bg.quotedCost).toFixed(2)} ${escapeHtml(bg.currency||'USD')}`:'Prototype price not recorded'}</b></div></div><h2 class="${failed?'bad':'good'}">${failed?'Review required · Does not meet Danco demo criteria':'Clear · Meets Danco demo criteria'}</h2><table><thead><tr><th>Screening area</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table><h3>Illustrative full-report detail</h3><p>${failed?'A synthetic review flag was selected by the administrator to demonstrate the non-eligible workflow. No real criminal record, court data or consumer report was obtained.':'All selected categories were configured to return clear or no-record statuses for workflow demonstration. No real criminal record, court data or consumer report was obtained.'}</p><p class="fine">This prototype file demonstrates the full-report filing position. Sensitive source details are intentionally excluded from the ordinary applicant summary and, in live service, would remain restricted to authorized personnel.</p></div></div></body></html>`;
   }
+  function renderBackgroundReportViewer(record){
+    const bg=record?.backgroundScreening||{},failed=bg.decision==='not_eligible',passed=bg.decision==='eligible',res=demoBackgroundDisplayResults(bg),ref=displayRecordReference(record)||record?.reference||'DEMO';
+    const rows=Object.values(res).map(item=>`<tr><td>${escapeHtml(item.label||'Screening area')}</td><td><b class="${/clear|no record|no match/i.test(item.result||'')?'result-good':/review/i.test(item.result||'')?'result-bad':''}">${escapeHtml(item.result||'Status unavailable')}</b></td></tr>`).join('');
+    $('background-report-viewer-title')?.remove?.();
+    $('background-report-viewer-content').innerHTML=`<article class="background-report-document"><div class="report-document-header"><div class="print-brand"><img src="danco-logo-white.png" alt="Danco Roofing Services, Inc."><span><b>Danco Background Screening Report</b><small>Private administrator view</small></span></div><span class="dashboard-status">${failed?'REVIEW REQUIRED':passed?'CLEAR':'TO ACTION'}</span></div><div class="report-document-body"><div class="dashboard-heading"><div><span class="eyebrow">BACKGROUND SCREENING</span><h2 id="background-report-viewer-title">${escapeHtml(record?.name||'Applicant')}</h2><p>${escapeHtml(ref)}</p></div></div>${bg.mode==='prototype_demo'?'<div class="dashboard-banner">Demonstration report only — this is not a consumer report and no third-party screening was performed.</div>':''}<div class="dashboard-summary"><div class="score-ring background-status-ring" style="--score:${failed?'35':'100'}%"><div><b>${failed?'!':'✓'}</b><span>${failed?'REVIEW':'CLEAR'}</span></div></div><div class="recommendation-card ${failed?'background-report-failed-card':''}"><small>DANCO+ SCREENING STATUS</small><h3>${failed?'Does not meet Danco demonstration criteria':passed?'Meets Danco demonstration criteria':'Screening requires administrator action'}</h3><p>${failed?'A synthetic review flag was selected to demonstrate the non-eligible workflow.':'The selected demonstration categories are recorded as clear/no-record for workflow demonstration.'}</p></div></div><div class="metric-grid"><div class="metric-card"><b>${escapeHtml(bg.provider||'Provider')}</b><span>Provider reference</span></div><div class="metric-card"><b>${escapeHtml(bg.packageLabel||'Employment screen')}</b><span>Screening package</span></div><div class="metric-card"><b>${bg.quotedCost?`$${Number(bg.quotedCost).toFixed(2)}`:'—'}</b><span>Approved cost</span></div></div><h3>Screening category summary</h3><table class="breakdown-table"><thead><tr><th>Screening area</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table><div class="candidate-brief-card"><span class="eyebrow">REPORT DETAIL</span><h3>Demonstration workflow record</h3><p>${failed?'This demonstration intentionally contains a synthetic review result so the blocked candidate path can be presented. No criminal, court, identity or consumer-report data was obtained.':'This demonstration intentionally returns clear/no-record statuses so the successful workflow can be presented. No criminal, court, identity or consumer-report data was obtained.'}</p><p class="fine">In a live integration, authoritative screening detail would remain controlled by the approved screening provider and available only to authorized personnel.</p></div></div></article>`;
+    currentBackgroundReportRecord=record;openModal('background-report-viewer-modal');
+  }
+  function printBackgroundReport(){document.body.classList.add('print-background-report-mode');const clean=()=>document.body.classList.remove('print-background-report-mode');window.addEventListener('afterprint',clean,{once:true});window.print();setTimeout(clean,1600);}
+
   async function populateBackgroundReportFolder(preloaded=null){
     const select=$('background-report-select'), status=$('background-report-store-status');
     if(!select||!status) return;
@@ -1223,7 +1401,7 @@
         const opt=document.createElement('option');
         opt.value=item.reference;
         const statusLabel=item.queueStatus==='background_eligible'?'Eligible':item.queueStatus==='background_not_eligible'?'Not eligible':'To action';
-        opt.textContent=`${item.name||'Applicant'} — ${item.reference} · ${statusLabel}`;
+        opt.textContent=`${item.name||'Applicant'} — ${displayRecordReference(item)||item.reference} · ${statusLabel}`;
         select.appendChild(opt);
       });
       status.textContent=backgroundReportRecords.length?`${backgroundReportRecords.length} stored screening report${backgroundReportRecords.length===1?'':'s'} · linked to application reference`:'A completed Danco+ screening demonstration will be filed here automatically.';
@@ -1235,24 +1413,9 @@
   }
   async function openBackgroundReportFile(){
     if(!requireDancoPlus('Background Check Reports')) return;
-    const select=$('background-report-select'), ref=select?.value||'';
-    if(!ref){toast('Select a background-check report first.');return;}
-    const tab=window.open('about:blank','_blank');
-    try{
-      const response=await sharedRequest('/api/admin',{action:'get',reference:ref,adminPin:adminAccessPin});
-      const record=response.submission;
-      if(!record?.backgroundScreening) throw new Error('No background-screening record is available for this applicant.');
-      let html=decodeDataHtml(record.backgroundScreening.providerReportUrl);
-      if(!html) html=buildPrototypeBackgroundReportHtml(record);
-      if(tab){tab.document.open();tab.document.write(html);tab.document.close();}
-      else{
-        const blob=new Blob([html],{type:'text/html'});
-        const url=URL.createObjectURL(blob); window.location.href=url; setTimeout(()=>URL.revokeObjectURL(url),60000);
-      }
-    }catch(error){
-      if(tab)tab.close();
-      toast(error.message||'Unable to open the background-check report.');
-    }
+    const select=$('background-report-select'),ref=select?.value||'';if(!ref){toast('Select a background-check report first.');return;}
+    try{const response=await sharedRequest('/api/admin',{action:'get',reference:ref,adminPin:adminAccessPin});const record=response.submission;if(!record?.backgroundScreening)throw new Error('No background-screening record is available for this applicant.');renderBackgroundReportViewer(record);}
+    catch(error){toast(error.message||'Unable to open the background-check report.');}
   }
 
 
@@ -1289,78 +1452,63 @@
   }
   function leaderboardEligibleRecord(record){
     const data=record?.assessment?.knowledgeAnswers?record.assessment:decodeResult(record?.resultCode||record?.code||'');
-    const role=record?.application?.role||'';
-    const track=data?.assessmentTrack||'';
+    const role=record?.role||record?.application?.role||'';
+    const track=record?.assessmentTrack||data?.assessmentTrack||'';
     if(!(track==='account_manager'||role==='Commercial Account Manager')) return null;
     if(!Array.isArray(data?.knowledgeAnswers)||!data.knowledgeAnswers.length) return null;
     const result=scoreSalesAssessment(data.knowledgeAnswers);
-    const source=record.reference?`remote:${record.reference}`:`local:${record.code||''}`;
+    const rawRef=record.reference||record.code||'';
+    const displayRef=record?.application?.inviteSource&&rawRef?`LINK-${rawRef}`:rawRef;
     return {
-      source,
-      queueStatus:record.queueStatus||'pending',
-      name:record.name||'Unnamed applicant',
-      roleLabel:role||'Commercial Account Manager',
-      reference:record.reference||record.code||'',
-      submittedAt:record.submittedAt||'',
-      overall:result.suitability,
-      categories:{...result.categoryPct},
-      result,
-      recordType:record.recordType||'assessment'
+      source:record.reference?`remote:${record.reference}`:`local:${record.code||''}`,
+      queueStatus:record.queueStatus||'pending',name:record.name||'Unnamed applicant',roleLabel:role||'Commercial Account Manager',
+      reference:rawRef,displayReference:displayRef,submittedAt:record.submittedAt||'',overall:result.suitability,categories:{...result.categoryPct},result,
+      recordType:record.recordType||'assessment',leaderboardHidden:record.leaderboardHidden===true,application:record.application||{}
     };
   }
   function buildSalesLeaderboardRows(records){
-    const rows=[];
-    (Array.isArray(records)?records:[]).forEach(record=>{
-      try{const row=leaderboardEligibleRecord(record); if(row)rows.push(row);}catch(_){ }
-    });
-    const deduped=[]; const seen=new Set();
-    rows.forEach(row=>{const key=`${row.reference}|${row.recordType}|${row.submittedAt}`; if(seen.has(key))return; seen.add(key); deduped.push(row);});
-    return deduped;
+    const rows=[];(Array.isArray(records)?records:[]).forEach(record=>{try{const row=leaderboardEligibleRecord(record);if(row)rows.push(row);}catch(_){}});
+    const deduped=[],seen=new Set();rows.forEach(row=>{const key=row.reference||`${row.name}|${row.submittedAt}`;if(seen.has(key))return;seen.add(key);deduped.push(row);});return deduped;
   }
-  async function openLeaderboardRecord(source,queueStatus){
-    try{
-      if(queueStatus&&queueStatus!==currentQueueStatus){currentQueueStatus=queueStatus; await populateStoredApplicants();}
-      const select=$('stored-applicant-select');
-      if(select){
-        const option=Array.from(select.options).find(opt=>opt.value===source);
-        if(option) select.value=source;
-      }
-      if(source?.startsWith('remote:')||source?.startsWith('local:')) await loadStoredApplicantFromSource(source);
-    }catch(error){$('decode-error').textContent=error.message||'Unable to open leaderboard result.';}
+  async function refreshSalesLeaderboard(){
+    if(!adminAccessPin){salesLeaderboardRows=[];renderSalesLeaderboard();return;}
+    try{const response=await sharedRequest('/api/leaderboard',{action:'list',adminPin:adminAccessPin});salesLeaderboardRows=buildSalesLeaderboardRows(response.submissions||[]);renderSalesLeaderboard();updateReportLeaderboardControl(currentLoadedRecord);}
+    catch(error){console.warn('Leaderboard unavailable',error);salesLeaderboardRows=buildSalesLeaderboardRows(Object.values(sharedQueueGroups||{}).flat());renderSalesLeaderboard();}
+  }
+  async function setLeaderboardVisibility(reference,hidden){
+    if(!reference)return;
+    try{await sharedRequest('/api/leaderboard',{action:hidden?'hide':'restore',reference,adminPin:adminAccessPin});await refreshSalesLeaderboard();toast(hidden?'Removed from league table. Filing location unchanged.':'Restored to sales league table.');}
+    catch(error){$('decode-error').textContent=error.message||'Unable to update league table visibility.';}
+  }
+  async function openLeaderboardRecord(source){
+    try{if(source?.startsWith('remote:')||source?.startsWith('local:'))await loadStoredApplicantFromSource(source);}
+    catch(error){$('decode-error').textContent=error.message||'Unable to open leaderboard result.';}
   }
   function leaderboardWinnerCopy(row){
-    const focus=salesLeaderboardCategoryName(salesLeaderboardSort.key);
-    if(!row) return 'Sales submissions will appear here after applicants complete the Commercial Account Manager route.';
-    return salesLeaderboardSort.key==='overall'
-      ? `${row.name} currently leads the sales suitability leaderboard at ${row.overall}% overall fit.`
-      : `${row.name} is currently leading for ${focus.toLowerCase()} at ${row.categories?.[salesLeaderboardSort.key]||0}%.`;
+    const focus=salesLeaderboardCategoryName(salesLeaderboardSort.key);if(!row)return 'Sales submissions will appear here after applicants complete the Commercial Account Manager route.';
+    return salesLeaderboardSort.key==='overall'?`${row.name} currently leads the sales suitability leaderboard at ${row.overall}% overall fit.`:`${row.name} is currently leading for ${focus.toLowerCase()} at ${row.categories?.[salesLeaderboardSort.key]||0}%.`;
   }
   function leaderboardTableHtml(rows){
-    const sortableKeys=['overall','experience','network','development','consultative','commercial'];
-    const sortIcon=(key)=>salesLeaderboardSort.key===key?(salesLeaderboardSort.dir==='desc'?'↓':'↑'):'↕';
-    const th=(label,key)=>sortableKeys.includes(key)
-      ? `<th><button class="leaderboard-sort-button ${salesLeaderboardSort.key===key?'active':''}" type="button" data-leader-sort="${key}">${label}<span>${sortIcon(key)}</span></button></th>`
-      : `<th>${label}</th>`;
-    return `<div class="leaderboard-table-scroll"><table class="leaderboard-table"><thead><tr><th>Rank</th><th>Candidate</th><th>Role</th>${th('Overall','overall')}${th('Experience','experience')}${th('Network','network')}${th('Development','development')}${th('Consultative','consultative')}${th('Commercial','commercial')}<th>Status</th><th>Open</th></tr></thead><tbody>${rows.map((row,index)=>`<tr class="${index===0?'leader-row':''}"><td><span class="leader-rank ${index<3?'top-three':''}">${index+1}</span></td><td><div class="leader-name"><b>${escapeHtml(row.name)}</b><span>${escapeHtml(row.reference||'No reference')}</span></div></td><td>${escapeHtml(row.roleLabel)}</td><td><b>${row.overall}%</b></td><td>${row.categories.experience||0}%</td><td>${row.categories.network||0}%</td><td>${row.categories.development||0}%</td><td>${row.categories.consultative||0}%</td><td>${row.categories.commercial||0}%</td><td>${escapeHtml(queueStatusLabel(row.queueStatus))}</td><td><button class="button button-secondary leaderboard-open-button" type="button" data-leader-open="${escapeHtml(row.source)}" data-leader-queue="${escapeHtml(row.queueStatus)}">Open</button></td></tr>`).join('')}</tbody></table></div>`;
+    const sortableKeys=['overall','experience','network','development','consultative','commercial'];const sortIcon=(key)=>salesLeaderboardSort.key===key?(salesLeaderboardSort.dir==='desc'?'↓':'↑'):'↕';
+    const th=(label,key)=>sortableKeys.includes(key)?`<th><button class="leaderboard-sort-button ${salesLeaderboardSort.key===key?'active':''}" type="button" data-leader-sort="${key}">${label}<span>${sortIcon(key)}</span></button></th>`:`<th>${label}</th>`;
+    return `<div class="leaderboard-table-scroll"><table class="leaderboard-table"><thead><tr><th>Rank</th><th>Candidate</th><th>Role</th>${th('Overall','overall')}${th('Experience','experience')}${th('Network','network')}${th('Development','development')}${th('Consultative','consultative')}${th('Commercial','commercial')}<th>Status</th><th>Actions</th></tr></thead><tbody>${rows.map((row,index)=>`<tr class="${index===0?'leader-row':''}"><td><span class="leader-rank ${index<3?'top-three':''}">${index+1}</span></td><td><div class="leader-name"><b>${escapeHtml(row.name)}</b><span>${escapeHtml(row.displayReference||'No reference')}</span></div></td><td>${escapeHtml(row.roleLabel)}</td><td><b>${row.overall}%</b></td><td>${row.categories.experience||0}%</td><td>${row.categories.network||0}%</td><td>${row.categories.development||0}%</td><td>${row.categories.consultative||0}%</td><td>${row.categories.commercial||0}%</td><td>${escapeHtml(queueStatusLabel(row.queueStatus))}</td><td><div class="leaderboard-row-actions"><button class="button button-secondary leaderboard-open-button" type="button" data-leader-open="${escapeHtml(row.source)}">Open</button><button class="button button-secondary leaderboard-remove-button" type="button" data-leader-remove="${escapeHtml(row.reference)}">Remove</button></div></td></tr>`).join('')}</tbody></table></div>`;
   }
   function renderSalesLeaderboard(){
-    const wrap=$('sales-leaderboard-wrap'); if(!wrap)return;
-    const count=$('sales-leaderboard-count');
-    const winnerName=$('leaderboard-winner-name');
-    const winnerRole=$('leaderboard-winner-role');
-    const winnerCopy=$('leaderboard-winner-copy');
-    const winnerMetric=$('leaderboard-winner-score');
-    const rows=[...salesLeaderboardRows].sort(salesLeaderboardComparator());
-    if(count)count.textContent=`${rows.length} sales candidate${rows.length===1?'':'s'}`;
-    const top=rows[0]||null;
-    if(winnerName)winnerName.textContent=top?top.name:'Waiting for sales submissions';
-    if(winnerRole)winnerRole.textContent=top?`${top.roleLabel} · ${top.reference}`:'Commercial Account Manager leaderboard';
-    if(winnerMetric)winnerMetric.textContent=top?(salesLeaderboardSort.key==='overall'?`${top.overall}% overall fit`:`${top.categories?.[salesLeaderboardSort.key]||0}% ${salesLeaderboardCategoryName(salesLeaderboardSort.key).toLowerCase()}`):'No ranked submissions yet';
-    if(winnerCopy)winnerCopy.textContent=leaderboardWinnerCopy(top);
-    wrap.innerHTML=rows.length?leaderboardTableHtml(rows):'<div class="leaderboard-empty"><b>No sales suitability submissions yet.</b><span>Completed Commercial Account Manager applications and assessment-only results will build this league table automatically.</span></div>';
-    wrap.querySelectorAll('[data-leader-sort]').forEach(button=>button.addEventListener('click',()=>setSalesLeaderboardSort(button.dataset.leaderSort)));
-    wrap.querySelectorAll('[data-leader-open]').forEach(button=>button.addEventListener('click',()=>openLeaderboardRecord(button.dataset.leaderOpen,button.dataset.leaderQueue)));
+    const wrap=$('sales-leaderboard-wrap');if(!wrap)return;const count=$('sales-leaderboard-count'),winnerName=$('leaderboard-winner-name'),winnerRole=$('leaderboard-winner-role'),winnerCopy=$('leaderboard-winner-copy'),winnerMetric=$('leaderboard-winner-score');
+    const active=salesLeaderboardRows.filter(r=>!r.leaderboardHidden).sort(salesLeaderboardComparator()),removed=salesLeaderboardRows.filter(r=>r.leaderboardHidden).sort((a,b)=>String(b.submittedAt).localeCompare(String(a.submittedAt)));
+    if(count)count.textContent=`${active.length} ranked sales candidate${active.length===1?'':'s'}`;const top=active[0]||null;
+    if(winnerName)winnerName.textContent=top?top.name:'Waiting for sales submissions';if(winnerRole)winnerRole.textContent=top?`${top.roleLabel} · ${top.displayReference}`:'Commercial Account Manager leaderboard';if(winnerMetric)winnerMetric.textContent=top?(salesLeaderboardSort.key==='overall'?`${top.overall}% overall fit`:`${top.categories?.[salesLeaderboardSort.key]||0}% ${salesLeaderboardCategoryName(salesLeaderboardSort.key).toLowerCase()}`):'No ranked submissions yet';if(winnerCopy)winnerCopy.textContent=leaderboardWinnerCopy(top);
+    wrap.innerHTML=active.length?leaderboardTableHtml(active):'<div class="leaderboard-empty"><b>No ranked sales reports currently visible.</b><span>Completed Commercial Account Manager reports appear automatically unless archived, not eligible, or manually removed.</span></div>';
+    wrap.querySelectorAll('[data-leader-sort]').forEach(button=>button.addEventListener('click',()=>setSalesLeaderboardSort(button.dataset.leaderSort)));wrap.querySelectorAll('[data-leader-open]').forEach(button=>button.addEventListener('click',()=>openLeaderboardRecord(button.dataset.leaderOpen)));wrap.querySelectorAll('[data-leader-remove]').forEach(button=>button.addEventListener('click',()=>setLeaderboardVisibility(button.dataset.leaderRemove,true)));
+    const removedWrap=$('sales-leaderboard-removed'),removedList=$('sales-leaderboard-removed-list');if(removedWrap&&removedList){removedWrap.hidden=!removed.length;removedList.innerHTML=removed.map(row=>`<div class="leaderboard-removed-row"><div><b>${escapeHtml(row.name)}</b><span>${escapeHtml(row.displayReference)} · ${row.overall}% overall</span></div><button class="button button-secondary" type="button" data-leader-restore="${escapeHtml(row.reference)}">Restore</button></div>`).join('');removedList.querySelectorAll('[data-leader-restore]').forEach(button=>button.addEventListener('click',()=>setLeaderboardVisibility(button.dataset.leaderRestore,false)));}
   }
+  function updateReportLeaderboardControl(record){
+    const section=$('report-leaderboard-control'),button=$('report-leaderboard-toggle'),copy=$('report-leaderboard-copy');if(!section||!button||!copy){return;}
+    const ref=record?.reference||record?.code||'';const row=salesLeaderboardRows.find(r=>r.reference===ref);const sales=row||record?.assessmentTrack==='account_manager'||record?.assessment?.assessmentTrack==='account_manager'||record?.application?.role==='Commercial Account Manager';
+    if(!sales||['archived','background_not_eligible'].includes(record?.queueStatus||'')){section.hidden=true;return;}
+    section.hidden=false;const hidden=!!row?.leaderboardHidden;section.dataset.reference=ref;section.dataset.hidden=String(hidden);copy.textContent=hidden?'This report is removed from the league table only. Its filing location has not changed.':'This completed sales report is included in the league table. Removing it will not change its filing location or report status.';button.textContent=hidden?'Restore to league table':'Remove from league table';button.dataset.leaderboardAction=hidden?'restore':'hide';
+  }
+
 
   async function populateStoredApplicants(){
     const select=$('stored-applicant-select'); if(!select) return;
@@ -1375,14 +1523,13 @@
       const grouped=Object.fromEntries(statuses.map((status,index)=>[status,Array.isArray(responses[index].submissions)?responses[index].submissions:[]]));
       grouped && Object.entries(grouped).forEach(([status,list])=>{(Array.isArray(list)?list:[]).forEach(item=>{item.queueStatus=item.queueStatus||status;});});
       sharedQueueGroups=grouped;
-      salesLeaderboardRows=buildSalesLeaderboardRows(Object.values(grouped).flat());
       $$('[data-queue-status]').forEach(button=>{const status=button.dataset.queueStatus;button.classList.toggle('active',status===currentQueueStatus);const count=button.querySelector('[data-queue-count]');if(count)count.textContent=!dancoPlusActive()&&advancedQueueStatus(status)?'+':String(grouped[status]?.length||0);});
       sharedQueueRecords=grouped[currentQueueStatus]||[];
       select.innerHTML=sharedQueueRecords.length?'<option value="">Select a shared submission</option>':'<option value="">No submissions in this queue</option>';
-      sharedQueueRecords.forEach(item=>{const option=document.createElement('option');option.value=`remote:${item.reference}`;const kind=item.recordType==='application'?'Application':'Assessment';const role=item.role?` · ${item.role}`:'';option.textContent=`${item.name||'Unnamed applicant'} — ${item.reference} · ${kind}${role}`;select.appendChild(option);});
+      sharedQueueRecords.forEach(item=>{const option=document.createElement('option');option.value=`remote:${item.reference}`;const kind=item.recordType==='application'?'Application':'Assessment';const role=item.role?` · ${item.role}`:'';option.textContent=`${item.name||'Unnamed applicant'} — ${displayRecordReference(item)||item.reference} · ${kind}${role}`;select.appendChild(option);});
       $('shared-service-status').textContent='Live shared list · available on every authorized device';
       select.disabled=false;
-      renderSalesLeaderboard();
+      await refreshSalesLeaderboard();
       await populateBackgroundReportFolder(grouped);
     }catch(error){
       const localAll=storedApplications();
@@ -1404,7 +1551,10 @@
     const assessment={knowledgeAnswers:[...(session.knowledgeAnswers||[])],profileSkipped:!!session.profileSkipped,profileAnswers:[...(session.profileAnswers||[])],assessmentTrack:activeAssessmentTrack(),lang:session.lang,audio:!!session.audio,supportReason:normaliseSupportReason(session.supportReason)};
     const record={recordType:session.mode==='application'?'application':'assessment',resultCode:session.resultCode,name:session.name,application:session.mode==='application'?{...(session.application||{})}:{},assessment};
     try{
-      const response=await sharedRequest('/api/submissions',{record});
+      if(inviteLiveMode()&&activeInvite?.status!=='completed'&&activeInvite?.status!=='submitted'){
+        const completed=await inviteRequest({action:'complete',token:INVITE_TOKEN,resultCode:session.resultCode,draftRecord:{...record,resultCode:session.resultCode}});if(completed?.invite)activeInvite=completed.invite;
+      }
+      const response=await sharedRequest('/api/submissions',inviteLiveMode()?{record,inviteToken:INVITE_TOKEN}:{record});
       const saved=response.submission||{}; if(!saved.reference)throw new Error(t('submissionFailed'));
       const submittedAt=saved.submittedAt||new Date().toISOString();
       const applications=storedApplications();
@@ -1413,6 +1563,7 @@
       if(existing>=0)applications[existing]=localRecord;else applications.unshift(localRecord);
       saveJson(APPLICATIONS_KEY,applications.slice(0,100));
       session.applicationSubmitted=true; session.submissionReference=saved.reference; session.submittedAt=submittedAt; saveSession();
+      if(inviteLiveMode()){activeInvite={...(activeInvite||{}),status:'submitted',submissionReference:saved.reference,resultCode:session.resultCode};}
       closeModal('submit-modal'); renderResult(); if(adminAuthenticated)populateStoredApplicants(); toast(existing>=0?t('submissionAlreadySaved'):t('submissionSaved'));
     }catch(error){ $('submit-error').textContent=error.message||t('submissionFailed'); }
     finally{button.disabled=false;button.textContent=t('confirmSubmit');}
@@ -1426,8 +1577,8 @@
     if(!record)throw new Error('Submission was not found.');
     currentLoadedRecord=record; currentBackgroundScreening=record.backgroundScreening||null; currentEmploymentContract=record.employmentContract||null;
     const data=record.assessment?.knowledgeAnswers?record.assessment:decodeResult(record.resultCode||record.code); $('decode-error').textContent='';
-    renderDashboard(data,{code:'',name:record.name,reference:record.reference||record.code,application:record.recordType==='assessment'?null:(record.application||null),submittedAt:record.submittedAt,backgroundScreening:record.backgroundScreening||null,employmentContract:record.employmentContract||null});
-    renderBackgroundActions(record); renderEmploymentContractActions(record);
+    renderDashboard(data,{code:'',name:record.name,reference:displayRecordReference(record)||record.reference||record.code,application:record.recordType==='assessment'?null:(record.application||null),submittedAt:record.submittedAt,backgroundScreening:record.backgroundScreening||null,employmentContract:record.employmentContract||null});
+    updateReportLeaderboardControl(record); renderBackgroundActions(record); renderEmploymentContractActions(record);
   }
   async function loadStoredApplicant(){
     const selected=$('stored-applicant-select').value;
@@ -1462,7 +1613,7 @@
   function decodeResult(code){
     const raw=String(code||'').toUpperCase().replace(/^\s*DRA[-\s]*/,'').replace(/[^A-Z2-9]/g,''); if(raw.length!==15) throw new Error('Result code is incomplete or from an unsupported version.');
     let bytes=base32Decode(raw); if(bytes.length<9) throw new Error('Result code is incomplete.'); bytes=bytes.slice(0,9).map((b,i)=>b^XOR_STREAM[i]); const bits=bytesToBits(bytes); let p=0;
-    const version=readBits(bits,p,4);p+=4;if(version!==VERSION)throw new Error('This result code was created by a different assessment version.'); p+=8;
+    const version=readBits(bits,p,4);p+=4;if(![17,18,19].includes(version))throw new Error('This result code was created by a different assessment version.'); p+=8;
     const knowledgeAnswers=[];for(let i=0;i<10;i++){knowledgeAnswers.push(readBits(bits,p,3));p+=3;}
     const profileCompleted=readBits(bits,p,1)===1;p+=1;const profileAnswers=[];for(let i=0;i<5;i++){profileAnswers.push(DISC_CODE[readBits(bits,p,3)]||'');p+=3;}
     const lang=readBits(bits,p,1)?'es':'en';p+=1;const audio=readBits(bits,p,1)===1;p+=1;const supportReason=readBits(bits,p,2);p+=2;const expected=checksum(bits.slice(0,p));const received=readBits(bits,p,8);
@@ -1769,8 +1920,8 @@
     const record=response.submission; if(!record)return;
     currentLoadedRecord=record; currentBackgroundScreening=record.backgroundScreening||null; currentEmploymentContract=record.employmentContract||null;
     const data=record.assessment?.knowledgeAnswers?record.assessment:decodeResult(record.resultCode||record.code);
-    renderDashboard(data,{code:'',name:record.name,reference:record.reference||record.code,application:record.recordType==='assessment'?null:(record.application||null),submittedAt:record.submittedAt,backgroundScreening:record.backgroundScreening||null,employmentContract:record.employmentContract||null});
-    renderBackgroundActions(record); renderEmploymentContractActions(record);
+    renderDashboard(data,{code:'',name:record.name,reference:displayRecordReference(record)||record.reference||record.code,application:record.recordType==='assessment'?null:(record.application||null),submittedAt:record.submittedAt,backgroundScreening:record.backgroundScreening||null,employmentContract:record.employmentContract||null});
+    updateReportLeaderboardControl(record); renderBackgroundActions(record); renderEmploymentContractActions(record);
   }
 
 
@@ -1955,6 +2106,7 @@
 
   function initEvents(){
     $$('[data-language]').forEach(button=>button.addEventListener('click',()=>{setLanguage(button.dataset.language);routeAfterLanguage();}));
+    $('invite-welcome-continue')?.addEventListener('click',()=>showScreen('language-screen'));
     $$('[data-action="open-danco-plus-pitch"]').forEach(button=>button.addEventListener('click',()=>openDancoPitch()));
     $('play-danco-plus-pitch')?.addEventListener('click',startDancoPitch);
     $('skip-danco-plus-pitch')?.addEventListener('click',skipDancoPitchPrompt);
@@ -1973,7 +2125,7 @@
     document.querySelector('[data-action="repeat-audio"]').addEventListener('click',repeatHelpAudio);
     document.querySelector('[data-action="test-narration"]').addEventListener('click',testNarration);
     $$('[data-voice-mode]').forEach(button=>button.addEventListener('click',()=>setVoiceMode(button.dataset.voiceMode)));
-    document.querySelector('.brand-button').addEventListener('click',()=>{if(session?.status==='complete')renderResult();else showScreen('language-screen');});
+    document.querySelector('.brand-button').addEventListener('click',()=>{if(session?.status==='complete')renderResult();else if(inviteLiveMode()){prepareInviteWelcome();showScreen('invite-welcome-screen');}else showScreen('language-screen');});
     $('help-tab').addEventListener('click',openHelp); $('help-backdrop').addEventListener('click',closeHelp);
     $('language-toggle').addEventListener('click',()=>setLanguage(settings.lang==='en'?'es':'en'));
     $('audio-toggle').addEventListener('click',()=>setAudioSupport(!settings.audio));
@@ -1986,7 +2138,7 @@
     $$('input[name="background-consent"]').forEach(input=>input.addEventListener('change',updateBackgroundConsentReason));
     $('candidate-role')?.addEventListener('change',updateRoleExperienceLabel);
     $('candidate-ssn')?.addEventListener('input',()=>{const input=$('candidate-ssn');const formatted=formatSsnInput(input.value);if(input.value!==formatted)input.value=formatted;resetSsnOverrideIfChanged();updateSsnStatus();});
-    $('begin-beginner').addEventListener('click',beginBeginner); $('start-profile').addEventListener('click',startProfile); $('skip-profile').addEventListener('click',skipProfile); $('profile-confirm').addEventListener('click',confirmProfileAnswer); $('start-knowledge').addEventListener('click',startKnowledge); $('knowledge-repeat').addEventListener('click',repeatCurrentQuestion); $('knowledge-confirm').addEventListener('click',confirmKnowledgeAnswer);
+    $('begin-beginner').addEventListener('click',beginBeginner); $('start-profile').addEventListener('click',startProfile); $('skip-profile').addEventListener('click',skipProfile); $('profile-confirm').addEventListener('click',confirmProfileAnswer); $('start-knowledge').addEventListener('click',startKnowledge); $('knowledge-repeat').addEventListener('click',repeatCurrentQuestion); $('knowledge-reveal')?.addEventListener('click',revealAccessibleAnswers); $('knowledge-confirm').addEventListener('click',confirmKnowledgeAnswer); $('accessible-answer-no')?.addEventListener('click',()=>accessibleCommitDecision(false)); $('accessible-answer-yes')?.addEventListener('click',()=>accessibleCommitDecision(true));
     $('unlock-submit').addEventListener('click',async()=>{ $('unlock-error').textContent=''; const raw=$('unlock-code').value; try{const result=activateCode(raw);if(result.mode==='owner'){try{await establishOwnerSession(raw);}catch(_){}toast(t('ownerSuccess'));applyDancoPlusMode();}else{if(result.remaining<=0)throw new Error(t('usedError'));toast(t('unlockSuccess',result.remaining));} $('unlock-code').value='';closeModal('unlock-modal');}catch(error){$('unlock-error').textContent=error.message;} });
     $('copy-code').addEventListener('click',async()=>{try{const value=session.mode==='application'?(session.submissionReference||''):session.resultCode;if(!value)return;await navigator.clipboard.writeText(value);toast(t('copied'));}catch(_){toast(t('copyFailed'));}});
     $('submit-application').addEventListener('click',()=>{$('submit-error').textContent='';openModal('submit-modal');});
@@ -2016,6 +2168,8 @@
     $('upload-signed-contract').addEventListener('click',uploadSignedContract);
     $('open-signed-contract').addEventListener('click',openSignedContract);
     $('open-background-report')?.addEventListener('click',openBackgroundReportFile);
+    $$('[data-action="close-background-report-viewer"]').forEach(button=>button.addEventListener('click',()=>closeModal('background-report-viewer-modal')));
+    $('print-background-report')?.addEventListener('click',printBackgroundReport);
     $('print-contract').addEventListener('click',printEmploymentContract);
     $('confirm-background-request').addEventListener('click',confirmBackgroundRequest);
     $$('[data-background-decision]').forEach(button=>button.addEventListener('click',()=>setBackgroundDecision(button.dataset.backgroundDecision)));
@@ -2027,16 +2181,19 @@
     $('enter-danco-plus')?.addEventListener('click',()=>{localStorage.setItem(DANCO_PLUS_INTRO_KEY,'1');closeModal('danco-plus-welcome-modal');toast('Danco+ advanced mode active.');});
     $$('[data-owner-product-mode]').forEach(button=>button.addEventListener('click',()=>setOwnerProductMode(button.dataset.ownerProductMode)));
     $('refresh-danco-plus-requests')?.addEventListener('click',refreshOwnerRequests);
+    $('create-candidate-link')?.addEventListener('click',createCandidateInvite);
+    $('copy-candidate-link')?.addEventListener('click',copyCandidateInvite);
     $('verify-owner-session')?.addEventListener('click',()=>{if($('owner-verify-error'))$('owner-verify-error').textContent='';openModal('owner-verify-modal');setTimeout(()=>$('owner-verify-code')?.focus(),80);});
     $$('[data-action="close-owner-verify"]').forEach(button=>button.addEventListener('click',()=>closeModal('owner-verify-modal')));
     $('owner-verify-submit')?.addEventListener('click',async()=>{const code=$('owner-verify-code').value,error=$('owner-verify-error'),button=$('owner-verify-submit');error.textContent='';button.disabled=true;button.textContent='Verifying…';try{if(accessHash(code)!==OWNER_HASH)throw new Error('Owner access code not recognized.');localStorage.setItem(OWNER_KEY,'1');await establishOwnerSession(code);applyAccessState();$('owner-verify-code').value='';closeModal('owner-verify-modal');toast('Owner access active.');if(adminAuthenticated)await refreshOwnerRequests();}catch(e){error.textContent=e.message;}finally{button.disabled=false;button.textContent='Verify owner';}});
+    $('report-leaderboard-toggle')?.addEventListener('click',()=>{const section=$('report-leaderboard-control'),ref=section?.dataset.reference||'',action=$('report-leaderboard-toggle').dataset.leaderboardAction||'hide';if(ref)setLeaderboardVisibility(ref,action==='hide');});
     $('load-example').addEventListener('click',()=>{const demo={knowledgeAnswers:[1,1,1,1,1,1,2,1,1,1],profileSkipped:false,profileAnswers:['S','C','S','I','S'],assessmentTrack:'roofing',lang:'en',audio:false};currentLoadedRecord=null;renderBackgroundActions(null);renderDashboard(demo,{demo:true,name:'Example Applicant',reference:'DEMO-001'});});
     $('print-report').addEventListener('click',()=>window.print());
     $('reset-device').addEventListener('click',()=>{if(!confirm('Reset the current applicant on this device? Access status and remaining trial runs will be preserved.'))return;clearInterval(timer);localStorage.removeItem(SESSION_KEY);session=null;$('dashboard-output').innerHTML='';closeModal('admin-modal');newSession();showScreen('language-screen');toast('Applicant reset.');});
-    [$('unlock-modal'),$('admin-modal'),$('submit-modal'),$('background-modal'),$('contract-modal'),$('ssn-warning-modal'),$('danco-plus-request-modal'),$('danco-plus-welcome-modal'),$('owner-verify-modal')].forEach(modal=>modal.addEventListener('click',event=>{if(event.target===modal)modal.classList.remove('open');}));
+    [$('unlock-modal'),$('admin-modal'),$('submit-modal'),$('background-modal'),$('background-report-viewer-modal'),$('accessible-answer-confirm-modal'),$('contract-modal'),$('ssn-warning-modal'),$('danco-plus-request-modal'),$('danco-plus-welcome-modal'),$('owner-verify-modal')].forEach(modal=>modal.addEventListener('click',event=>{if(event.target===modal)modal.classList.remove('open');}));
     $('danco-plus-pitch-prompt-modal')?.addEventListener('click',event=>{if(event.target===$('danco-plus-pitch-prompt-modal'))skipDancoPitchPrompt();});
     $('danco-plus-pitch-modal')?.addEventListener('click',event=>{if(event.target===$('danco-plus-pitch-modal'))closeDancoPitch();});
-    document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeModal('unlock-modal');closeModal('admin-modal');closeModal('submit-modal');closeModal('background-modal');closeModal('contract-modal');closeModal('ssn-warning-modal');closeModal('danco-plus-request-modal');closeModal('danco-plus-welcome-modal');closeModal('danco-plus-pitch-prompt-modal');closeDancoPitch();closeModal('owner-verify-modal');closeHelp();}});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeModal('unlock-modal');closeModal('admin-modal');closeModal('submit-modal');closeModal('background-modal');closeModal('background-report-viewer-modal');closeModal('accessible-answer-confirm-modal');closeModal('contract-modal');closeModal('ssn-warning-modal');closeModal('danco-plus-request-modal');closeModal('danco-plus-welcome-modal');closeModal('danco-plus-pitch-prompt-modal');closeDancoPitch();closeModal('owner-verify-modal');closeHelp();}});
   }
   function prepareAdmin(){
     $('print-date').textContent=new Intl.DateTimeFormat('en-US',{dateStyle:'long',timeStyle:'short'}).format(new Date());
@@ -2047,17 +2204,25 @@
     }
   }
 
-  function init(){
+  async function init(){
     settings.deviceMode=normaliseDeviceMode(settings.deviceMode); if(session&&session.status!=='complete'&&!['assessment','application',''].includes(session.mode)){session.mode='';saveSession();}
-    initialiseNarration(); setLanguage(settings.lang); $('audio-toggle').textContent=settings.audio?'🔊':'🔇'; applyAccessState(); initEvents(); applyProductMode(); applyDancoPlusMode(); refreshDancoPlusStatus({welcome:true});
-    if(session?.status==='complete'&&session.resultCode){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);renderResult();}
+    initialiseNarration();setLanguage(settings.lang);$('audio-toggle').textContent=settings.audio?'🔊':'🔇';initEvents();
+    const invited=await handleInviteBoot();
+    applyAccessState();applyProductMode();applyDancoPlusMode();
+    if(!invited)refreshDancoPlusStatus({welcome:true});
+    if(invited){
+      prepareInviteWelcome();
+      if(session?.status==='complete'&&session.resultCode){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);applyProductMode();renderResult();}
+      else if(activeInvite?.status==='started'&&session?.status==='knowledge'&&!activeInvite.blockedStarted){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);applyProductMode();renderKnowledgeQuestion();}
+      else showScreen('invite-welcome-screen');
+    }else if(session?.status==='complete'&&session.resultCode){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);renderResult();}
     else if(session?.status==='knowledge'){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);showInstructions();$('start-knowledge').textContent=t('resume');}
     else if(session?.status==='profile'){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);profileIndex=session.profileAnswers?.length||0;renderProfile();}
     else if(session?.status==='profile-intro'){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);showScreen('profile-intro-screen');}
     else showScreen('language-screen');
-    if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=35.0.0').catch(()=>{}));
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDancoPlusStatus({welcome:true});});
+    if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=36.0.0').catch(()=>{}));
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!inviteLiveMode())refreshDancoPlusStatus({welcome:true});});
   }
 
-  document.addEventListener('DOMContentLoaded',init);
+  document.addEventListener('DOMContentLoaded',()=>{init().catch(error=>{console.error(error);showScreen(INVITE_TOKEN?'invite-welcome-screen':'language-screen');});});
 })();

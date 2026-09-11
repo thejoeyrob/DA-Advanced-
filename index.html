@@ -10,10 +10,10 @@
   <meta property="og:image" content="social-preview.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="manifest.webmanifest?v=35.0.0">
+  <link rel="manifest" href="manifest.webmanifest?v=36.0.0">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" href="icon-192.png">
-  <link rel="stylesheet" href="app.css?v=35.0.0">
+  <link rel="stylesheet" href="app.css?v=36.0.0">
   <title>Danco Workforce Assessment · Prototype</title>
 </head>
 <body class="prototype-locked">
@@ -35,6 +35,21 @@
   <button class="immersive-exit" id="immersive-exit" type="button" aria-label="Exit full-screen app view">⛶ <span>Exit full screen</span></button>
 
   <main id="app" tabindex="-1">
+    <section class="screen" id="invite-welcome-screen" aria-labelledby="invite-welcome-title">
+      <div class="hero-shell invite-welcome-shell">
+        <img class="hero-helper hero-helper-left" src="danco-helper-english.png" alt="Danco team guide">
+        <div class="hero-copy invite-welcome-copy">
+          <span class="eyebrow">DANCO ROOFING SERVICES, INC.</span>
+          <h1 id="invite-welcome-title">Welcome</h1>
+          <p class="lead" id="invite-welcome-message">The Danco team would like you to complete an application and role assessment.</p>
+          <div class="invite-role-card"><span>INVITED ROLE</span><b id="invite-welcome-role">Role</b><small>Your application, work-style profile and role-specific assessment will be submitted securely to Danco for review.</small></div>
+          <p class="privacy-line">Private candidate link · One assessment completion · Danco recruitment use</p>
+          <button class="button button-gold button-wide" id="invite-welcome-continue" type="button">Continue to language selection</button>
+        </div>
+        <img class="hero-helper hero-helper-right" src="danco-helper-spanish.png" alt="Danco team guide">
+      </div>
+    </section>
+
     <section class="screen active" id="language-screen" aria-labelledby="language-title">
       <div class="hero-shell">
         <img class="hero-helper hero-helper-left slide-left" src="danco-helper-english.png" alt="Friendly Danco team helper holding a clipboard">
@@ -121,6 +136,7 @@
             </div>
             <fieldset class="other-role-fieldset"><legend data-i18n="otherRolesLegend">Would you consider another listed role if it better matches your assessment?</legend><label><input type="radio" name="other-roles" value="Yes" checked><span data-i18n="otherRolesYes">Yes, I’m open to other roles</span></label><label><input type="radio" name="other-roles" value="No"><span data-i18n="otherRolesNo">No, only the role selected above</span></label></fieldset>
             <fieldset class="background-consent-fieldset"><legend data-i18n="backgroundConsentLegend">If your application progresses, do you consent to Danco requesting an employment background screening?</legend><div class="consent-choice-row"><label><input type="radio" name="background-consent" value="Yes"><span data-i18n="backgroundConsentYes">Yes, I consent to a background screening if my application progresses</span></label><label><input type="radio" name="background-consent" value="No"><span data-i18n="backgroundConsentNo">No, I do not consent</span></label></div><div id="background-consent-reason-wrap" hidden><label class="field"><span data-i18n="backgroundReasonLabel">Please provide a reason</span><textarea id="background-consent-reason" maxlength="600" data-i18n-placeholder="backgroundReasonPlaceholder" placeholder="Briefly explain your answer"></textarea></label></div><p class="fine" data-i18n="backgroundConsentNote">Prototype acknowledgement only. A live screening provider would present its own formal disclosure and authorization before any check is run.</p></fieldset>
+            <label class="candidate-privacy-ack" id="candidate-privacy-ack-wrap"><input id="candidate-privacy-ack" type="checkbox"><span><b>Personal information acknowledgement</b><small>I understand that the personal information I choose to provide is for Danco's recruitment and related employment administration only. It will not be used for unrelated purposes, and any retention should follow Danco's approved recruitment and privacy procedures.</small></span></label>
           </section>
           <fieldset class="option-fieldset">
             <legend data-i18n="audioTitle">Would audio support help?</legend>
@@ -198,12 +214,12 @@
           <p class="lead small" data-i18n="instructionsLead">The assessment checks practical roofing knowledge, safe decision-making and role readiness.</p>
           <div class="feature-grid">
             <article><span>10</span><b data-i18n="featureQuestions">Questions</b><small data-i18n="featureQuestionsCopy">Seven include visual answer choices</small></article>
-            <article><span>⏱</span><b data-i18n="featureTiming">Review then answer</b><small data-i18n="featureTimingCopy">A clear timer appears for each stage</small></article>
+            <article><span>⏱</span><b data-i18n="featureTiming">45 seconds per question</b><small data-i18n="featureTimingCopy">Question and answers are available immediately</small></article>
             <article><span>1</span><b data-i18n="featureChoice">One answer</b><small data-i18n="featureChoiceCopy">Choose the single best response</small></article>
             <article><span>✓</span><b data-i18n="featureResult">Private result</b><small data-i18n="featureResultCopy">You receive a result code, not a score</small></article>
           </div>
-          <div class="notice-card"><span>!</span><p data-i18n="timingNotice">First, review the question while the answer cards are locked. When the answer timer begins, select one response. Unanswered questions are recorded as timed out.</p></div>
-          <div class="notice-card accessibility-notice" id="accessibility-notice" hidden><span>+</span><p><b data-i18n="supportActiveTitle">Accessibility support is active.</b> <span data-i18n="supportActiveCopy">Extra answer time and the Repeat question control are enabled.</span></p></div>
+          <div class="notice-card"><span>!</span><p data-i18n="timingNotice">Standard mode gives 45 seconds for each question with answer choices available immediately. If time expires, a selected answer is recorded; otherwise the question is recorded as not answered.</p></div>
+          <div class="notice-card accessibility-notice" id="accessibility-notice" hidden><span>+</span><p><b data-i18n="supportActiveTitle">Accessibility support is active.</b> <span data-i18n="supportActiveCopy">The question can be heard and repeated without a timer. Press Reveal answers when ready; the 60-second answer timer starts only then.</span></p></div>
           <button class="button button-primary button-wide" id="start-knowledge" type="button" data-i18n="startQuestions">Start the 10 questions</button>
         </div>
       </div>
@@ -225,7 +241,7 @@
           <p class="question-category" id="knowledge-category">Roof products</p>
           <h2 id="knowledge-question"></h2>
           <p class="question-hint" id="knowledge-hint"></p>
-          <button class="button button-secondary question-repeat" id="knowledge-repeat" type="button" hidden><span aria-hidden="true">↻</span><span data-i18n="repeatQuestion">Repeat question</span></button>
+          <div class="accessibility-question-actions"><button class="button button-secondary question-repeat" id="knowledge-repeat" type="button" hidden><span aria-hidden="true">↻</span><span data-i18n="repeatQuestion">Repeat question</span></button><button class="button button-gold" id="knowledge-reveal" type="button" hidden>Reveal answers &amp; start 60 seconds</button></div>
           <div class="knowledge-options" id="knowledge-options"></div>
           <div class="answer-confirm-bar timed-confirm-bar"><span data-i18n="confirmAnswerHint">Select an option, then confirm it.</span><button class="button button-primary" id="knowledge-confirm" type="button" disabled data-i18n="confirmFinalAnswer">Confirm final answer</button></div>
         </div>
@@ -326,6 +342,13 @@
           <div class="owner-provider-lock"><b>Live screening-provider connection</b><span>Production owner setup only. Vendor credentials and real provider configuration are intentionally unavailable in trial mode.</span></div>
           <div class="owner-request-toolbar"><b>Advanced trial requests</b><button class="button button-secondary" id="refresh-danco-plus-requests" type="button">Refresh requests</button></div>
           <div class="owner-request-list" id="owner-request-list"><p class="fine">Owner approval service will load here.</p></div>
+          <section class="owner-invite-builder" id="owner-invite-builder">
+            <div class="owner-request-toolbar"><div><b>Create genuine candidate link</b><span>Creates a one-use application and role-assessment link with Standard Danco presentation and no prototype messaging.</span></div></div>
+            <div class="owner-invite-grid"><label class="field"><span>Candidate name (optional)</span><input id="owner-invite-name" maxlength="120" placeholder="Optional welcome name"></label><label class="field"><span>Role</span><select id="owner-invite-role"><option value="Commercial Account Manager">Commercial Account Manager</option><option value="Service Helper">Service Helper</option><option value="Roofer">Roofer</option><option value="Foreman">Foreman</option></select></label></div>
+            <button class="button button-gold" id="create-candidate-link" type="button">Create one-use candidate link</button>
+            <div class="owner-invite-output" id="owner-invite-output" hidden><span>Candidate link</span><div><input id="owner-invite-link" readonly><button class="button button-secondary" id="copy-candidate-link" type="button">Copy link</button></div><small>The link becomes assessment-locked when the timed questions begin. After completion it opens only the result screen and can be submitted once.</small></div>
+            <p class="form-error" id="owner-invite-error" role="alert"></p>
+          </section>
           <button class="button button-secondary owner-verify-button" id="verify-owner-session" type="button" hidden>Verify owner approval session</button>
           <p class="form-error" id="owner-plus-error" role="alert"></p>
         </section>
@@ -335,13 +358,14 @@
         </section>
         <section class="sales-leaderboard-card" aria-labelledby="sales-leaderboard-title">
           <div class="sales-leaderboard-hero">
-            <div class="sales-leaderboard-hero-copy"><span class="eyebrow">SALES ROLE · LIVE LEAGUE TABLE</span><h3 id="sales-leaderboard-title">Commercial Account Manager leaderboard</h3><p>Every completed Commercial Account Manager application and assessment can be ranked here by overall suitability or by any core sales attribute.</p><div class="leaderboard-chip-row"><span class="leaderboard-chip" id="sales-leaderboard-count">0 sales candidates</span><span class="leaderboard-chip">Click Overall, Experience, Network, Development, Consultative or Commercial to re-rank</span></div></div>
+            <div class="sales-leaderboard-hero-copy"><span class="eyebrow">SALES ROLE · LIVE LEAGUE TABLE</span><h3 id="sales-leaderboard-title">Commercial Account Manager leaderboard</h3><p>Completed Commercial Account Manager reports appear here automatically unless archived, marked not eligible, or manually removed from the league table. Rank by overall suitability or any core sales attribute.</p><div class="leaderboard-chip-row"><span class="leaderboard-chip" id="sales-leaderboard-count">0 sales candidates</span><span class="leaderboard-chip">Click Overall, Experience, Network, Development, Consultative or Commercial to re-rank</span></div></div>
             <div class="sales-leaderboard-winner-panel">
               <div class="leaderboard-illustration-card"><img src="leaderboard-hero-rendered.png" alt="Illustration of a new employee being welcomed to Danco from behind"></div>
               <div class="leaderboard-winner-copy"><small>CURRENT LEADER</small><h4 id="leaderboard-winner-name">Waiting for sales submissions</h4><span id="leaderboard-winner-role">Commercial Account Manager leaderboard</span><b id="leaderboard-winner-score">No ranked submissions yet</b><p id="leaderboard-winner-copy">Sales submissions will appear here after applicants complete the Commercial Account Manager route.</p></div>
             </div>
           </div>
           <div id="sales-leaderboard-wrap" class="sales-leaderboard-wrap"><div class="leaderboard-empty"><b>No sales suitability submissions yet.</b><span>Completed Commercial Account Manager applications and assessment-only results will build this league table automatically.</span></div></div>
+          <div class="leaderboard-removed" id="sales-leaderboard-removed" hidden><div><b>Removed from league table</b><span>These reports stay in their normal filing location and can be restored here at any time.</span></div><div id="sales-leaderboard-removed-list"></div></div>
         </section>
 
         <section class="stored-applications-card" aria-labelledby="stored-applications-title">
@@ -363,6 +387,7 @@
         <p class="form-error" id="decode-error" role="alert"></p>
 
         <div id="dashboard-output" class="dashboard-output"></div>
+        <section class="report-leaderboard-control" id="report-leaderboard-control" hidden><div><span class="eyebrow">SALES LEAGUE TABLE</span><h3>League table visibility</h3><p id="report-leaderboard-copy">This completed sales report is included in the leaderboard.</p></div><button class="button button-secondary" id="report-leaderboard-toggle" type="button">Remove from league table</button></section>
         <section class="background-screening-actions danco-plus-feature-card" id="background-screening-actions" data-advanced-feature="background" hidden><div><span class="eyebrow">ADVANCED PROTOTYPE · BACKGROUND SCREENING</span><h3>Progress a promising candidate</h3><p id="background-action-copy"></p></div><button class="button button-gold" id="request-background-check" type="button">Request background check</button><div class="background-decision-actions" id="background-decision-actions" hidden><span>After review, file the candidate as:</span><button class="button button-secondary" type="button" data-background-decision="further_review">CB checked · To action</button><button class="button button-secondary" type="button" data-background-decision="eligible">CB checked · Eligible</button><button class="button button-secondary" type="button" data-background-decision="not_eligible">CB checked · Not eligible</button><small>These are manual prototype workflow states. The screening result does not automatically make an employment decision.</small></div></section>
         <section class="employment-contract-actions danco-plus-feature-card" id="employment-contract-actions" data-advanced-feature="contract" hidden>
           <div><span class="eyebrow">ADVANCED PROTOTYPE · EMPLOYMENT CONTRACT</span><h3>Progress an eligible candidate to offer documentation</h3><p id="employment-contract-copy">Create a pre-filled Danco employment contract from the stored applicant record.</p></div>
@@ -497,6 +522,18 @@
     <div class="modal-card small-modal"><button class="modal-close" type="button" data-action="close-owner-verify" aria-label="Close">×</button><span class="eyebrow">OWNER VERIFICATION</span><h2 id="owner-verify-title">Connect owner approval controls</h2><p>Enter the existing private owner access code once to establish the secure approval session on this device.</p><label class="field"><span>Owner access code</span><input id="owner-verify-code" type="password" autocomplete="off"></label><p class="form-error" id="owner-verify-error"></p><button class="button button-primary button-wide" id="owner-verify-submit" type="button">Verify owner</button></div>
   </div>
 
+  <div class="modal-backdrop" id="background-report-viewer-modal" role="dialog" aria-modal="true" aria-labelledby="background-report-viewer-title">
+    <div class="modal-card background-report-viewer-card">
+      <button class="modal-close" type="button" data-action="close-background-report-viewer" aria-label="Close">×</button>
+      <div id="background-report-viewer-content"></div>
+      <div class="background-report-viewer-actions"><button class="button button-secondary" id="print-background-report" type="button">Print / save PDF</button><button class="button button-primary" type="button" data-action="close-background-report-viewer">Close report</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="accessible-answer-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="accessible-answer-confirm-title">
+    <div class="modal-card small-modal accessible-answer-confirm-card"><span class="eyebrow">FINAL ANSWER CHECK</span><h2 id="accessible-answer-confirm-title">Are you sure you want to commit this answer?</h2><p id="accessible-answer-confirm-copy">Your selected answer will be recorded and the assessment will move to the next question.</p><div class="accessible-confirm-actions"><button class="accessible-confirm-button no" id="accessible-answer-no" type="button"><span aria-hidden="true">✕</span><b>No — go back</b></button><button class="accessible-confirm-button yes" id="accessible-answer-yes" type="button"><span aria-hidden="true">✓</span><b>Yes — commit answer</b></button></div></div>
+  </div>
+
   <div class="modal-backdrop" id="background-modal" role="dialog" aria-modal="true" aria-labelledby="background-modal-title">
     <div class="modal-card background-modal-card">
       <button class="modal-close" type="button" data-action="close-background" aria-label="Close">×</button>
@@ -580,7 +617,7 @@
     <img src="joseph-whelan-eds-white.png" alt="" aria-hidden="true">
   </aside>
 
-  <script src="narration-manifest.js?v=35.0.0" defer></script>
-  <script src="app.js?v=35.0.0" defer></script>
+  <script src="narration-manifest.js?v=36.0.0" defer></script>
+  <script src="app.js?v=36.0.0" defer></script>
 </body>
 </html>

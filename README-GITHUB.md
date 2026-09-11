@@ -73,3 +73,13 @@ The ordinary applicant record excludes the full raw SSN. Signed employment files
 - The header mode switch now uses the official Danco roof/wordmark in metallic gold. Danco+ adds a digitally hand-drawn glowing plus and a roof alignment adjusted for the wider mark.
 - Tablet/desktop pitch geometry was tightened so Dan and Brenda remain clearly visible beside the message card.
 - Deploy the full flat package to the repository root; the v33 service-worker cache key clears stale v31 files.
+
+## v36 — live sales leaderboard, candidate invitation links & accessibility timing
+
+- The Commercial Account Manager league table now loads complete historical and future sales assessments from the shared database, excluding only Archived and Background checked — Not eligible records.
+- Administrators can remove a report from the league table without changing its filing queue and restore it later either from the removed list or from the report itself.
+- Owner-only one-use candidate links are backed by server-side invitation state. They preselect the role, remove prototype presentation, require a privacy acknowledgement, lock when timed assessment begins, restore the result after completion, and allow one final submission.
+- Standard timed questions use a single 45-second question-and-answer window with answers selectable immediately. Reading/sight support keeps the question untimed until answers are revealed, then provides 60 seconds and an accessible spoken final-answer confirmation.
+- The background-screening demonstration report now opens inside the app in the same report visual system, with Close and Print / Save PDF controls.
+- Admin report and table surfaces are now opaque/high-contrast for tablet readability.
+- Deploy the complete flat v36 package. The v36 service-worker cache key replaces earlier cached interface files.
