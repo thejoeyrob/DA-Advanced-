@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 17;
+  const VERSION = 18;
   const SESSION_KEY = 'dancoAssessment_adv_v13_session';
   const SETTINGS_KEY = 'dancoAssessment_adv_v13_settings';
   const APPLICATIONS_KEY = 'dancoAssessment_adv_v13_applications';
@@ -39,9 +39,9 @@
     {speaker:'brenda',headline:'From first application to payroll-ready',visual:'payroll',line:'Exactly, Dan. Danco Plus can take the right candidate from first application to a signed employment agreement ready for payroll in one connected path. What can otherwise stretch across days or weeks can, when everything aligns, become hours. Less admin. Less waiting. Better evidence. Faster confidence. That’s Danco Plus: hiring, built to move at Danco speed.'}
   ];
 
-  // v33: Danco+ presentation uses recorded audio files by default.
-  // These are direct playable MP3 assets (the same delivery path that worked in v31).
-  // Scene 06 has the corrected re-keying narration. Device TTS is never used as an automatic pitch fallback.
+  // v34: Danco+ presentation still defaults to recorded audio.
+  // Delivery has been tightened to feel more upbeat, and direct playable MP3 assets remain the default.
+  // Scene 06 retains the corrected re-keying narration. Device TTS is never used as an automatic pitch fallback.
   const PREMIUM_PITCH_AUDIO = [
     'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/096d0dd6-da7a-40e3-a45f-5342a206499d.mp3',
     'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/94d3ad02-9857-4e8d-b1e0-fb00e38ec69d.mp3',
@@ -55,10 +55,11 @@
     'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d73d3abe-fb7c-4f87-939e-19aef6d9bff0.mp3'
   ];
   if(PREMIUM_PITCH_AUDIO.length!==DANCO_PLUS_PITCH_SCENES.length){throw new Error('Danco+ pitch audio/scene mismatch');}
+  const PITCH_AUDIO_PLAYBACK_RATE = 1.08;
   const pitchAudioPreload = new Map();
   function preloadPitchAudio(index){
     if(index<0||index>=PREMIUM_PITCH_AUDIO.length||pitchAudioPreload.has(index))return;
-    try{const a=new Audio(PREMIUM_PITCH_AUDIO[index]);a.preload='auto';pitchAudioPreload.set(index,a);}catch(_){/* handled during playback */}
+    try{const a=new Audio(PREMIUM_PITCH_AUDIO[index]);a.preload='auto';a.playbackRate=PITCH_AUDIO_PLAYBACK_RATE;a.defaultPlaybackRate=PITCH_AUDIO_PLAYBACK_RATE;try{a.preservesPitch=false;a.webkitPreservesPitch=false;a.mozPreservesPitch=false;}catch(_){ }pitchAudioPreload.set(index,a);}catch(_){/* handled during playback */}
   }
   const PREMIUM_GUIDE_AUDIO = {
     en:{
@@ -302,7 +303,7 @@
   const SCREENS = ['language-screen','journey-choice-screen','setup-screen','profile-intro-screen','profile-screen','instructions-screen','knowledge-screen','result-screen'];
   let settings = loadJson(SETTINGS_KEY, {lang:'en',audio:false,supportReason:0,deviceMode:'choice',voiceMode:'recorded'});
   settings.voiceMode=['recorded','device'].includes(settings.voiceMode)?settings.voiceMode:'recorded';
-  const RECORDED_AUDIO_DEFAULT_KEY='dancoAssessment_recordedAudioDefault_v33';
+  const RECORDED_AUDIO_DEFAULT_KEY='dancoAssessment_recordedAudioDefault_v35';
   if(localStorage.getItem(RECORDED_AUDIO_DEFAULT_KEY)!=='1'){settings.voiceMode='recorded';localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));localStorage.setItem(RECORDED_AUDIO_DEFAULT_KEY,'1');}
   settings.deviceMode=['assessment','application','choice'].includes(settings.deviceMode)?settings.deviceMode:'choice';
   let session = loadJson(SESSION_KEY, null);
@@ -319,6 +320,9 @@
   let currentSharedReference = '';
   let currentQueueStatus = 'pending';
   let sharedQueueRecords = [];
+  let sharedQueueGroups = {};
+  let salesLeaderboardRows = [];
+  let salesLeaderboardSort = {key:'overall',dir:'desc'};
   let backgroundReportRecords = [];
   let currentLoadedRecord = null;
   let currentBackgroundScreening = null;
@@ -669,6 +673,9 @@
       pitchAudioPreload.delete(pitchIndex);
       premiumNarrationAudio=audio;
       audio.preload='auto';
+      audio.playbackRate=PITCH_AUDIO_PLAYBACK_RATE;
+      audio.defaultPlaybackRate=PITCH_AUDIO_PLAYBACK_RATE;
+      try{audio.preservesPitch=false;audio.webkitPreservesPitch=false;audio.mozPreservesPitch=false;}catch(_){ }
       let settled=false;
       const recordedFailure=()=>{
         if(settled||token!==pitchSpeechToken||!pitchPlaying)return;
@@ -781,8 +788,8 @@
 
   function initialiseNarration(){
     narrationPlayers={
-      en:new Audio('./narration-en.mp3?v=33.0.0'),
-      es:new Audio('./narration-es.mp3?v=33.0.0')
+      en:new Audio('./narration-en.mp3?v=35.0.0'),
+      es:new Audio('./narration-es.mp3?v=35.0.0')
     };
     Object.values(narrationPlayers).forEach(audio=>{audio.preload='auto';audio.load();});
     narrationAudio=narrationPlayers[settings.lang];
@@ -1248,6 +1255,113 @@
     }
   }
 
+
+  function queueStatusLabel(status){
+    return ({pending:'Yet to process',actioned:'Actioned',archived:'Archived',background_to_action:'CB checked · To action',background_eligible:'CB checked · Eligible',background_not_eligible:'CB checked · Not eligible',employment_contracts:'Employment contracts',signed_employment_contracts:'Signed employment contracts'})[status]||status||'Stored';
+  }
+  function salesLeaderboardCategoryName(key){
+    return ({overall:'Overall',experience:'Experience',network:'Network',development:'Development',consultative:'Consultative',commercial:'Commercial'})[key]||key;
+  }
+  function salesLeaderboardSortValue(row,key){
+    if(key==='name')return String(row.name||'').toLowerCase();
+    if(key==='role')return String(row.roleLabel||'').toLowerCase();
+    if(key==='queueStatus')return String(queueStatusLabel(row.queueStatus)||'').toLowerCase();
+    if(key==='submittedAt')return row.submittedAt?new Date(row.submittedAt).getTime():0;
+    if(key==='overall')return Number(row.overall||0);
+    return Number(row.categories?.[key]||0);
+  }
+  function salesLeaderboardComparator(){
+    const {key,dir}=salesLeaderboardSort;
+    return (a,b)=>{
+      const av=salesLeaderboardSortValue(a,key), bv=salesLeaderboardSortValue(b,key);
+      let order=0;
+      if(typeof av==='string'||typeof bv==='string') order=String(av).localeCompare(String(bv));
+      else order=Number(av)-Number(bv);
+      if(order===0) order=Number(a.overall||0)-Number(b.overall||0);
+      if(order===0) order=String(a.name||'').localeCompare(String(b.name||''));
+      return dir==='asc'?order:-order;
+    };
+  }
+  function setSalesLeaderboardSort(key){
+    if(salesLeaderboardSort.key===key) salesLeaderboardSort.dir=salesLeaderboardSort.dir==='desc'?'asc':'desc';
+    else salesLeaderboardSort={key,dir:'desc'};
+    renderSalesLeaderboard();
+  }
+  function leaderboardEligibleRecord(record){
+    const data=record?.assessment?.knowledgeAnswers?record.assessment:decodeResult(record?.resultCode||record?.code||'');
+    const role=record?.application?.role||'';
+    const track=data?.assessmentTrack||'';
+    if(!(track==='account_manager'||role==='Commercial Account Manager')) return null;
+    if(!Array.isArray(data?.knowledgeAnswers)||!data.knowledgeAnswers.length) return null;
+    const result=scoreSalesAssessment(data.knowledgeAnswers);
+    const source=record.reference?`remote:${record.reference}`:`local:${record.code||''}`;
+    return {
+      source,
+      queueStatus:record.queueStatus||'pending',
+      name:record.name||'Unnamed applicant',
+      roleLabel:role||'Commercial Account Manager',
+      reference:record.reference||record.code||'',
+      submittedAt:record.submittedAt||'',
+      overall:result.suitability,
+      categories:{...result.categoryPct},
+      result,
+      recordType:record.recordType||'assessment'
+    };
+  }
+  function buildSalesLeaderboardRows(records){
+    const rows=[];
+    (Array.isArray(records)?records:[]).forEach(record=>{
+      try{const row=leaderboardEligibleRecord(record); if(row)rows.push(row);}catch(_){ }
+    });
+    const deduped=[]; const seen=new Set();
+    rows.forEach(row=>{const key=`${row.reference}|${row.recordType}|${row.submittedAt}`; if(seen.has(key))return; seen.add(key); deduped.push(row);});
+    return deduped;
+  }
+  async function openLeaderboardRecord(source,queueStatus){
+    try{
+      if(queueStatus&&queueStatus!==currentQueueStatus){currentQueueStatus=queueStatus; await populateStoredApplicants();}
+      const select=$('stored-applicant-select');
+      if(select){
+        const option=Array.from(select.options).find(opt=>opt.value===source);
+        if(option) select.value=source;
+      }
+      if(source?.startsWith('remote:')||source?.startsWith('local:')) await loadStoredApplicantFromSource(source);
+    }catch(error){$('decode-error').textContent=error.message||'Unable to open leaderboard result.';}
+  }
+  function leaderboardWinnerCopy(row){
+    const focus=salesLeaderboardCategoryName(salesLeaderboardSort.key);
+    if(!row) return 'Sales submissions will appear here after applicants complete the Commercial Account Manager route.';
+    return salesLeaderboardSort.key==='overall'
+      ? `${row.name} currently leads the sales suitability leaderboard at ${row.overall}% overall fit.`
+      : `${row.name} is currently leading for ${focus.toLowerCase()} at ${row.categories?.[salesLeaderboardSort.key]||0}%.`;
+  }
+  function leaderboardTableHtml(rows){
+    const sortableKeys=['overall','experience','network','development','consultative','commercial'];
+    const sortIcon=(key)=>salesLeaderboardSort.key===key?(salesLeaderboardSort.dir==='desc'?'↓':'↑'):'↕';
+    const th=(label,key)=>sortableKeys.includes(key)
+      ? `<th><button class="leaderboard-sort-button ${salesLeaderboardSort.key===key?'active':''}" type="button" data-leader-sort="${key}">${label}<span>${sortIcon(key)}</span></button></th>`
+      : `<th>${label}</th>`;
+    return `<div class="leaderboard-table-scroll"><table class="leaderboard-table"><thead><tr><th>Rank</th><th>Candidate</th><th>Role</th>${th('Overall','overall')}${th('Experience','experience')}${th('Network','network')}${th('Development','development')}${th('Consultative','consultative')}${th('Commercial','commercial')}<th>Status</th><th>Open</th></tr></thead><tbody>${rows.map((row,index)=>`<tr class="${index===0?'leader-row':''}"><td><span class="leader-rank ${index<3?'top-three':''}">${index+1}</span></td><td><div class="leader-name"><b>${escapeHtml(row.name)}</b><span>${escapeHtml(row.reference||'No reference')}</span></div></td><td>${escapeHtml(row.roleLabel)}</td><td><b>${row.overall}%</b></td><td>${row.categories.experience||0}%</td><td>${row.categories.network||0}%</td><td>${row.categories.development||0}%</td><td>${row.categories.consultative||0}%</td><td>${row.categories.commercial||0}%</td><td>${escapeHtml(queueStatusLabel(row.queueStatus))}</td><td><button class="button button-secondary leaderboard-open-button" type="button" data-leader-open="${escapeHtml(row.source)}" data-leader-queue="${escapeHtml(row.queueStatus)}">Open</button></td></tr>`).join('')}</tbody></table></div>`;
+  }
+  function renderSalesLeaderboard(){
+    const wrap=$('sales-leaderboard-wrap'); if(!wrap)return;
+    const count=$('sales-leaderboard-count');
+    const winnerName=$('leaderboard-winner-name');
+    const winnerRole=$('leaderboard-winner-role');
+    const winnerCopy=$('leaderboard-winner-copy');
+    const winnerMetric=$('leaderboard-winner-score');
+    const rows=[...salesLeaderboardRows].sort(salesLeaderboardComparator());
+    if(count)count.textContent=`${rows.length} sales candidate${rows.length===1?'':'s'}`;
+    const top=rows[0]||null;
+    if(winnerName)winnerName.textContent=top?top.name:'Waiting for sales submissions';
+    if(winnerRole)winnerRole.textContent=top?`${top.roleLabel} · ${top.reference}`:'Commercial Account Manager leaderboard';
+    if(winnerMetric)winnerMetric.textContent=top?(salesLeaderboardSort.key==='overall'?`${top.overall}% overall fit`:`${top.categories?.[salesLeaderboardSort.key]||0}% ${salesLeaderboardCategoryName(salesLeaderboardSort.key).toLowerCase()}`):'No ranked submissions yet';
+    if(winnerCopy)winnerCopy.textContent=leaderboardWinnerCopy(top);
+    wrap.innerHTML=rows.length?leaderboardTableHtml(rows):'<div class="leaderboard-empty"><b>No sales suitability submissions yet.</b><span>Completed Commercial Account Manager applications and assessment-only results will build this league table automatically.</span></div>';
+    wrap.querySelectorAll('[data-leader-sort]').forEach(button=>button.addEventListener('click',()=>setSalesLeaderboardSort(button.dataset.leaderSort)));
+    wrap.querySelectorAll('[data-leader-open]').forEach(button=>button.addEventListener('click',()=>openLeaderboardRecord(button.dataset.leaderOpen,button.dataset.leaderQueue)));
+  }
+
   async function populateStoredApplicants(){
     const select=$('stored-applicant-select'); if(!select) return;
     select.disabled=true; select.innerHTML='<option value="">Loading shared submissions…</option>';
@@ -1259,19 +1373,27 @@
       if(!dancoPlusActive()&&advancedQueueStatus(currentQueueStatus))currentQueueStatus='pending';
       const responses=await Promise.all(statuses.map(status=>sharedRequest('/api/admin',{action:'list',status,adminPin:adminAccessPin})));
       const grouped=Object.fromEntries(statuses.map((status,index)=>[status,Array.isArray(responses[index].submissions)?responses[index].submissions:[]]));
+      grouped && Object.entries(grouped).forEach(([status,list])=>{(Array.isArray(list)?list:[]).forEach(item=>{item.queueStatus=item.queueStatus||status;});});
+      sharedQueueGroups=grouped;
+      salesLeaderboardRows=buildSalesLeaderboardRows(Object.values(grouped).flat());
       $$('[data-queue-status]').forEach(button=>{const status=button.dataset.queueStatus;button.classList.toggle('active',status===currentQueueStatus);const count=button.querySelector('[data-queue-count]');if(count)count.textContent=!dancoPlusActive()&&advancedQueueStatus(status)?'+':String(grouped[status]?.length||0);});
       sharedQueueRecords=grouped[currentQueueStatus]||[];
       select.innerHTML=sharedQueueRecords.length?'<option value="">Select a shared submission</option>':'<option value="">No submissions in this queue</option>';
       sharedQueueRecords.forEach(item=>{const option=document.createElement('option');option.value=`remote:${item.reference}`;const kind=item.recordType==='application'?'Application':'Assessment';const role=item.role?` · ${item.role}`:'';option.textContent=`${item.name||'Unnamed applicant'} — ${item.reference} · ${kind}${role}`;select.appendChild(option);});
       $('shared-service-status').textContent='Live shared list · available on every authorized device';
       select.disabled=false;
+      renderSalesLeaderboard();
       await populateBackgroundReportFolder(grouped);
     }catch(error){
-      const local=storedApplications().filter(item=>(item.queueStatus||'pending')===currentQueueStatus).sort((a,b)=>String(b.submittedAt).localeCompare(String(a.submittedAt)));
+      const localAll=storedApplications();
+      const local=localAll.filter(item=>(item.queueStatus||'pending')===currentQueueStatus).sort((a,b)=>String(b.submittedAt).localeCompare(String(a.submittedAt)));
+      sharedQueueGroups={pending:localAll.filter(item=>(item.queueStatus||'pending')==='pending'),actioned:localAll.filter(item=>item.queueStatus==='actioned'),archived:localAll.filter(item=>item.queueStatus==='archived')};
+      salesLeaderboardRows=buildSalesLeaderboardRows(localAll);
       select.innerHTML=local.length?'<option value="">Shared service unavailable — local copies</option>':'<option value="">Shared service unavailable</option>';
       local.forEach(item=>{const option=document.createElement('option');option.value=`local:${item.code}`;option.textContent=`${item.name||'Unnamed applicant'} — local copy`;select.appendChild(option);});
       $('shared-service-status').textContent=error.message;
       select.disabled=false;
+      renderSalesLeaderboard();
       await populateBackgroundReportFolder();
     }
   }
@@ -1296,19 +1418,21 @@
     finally{button.disabled=false;button.textContent=t('confirmSubmit');}
   }
 
+  async function loadStoredApplicantFromSource(selected){
+    if(!selected){ $('decode-error').textContent='Select a submission first.'; return; }
+    let record;
+    if(selected.startsWith('remote:')){const reference=selected.slice(7);const response=await sharedRequest('/api/admin',{action:'get',reference,adminPin:adminAccessPin});record=response.submission;currentSharedReference=reference;$('submission-status-actions').hidden=false;}
+    else{record=findStoredApplication(selected.slice(6));currentSharedReference='';currentEmploymentContract=null;$('submission-status-actions').hidden=true;}
+    if(!record)throw new Error('Submission was not found.');
+    currentLoadedRecord=record; currentBackgroundScreening=record.backgroundScreening||null; currentEmploymentContract=record.employmentContract||null;
+    const data=record.assessment?.knowledgeAnswers?record.assessment:decodeResult(record.resultCode||record.code); $('decode-error').textContent='';
+    renderDashboard(data,{code:'',name:record.name,reference:record.reference||record.code,application:record.recordType==='assessment'?null:(record.application||null),submittedAt:record.submittedAt,backgroundScreening:record.backgroundScreening||null,employmentContract:record.employmentContract||null});
+    renderBackgroundActions(record); renderEmploymentContractActions(record);
+  }
   async function loadStoredApplicant(){
     const selected=$('stored-applicant-select').value;
     if(!selected){ $('decode-error').textContent='Select a submission first.'; return; }
-    try{
-      let record;
-      if(selected.startsWith('remote:')){const reference=selected.slice(7);const response=await sharedRequest('/api/admin',{action:'get',reference,adminPin:adminAccessPin});record=response.submission;currentSharedReference=reference;$('submission-status-actions').hidden=false;}
-      else{record=findStoredApplication(selected.slice(6));currentSharedReference='';currentEmploymentContract=null;$('submission-status-actions').hidden=true;}
-      if(!record)throw new Error('Submission was not found.');
-      currentLoadedRecord=record; currentBackgroundScreening=record.backgroundScreening||null; currentEmploymentContract=record.employmentContract||null;
-      const data=record.assessment?.knowledgeAnswers?record.assessment:decodeResult(record.resultCode||record.code); $('decode-error').textContent='';
-      renderDashboard(data,{code:'',name:record.name,reference:record.reference||record.code,application:record.recordType==='assessment'?null:(record.application||null),submittedAt:record.submittedAt,backgroundScreening:record.backgroundScreening||null,employmentContract:record.employmentContract||null});
-      renderBackgroundActions(record); renderEmploymentContractActions(record);
-    }catch(error){ $('decode-error').textContent=error.message; $('dashboard-output').innerHTML=''; }
+    try{ await loadStoredApplicantFromSource(selected); }catch(error){ $('decode-error').textContent=error.message; $('dashboard-output').innerHTML=''; }
   }
   async function updateSharedStatus(status){
     if(!currentSharedReference)return;
@@ -1916,6 +2040,7 @@
   }
   function prepareAdmin(){
     $('print-date').textContent=new Intl.DateTimeFormat('en-US',{dateStyle:'long',timeStyle:'short'}).format(new Date());
+    renderSalesLeaderboard();
     populateStoredApplicants(); applyProductMode(); applyDancoPlusMode(); refreshDancoPlusStatus({welcome:true}); if(isOwner())refreshOwnerRequests();
     if(session?.status==='complete'){
       try{const decoded=decodeResult(session.resultCode);decoded.assessmentTrack=session.assessmentTrack||'roofing';renderDashboard(decoded,{code:'',name:session.name,reference:session.submissionReference||session.reference,application:session.mode==='application'?(session.application||{}):null,submittedAt:session.submittedAt||''});}catch(_){}
@@ -1930,7 +2055,7 @@
     else if(session?.status==='profile'){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);profileIndex=session.profileAnswers?.length||0;renderProfile();}
     else if(session?.status==='profile-intro'){settings.lang=session.lang||settings.lang;setLanguage(settings.lang);showScreen('profile-intro-screen');}
     else showScreen('language-screen');
-    if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=33.0.0').catch(()=>{}));
+    if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=35.0.0').catch(()=>{}));
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDancoPlusStatus({welcome:true});});
   }
 

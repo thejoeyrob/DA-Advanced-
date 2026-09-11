@@ -10,10 +10,10 @@
   <meta property="og:image" content="social-preview.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="manifest.webmanifest?v=33.0.0">
+  <link rel="manifest" href="manifest.webmanifest?v=35.0.0">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" href="icon-192.png">
-  <link rel="stylesheet" href="app.css?v=33.0.0">
+  <link rel="stylesheet" href="app.css?v=35.0.0">
   <title>Danco Workforce Assessment · Prototype</title>
 </head>
 <body class="prototype-locked">
@@ -333,6 +333,17 @@
           <div><span class="eyebrow">DEVICE START MODE</span><h3 id="admin-mode-title">Lock this device to a route</h3><p>Choose whether this browser/device offers the workforce assessment only, the job application only, or lets the user choose after selecting a language.</p></div>
           <div class="mode-toggle mode-toggle-three" role="group" aria-label="Device start mode"><button type="button" data-admin-device-mode="assessment">Workforce assessment only</button><button type="button" data-admin-device-mode="application">Application only</button><button type="button" data-admin-device-mode="choice">Choice of either</button></div>
         </section>
+        <section class="sales-leaderboard-card" aria-labelledby="sales-leaderboard-title">
+          <div class="sales-leaderboard-hero">
+            <div class="sales-leaderboard-hero-copy"><span class="eyebrow">SALES ROLE · LIVE LEAGUE TABLE</span><h3 id="sales-leaderboard-title">Commercial Account Manager leaderboard</h3><p>Every completed Commercial Account Manager application and assessment can be ranked here by overall suitability or by any core sales attribute.</p><div class="leaderboard-chip-row"><span class="leaderboard-chip" id="sales-leaderboard-count">0 sales candidates</span><span class="leaderboard-chip">Click Overall, Experience, Network, Development, Consultative or Commercial to re-rank</span></div></div>
+            <div class="sales-leaderboard-winner-panel">
+              <div class="leaderboard-illustration-card"><img src="leaderboard-hero-rendered.png" alt="Illustration of a new employee being welcomed to Danco from behind"></div>
+              <div class="leaderboard-winner-copy"><small>CURRENT LEADER</small><h4 id="leaderboard-winner-name">Waiting for sales submissions</h4><span id="leaderboard-winner-role">Commercial Account Manager leaderboard</span><b id="leaderboard-winner-score">No ranked submissions yet</b><p id="leaderboard-winner-copy">Sales submissions will appear here after applicants complete the Commercial Account Manager route.</p></div>
+            </div>
+          </div>
+          <div id="sales-leaderboard-wrap" class="sales-leaderboard-wrap"><div class="leaderboard-empty"><b>No sales suitability submissions yet.</b><span>Completed Commercial Account Manager applications and assessment-only results will build this league table automatically.</span></div></div>
+        </section>
+
         <section class="stored-applications-card" aria-labelledby="stored-applications-title">
           <div><span class="eyebrow">SHARED SUBMISSION DATABASE</span><h3 id="stored-applications-title">Applications and assessment results</h3><p id="shared-service-status">Submitted records are shared across authorized phones, tablets and computers.</p></div>
           <div class="shared-submission-browser">
@@ -569,7 +580,7 @@
     <img src="joseph-whelan-eds-white.png" alt="" aria-hidden="true">
   </aside>
 
-  <script src="narration-manifest.js?v=33.0.0" defer></script>
-  <script src="app.js?v=33.0.0" defer></script>
+  <script src="narration-manifest.js?v=35.0.0" defer></script>
+  <script src="app.js?v=35.0.0" defer></script>
 </body>
 </html>
